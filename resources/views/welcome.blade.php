@@ -99,6 +99,86 @@
                 </div>
             </div>
         </div>
+        <div class="float-contact">
+   
+            <script type="text/javascript">
+                var array = ['0357791333','0374943343','0367878179'];
+                var item = array[Math.floor(Math.random() * array.length)];
+            </script>
+            <div class="zalo">
+                <a href="https://zalo.me/" onclick="window.open(this.href + item)" target="_blank">
+                    <img alt="zalo" src="https://i.pinimg.com/originals/27/92/1e/27921eeb41b9bd80b61f14835a7b8b96.png" style="width: 40px; height: 40px;" />
+                </a>
+            </div>
+        </div>
+
+
+        <style type="text/css">
+
+
+        @media (min-width: 1025px) {
+        .float-contact {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            z-index: 99999;
+            text-align: left;
+        }
+        .chat-face, .hotline, .zalo, .face {
+            overflow: hidden;
+            border: none !important;
+            background: none !important;
+        }   
+        .chat-face a, .hotline a, .zalo a, .face a {
+            display: block;
+            margin-bottom: 6px;
+        }
+        .chat-face a:hover, .hotline a:hover, .zalo a:hover, .face a:hover {
+            background: #137b00;
+            color: #fff;
+            text-decoration: none;
+        }
+        .chat-face a img, .hotline a img, .zalo a img, .face a img {
+            display: block;
+            margin: auto;
+        }
+        .chat-face a, .hotline a, .zalo a, .face a {
+            color: #000;
+            text-align: center;
+            display: block;
+            font-size: 10px;
+        }   
+        }
+
+        @media (max-width: 1024px) {
+        .float-contact {
+            position: fixed;
+            bottom: 10%;
+            z-index: 99999;
+            display: flex;
+            /* background: linear-gradient(#fff,#137b00); */
+            width: 100%;
+            height: 63px;
+        }
+        .face, .chat-face, .zalo, .hotline {
+            width: 25%;
+            text-align: center;
+            margin: auto;
+            border-left: 1px solid #fff;
+            border-right: 1px solid #fff;
+        }
+        .face a img, .chat-face a img, .zalo a img, .hotline a img {
+            display: block;
+            margin: 5px auto 5px;
+        }
+        .face a, .chat-face a, .zalo a, .hotline a {
+            color: #fff;
+            font-size: 13px;
+        }
+
+        }
+        </style>
+
         <script src="{{asset('js/app.js')}}"></script>
     </body>
 </html>
