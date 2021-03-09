@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Laravel</title>
+        <title>UIT WORK</title>
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <!-- Fonts -->
@@ -80,10 +80,10 @@
                         @endauth
                     </div>
                 @endif
-                <example-component></example-component>
+                <!-- <example-component></example-component> -->
                 <div class="content">
                     <div class="title m-b-md">
-                        Laravel
+                        UIT WORK
                     </div>
 
                     <div class="links">
@@ -99,22 +99,8 @@
                 </div>
             </div>
         </div>
-        <div class="float-contact">
-   
-            <script type="text/javascript">
-                var array = ['0357791333','0374943343','0367878179'];
-                var item = array[Math.floor(Math.random() * array.length)];
-            </script>
-            <div class="zalo">
-                <a href="https://zalo.me/" onclick="window.open(this.href + item)" target="_blank">
-                    <img alt="zalo" src="https://i.pinimg.com/originals/27/92/1e/27921eeb41b9bd80b61f14835a7b8b96.png" style="width: 40px; height: 40px;" />
-                </a>
-            </div>
-        </div>
-
 
         <style type="text/css">
-
 
         @media (min-width: 1025px) {
         .float-contact {
@@ -128,7 +114,7 @@
             overflow: hidden;
             border: none !important;
             background: none !important;
-        }   
+        }
         .chat-face a, .hotline a, .zalo a, .face a {
             display: block;
             margin-bottom: 6px;
@@ -147,7 +133,7 @@
             text-align: center;
             display: block;
             font-size: 10px;
-        }   
+        }
         }
 
         @media (max-width: 1024px) {

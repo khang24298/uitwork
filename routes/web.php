@@ -21,3 +21,17 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 Route::resource('/task','TaskController');
+
+Route::get('/dashboard', 'DashboardController@create');
+
+Route::get('/projects', 'ProjectsController@index');
+
+Route::get('/projects/create', 'ProjectsController@create');
+
+Route::get('/projects/{project}', 'ProjectsController@show');
+
+Route::post('/projects', 'ProjectsController@store');
+
+Route::get('/projects/{project}/edit', 'ProjectsController@edit');
+
+Route::put('/projects/{project} ', 'ProjectsController@update');

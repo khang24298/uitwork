@@ -20,7 +20,6 @@ class TaskController extends Controller
 
     public function index()
     {
-
         $tasks = request()->user()->tasks;
 
         return response()->json([
