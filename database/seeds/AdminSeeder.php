@@ -15,18 +15,18 @@ class AdminSeeder extends Seeder
     {
         DB::table('admin')->insert([
             [
-                'username' => 'admin',
-                'password' => Hash::make('admin'),
+                'username' => 'admin2',
+                'password' => Hash::make('admin2'),
                 'departmentID' => rand(1,10),
                 'email' => Str::random(10).'@gmail.com',
                 'name' => Str::random(20),
             ],
             [
-                'username' => 'khang',
+                'username' => 'khang2',
                 'password' => Hash::make('Khang1998!'),
                 'departmentID' => rand(1,10),
-                'email' => 'khangnguyen24298@gmail.com',
-                'name' => 'Nguyen Tien Khang',
+                'email' => 'khangnguyen@gmail.com',
+                'name' => 'Tien Khang',
             ]
         ]
         );
