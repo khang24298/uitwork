@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Project;
+use Exception;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 class ProjectsController extends Controller
 {
     /**
@@ -15,21 +16,25 @@ class ProjectsController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth.jwt');
     }
 
     public function index()
-    {
-        //
-        // $projects = request()->user()->projects;
+    {   
+        try{
+            $projects = Project::latest()->get();
 
-        $pjs = Project::latest()->get();
+            return response()->json([
+                'projects' => $projects,
+                'message' => 'Success'
+            ],200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMEssage()
+            ], 500);
+        }
 
-        return view('projects.index', ['projects' => $pjs]);
-
-        // return response()->json([
-        //     'projects' => $pjs,
-        // ], 200);
     }
 
     public function all()
@@ -58,23 +63,37 @@ class ProjectsController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'project_name'  => 'required|max:255',
-            'description'   => 'required',
-        ]);
+        $role = Auth::user()->role;
+        if($role > 2){
+            $this->validate($request, [
+                'project_name'  => 'required|max:255',
+                'description'   => 'required',
+            ]);
+            try{
+                $project = Project::create([
+                    'project_name'  => request('project_name'),
+                    'description'   => request('description'),
+                    'user_id'       => Auth::user()->id
+                ]);
+                return response()->json([
+                    'project'    => $project,
+                    'message' => 'Success'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource!
+                            Please contact with adminitrator for more information!"
+            ], 403);
+        }
 
-        $project = Project::create([
-            'project_name'  => request('project_name'),
-            'description'   => request('description'),
-            'user_id'       => Auth::user()->id
-        ]);
-
-        // return response()->json([
-        //     'project'    => $project,
-        //     'message' => 'Success'
-        // ], 200);
-
-        return redirect('/projects');
+        
     }
 
     /**
@@ -85,7 +104,17 @@ class ProjectsController extends Controller
      */
     public function show(Project $project)
     {
-        return view('projects.show', ['project' => $project]);
+        try{
+            return response()->json([
+                'project' => $project,
+                'message' => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ],500);
+        }
     }
 
     /**
@@ -108,19 +137,34 @@ class ProjectsController extends Controller
      */
     public function update(Request $request, Project $project)
     {
-        //
-        $this->validate($request, [
-            'project_name'  => 'required|max:255',
-            'description'   => 'required',
-        ]);
-
-        $project->project_name = request('project_name');
-        $project->description = request('description');
-        $project->save();
-
-        return response()->json([
-            'message' => 'Project updated successfully!'
-        ], 200);
+        $role = Auth::user()->role;
+        if($role > 2){
+            $this->validate($request, [
+                'project_name'  => 'required|max:255',
+                'description'   => 'required',
+            ]);
+            try{
+                $project->project_name = request('project_name');
+                $project->description = request('description');
+                $project->save();
+                return response()->json([
+                    'project' => $project,
+                    'message' => 'Project updated successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource!
+                            Please contact with adminitrator for more information!"
+            ], 403);
+        }
+        
     }
 
     /**
@@ -131,11 +175,25 @@ class ProjectsController extends Controller
      */
     public function destroy(Project $project)
     {
-        //
-        $project->delete();
-
-        return response()->json([
-            'message' => 'Project deleted successfully!'
-        ], 200);
+        $role = Auth::user()->role;
+        if($role > 2){
+            try{
+                $project->delete();
+                return response()->json([
+                    'message' => 'Project deleted successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            } 
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource!
+                            Please contact with adminitrator for more information!"
+            ], 403);
+        }
     }
 }

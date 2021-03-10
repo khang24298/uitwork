@@ -8,8 +8,8 @@ use Faker\Generator as Faker;
 
 $factory->define(Project::class, function (Faker $faker) {
     return [
-        'user_id' => rand(1000,2000),
-        'project_name' => $faker->city,
-        'description' => $faker->company,
+        'user_id' => rand(1,10),
+        'project_name' => $faker->title,
+        'description' => $faker->paragraph,
     ];
 });

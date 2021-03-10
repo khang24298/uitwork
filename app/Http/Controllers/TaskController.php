@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Task;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
@@ -15,16 +16,24 @@ class TaskController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth.jwt');
     }
 
     public function index()
     {
-        $tasks = request()->user()->tasks;
-
-        return response()->json([
-            'tasks' => $tasks,
-        ], 200);
+        try{
+            $tasks = request()->user()->tasks;
+            return response()->json([
+                'tasks' => $tasks,
+                'message' => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+        
     }
 
     /**
@@ -48,19 +57,28 @@ class TaskController extends Controller
         $this->validate($request, [
             'name'        => 'required|max:255',
             'description' => 'required',
+            'assignee'    => 'required',
         ]);
 
-        $task = Task::create([
-            'name'        => request('name'),
-            'description' => request('description'),
-            'assignee_id' => request('assignee'),
-            'user_id'     => Auth::user()->id
-        ]);
+        try{
+            $task = Task::create([
+                'name'        => request('name'),
+                'description' => request('description'),
+                'assignee_id' => request('assignee'),
+                'user_id'     => Auth::user()->id
+            ]);
+            return response()->json([
+                'task'    => $task,
+                'message' => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
 
-        return response()->json([
-            'task'    => $task,
-            'message' => 'Success'
-        ], 200);
+        
     }
 
     /**
@@ -97,16 +115,24 @@ class TaskController extends Controller
         $this->validate($request, [
             'name'        => 'required|max:255',
             'description' => 'required',
+            'assignee'    => 'required',
         ]);
-
-        $task->name = request('name');
-        $task->description = request('description');
-        $task->assignee_id = request('assignee');
-        $task->save();
-
-        return response()->json([
-            'message' => 'Task updated successfully!'
-        ], 200);
+        
+        try{
+            $task->name = request('name');
+            $task->description = request('description');
+            $task->assignee_id = request('assignee');
+            $task->save();
+            return response()->json([
+                    'message' => 'Task updated successfully!'
+                    ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                    'message' => $e->getMessage() 
+                ],500);
+        }
+        
     }
 
     /**
@@ -117,10 +143,17 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        $task->delete();
-
-        return response()->json([
-            'message' => 'Task deleted successfully!'
-        ], 200);
+        try{
+            $task->delete();
+            return response()->json([
+                'message' => 'Task deleted successfully!'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+        
     }
 }

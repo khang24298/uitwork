@@ -13,16 +13,16 @@ class AdminSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('admin')->insert([
+        DB::table('admins')->insert([
             [
-                'username' => 'admin2',
-                'password' => Hash::make('admin2'),
+                'username' => 'admin',
+                'password' => Hash::make('admin'),
                 'departmentID' => rand(1,10),
                 'email' => Str::random(10).'@gmail.com',
                 'name' => Str::random(20),
             ],
             [
-                'username' => 'khang2',
+                'username' => 'khang',
                 'password' => Hash::make('Khang1998!'),
                 'departmentID' => rand(1,10),
                 'email' => 'khangnguyen@gmail.com',

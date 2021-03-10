@@ -7,6 +7,7 @@
 
                     <div class="card-body">
                         I'm an example component.
+                        Dang thay doi. Thay nua nay
                     </div>
                 </div>
             </div>

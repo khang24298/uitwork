@@ -19,11 +19,14 @@ use Illuminate\Support\Str;
 */
 
 $factory->define(User::class, function (Faker $faker) {
+    $a=array(1,2,3,4);
+    $random_keys=array_rand($a,1);
     return [
         'name' => $faker->name,
         'email' => $faker->unique()->safeEmail,
         'email_verified_at' => now(),
         'password' => Hash::make('passUITWORK'), // password
+        'role' => $a[$random_keys],
         'remember_token' => Str::random(10),
     ];
 });
