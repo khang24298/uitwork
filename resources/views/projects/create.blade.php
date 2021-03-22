@@ -1,12 +1,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.2/css/bulma.css">
 
-<form action="" style="width: 50%; margin-left: auto; margin-right: auto;">
+<form method="POST" action="/projects" style="width: 50%; margin-left: auto; margin-right: auto;">
     @csrf
     <div class="field">
         <label class="project_name" for="project_name">Name</label>
 
         <div class="control">
-            <input class="input @error('project-name') is-danger @enderror" type="text"
+
+            <input class="input @error('project_name') is-danger @enderror" type="text"
                     name="project_name" id="project_name" value="{{  old('project_name') }}">
 
             @error('project_name')

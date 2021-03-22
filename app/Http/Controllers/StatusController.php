@@ -2,30 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Project;
-use Exception;
-use GuzzleHttp\Handler\Proxy;
+use App\Status;
 use Illuminate\Http\Request;
+
+use Exception;
 use Illuminate\Support\Facades\Auth;
-class ProjectsController extends Controller
+use Illuminate\Support\Facades\DB;
+use NunoMaduro\Collision\Adapters\Phpunit\State;
+
+class StatusController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function __construct()
     {
         $this->middleware('auth.jwt');
     }
 
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
         try{
-            $projects = Project::latest()->get();
+            $status = Status::latest()->get();
 
             return response()->json([
-                'projects' => $projects,
+                'status'  => $status,
                 'message' => 'Success'
             ],200);
         }
@@ -36,14 +39,6 @@ class ProjectsController extends Controller
         }
     }
 
-    public function all()
-    {
-        // $projects = Project::latest()->get();
-
-        // return view('projects.index', ['projects' => $projects]);
-
-    }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -51,7 +46,7 @@ class ProjectsController extends Controller
      */
     public function create()
     {
-        return view('projects.create');
+        //
     }
 
     /**
@@ -65,17 +60,16 @@ class ProjectsController extends Controller
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'project_name'  => 'required|max:255',
-                'description'   => 'required',
+                'name'  => 'required',
+                'type_id'  => 'required',
             ]);
             try{
-                $project = Project::create([
-                    'project_name'  => request('project_name'),
-                    'description'   => request('description'),
-                    'user_id'       => Auth::user()->id
+                $status = Status::create([
+                    'name'  => request('name'),
+                    'type_id'  => request('type_id'),
                 ]);
                 return response()->json([
-                    'project'    => $project,
+                    'status'  => $status,
                     'message' => 'Success'
                 ], 200);
             }
@@ -95,14 +89,14 @@ class ProjectsController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Project  $project
+     * @param  \App\Status  $status
      * @return \Illuminate\Http\Response
      */
-    public function show(Project $project)
+    public function show(Status $status)
     {
         try{
             return response()->json([
-                'project' => $project,
+                'status'  => $status,
                 'message' => 'Success'
             ], 200);
         }
@@ -116,36 +110,37 @@ class ProjectsController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Project  $project
+     * @param  \App\Status  $status
      * @return \Illuminate\Http\Response
      */
-    public function edit(Project $project)
+    public function edit(Status $status)
     {
-        return view('projects.edit', ['project' => $project]);
+        //
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Project  $project
+     * @param  \App\Status  $status
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Project $project)
+    public function update(Request $request, Status $status)
     {
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'project_name'  => 'required|max:255',
-                'description'   => 'required',
+                'name'      => 'required',
+                'type_id'   => 'required',
             ]);
+
             try{
-                $project->project_name = request('project_name');
-                $project->description = request('description');
-                $project->save();
+                $status->name = request('name');
+                $status->type_id = request('type_id');
+                $status->save();
                 return response()->json([
-                    'project' => $project,
-                    'message' => 'Project updated successfully!'
+                    'status' => $status,
+                    'message' => 'Status updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -164,30 +159,30 @@ class ProjectsController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Project  $project
+     * @param  \App\Status  $status
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Project $project)
+    public function destroy(Status $status)
     {
-        $role = Auth::user()->role;
-        if($role > 2){
-            try{
-                $project->delete();
-                return response()->json([
-                    'message' => 'Project deleted successfully!'
-                ], 200);
-            }
-            catch(Exception $e){
-                return response()->json([
-                    'message' => $e->getMessage()
-                ], 500);
-            }
-        }
-        else{
+        //
+    }
+
+    public function getTaskByStatusID(int $type_id)
+    {
+        try {
+            $taskByStatus = DB::table('status')->join('tasks', 'status.type_id', '=', 'tasks.status_id')
+                ->select('task_name', 'description', 'name', 'user_id')
+                ->where('type_id', $type_id)->get();
+
             return response()->json([
-                'message' => "You don't have access to this resource!
-                            Please contact with administrator for more information!"
-            ], 403);
+                'taskByStatus'      => $taskByStatus,
+                'message'           => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

@@ -2,31 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Project;
-use Exception;
-use GuzzleHttp\Handler\Proxy;
+use App\Department;
 use Illuminate\Http\Request;
+
+use Exception;
 use Illuminate\Support\Facades\Auth;
-class ProjectsController extends Controller
+use Illuminate\Support\Facades\DB;
+
+class DepartmentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function __construct()
     {
         $this->middleware('auth.jwt');
     }
 
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
         try{
-            $projects = Project::latest()->get();
+            $departments = Department::latest()->get();
 
             return response()->json([
-                'projects' => $projects,
-                'message' => 'Success'
+                'departments' => $departments,
+                'message'     => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -36,14 +38,6 @@ class ProjectsController extends Controller
         }
     }
 
-    public function all()
-    {
-        // $projects = Project::latest()->get();
-
-        // return view('projects.index', ['projects' => $projects]);
-
-    }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -51,7 +45,7 @@ class ProjectsController extends Controller
      */
     public function create()
     {
-        return view('projects.create');
+        //
     }
 
     /**
@@ -65,18 +59,19 @@ class ProjectsController extends Controller
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'project_name'  => 'required|max:255',
-                'description'   => 'required',
+                'department_name'   => 'required|max:255',
+                'address'           => 'required|max:255',
+                'phone'             => 'required',
             ]);
             try{
-                $project = Project::create([
-                    'project_name'  => request('project_name'),
-                    'description'   => request('description'),
-                    'user_id'       => Auth::user()->id
+                $department = Department::create([
+                    'department_name'   => request('department_name'),
+                    'address'           => request('address'),
+                    'phone'             => request('phone'),
                 ]);
                 return response()->json([
-                    'project'    => $project,
-                    'message' => 'Success'
+                    'department'    => $department,
+                    'message'       => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -95,15 +90,15 @@ class ProjectsController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Project  $project
+     * @param  \App\Department  $department
      * @return \Illuminate\Http\Response
      */
-    public function show(Project $project)
+    public function show(Department $department)
     {
         try{
             return response()->json([
-                'project' => $project,
-                'message' => 'Success'
+                'department' => $department,
+                'message'    => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -116,36 +111,40 @@ class ProjectsController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Project  $project
+     * @param  \App\Department  $department
      * @return \Illuminate\Http\Response
      */
-    public function edit(Project $project)
+    public function edit(Department $department)
     {
-        return view('projects.edit', ['project' => $project]);
+        //
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Project  $project
+     * @param  \App\Department  $department
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Project $project)
+    public function update(Request $request, Department $department)
     {
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'project_name'  => 'required|max:255',
-                'description'   => 'required',
+                'department_name'   => 'required|max:255',
+                'address'           => 'required|max:255',
+                'phone'             => 'required',
             ]);
+
             try{
-                $project->project_name = request('project_name');
-                $project->description = request('description');
-                $project->save();
+                $department->department_name = request('department_name');
+                $department->address = request('address');
+                $department->phone = request('phone');
+                $department->save();
+
                 return response()->json([
-                    'project' => $project,
-                    'message' => 'Project updated successfully!'
+                    'department' => $department,
+                    'message' => 'Department updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -164,17 +163,17 @@ class ProjectsController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Project  $project
+     * @param  \App\Department  $department
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Project $project)
+    public function destroy(Department $department)
     {
         $role = Auth::user()->role;
         if($role > 2){
             try{
-                $project->delete();
+                $department->delete();
                 return response()->json([
-                    'message' => 'Project deleted successfully!'
+                    'message' => 'Department deleted successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -185,9 +184,26 @@ class ProjectsController extends Controller
         }
         else{
             return response()->json([
-                'message' => "You don't have access to this resource!
-                            Please contact with administrator for more information!"
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
             ], 403);
+        }
+    }
+
+    public function getUserByDepartmentID(int $department_id)
+    {
+        try {
+            $usersInDepartment = DB::table('departments')->join('users', 'departments.id', '=', 'users.department_id')
+                ->select('name', 'email')->where('departments.id', $department_id)->get();
+
+            return response()->json([
+                'usersInDepartment'     => $usersInDepartment,
+                'message'               => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }
