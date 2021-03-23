@@ -129,7 +129,36 @@ class CriteriaTypeController extends Controller
      */
     public function update(Request $request, CriteriaType $criteriaType)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            $this->validate($request, [
+                'type_name'     => 'required|max:255',
+                'type_id'       => 'required',
+                'description'   => 'required',
+            ]);
+
+            try{
+                $criteriaType->type_name = request('type_name');
+                $criteriaType->type_id = request('type_id');
+                $criteriaType->description = request('description');
+                $criteriaType->save();
+
+                return response()->json([
+                    'criteriaType'  => $criteriaType,
+                    'message'       => 'Criteria type updated successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
     /**
@@ -140,6 +169,24 @@ class CriteriaTypeController extends Controller
      */
     public function destroy(CriteriaType $criteriaType)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            try{
+                $criteriaType->delete();
+                return response()->json([
+                    'message' => 'Criteria type deleted successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 }

@@ -65,7 +65,7 @@ class CriteriaController extends Controller
                 'criteria_name'     => 'required|max:255',
                 'criteria_type_id'  => 'required',
                 'description'       => 'required',
-                'score'             => 'required'
+                'score'             => 'required',
             ]);
             try{
                 $criteria = Criteria::create([
@@ -135,7 +135,40 @@ class CriteriaController extends Controller
      */
     public function update(Request $request, Criteria $criteria)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            $this->validate($request, [
+                'criteria_name'     => 'required|max:255',
+                'criteria_type_id'  => 'required',
+                'description'       => 'required',
+                'score'             => 'required',
+            ]);
+
+            try{
+                $criteria->criteria_name = request('criteria_name');
+                $criteria->user_id = Auth::user()->id;
+                $criteria->task_id = request('task_id');
+                $criteria->criteria_type_id = request('criteria_type_id');
+                $criteria->description = request('description');
+                $criteria->score = request('score');
+                $criteria->save();
+
+                return response()->json([
+                    'criteria' => $criteria,
+                    'message'  => 'Criteria updated successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
     /**
@@ -146,10 +179,28 @@ class CriteriaController extends Controller
      */
     public function destroy(Criteria $criteria)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            try{
+                $criteria->delete();
+                return response()->json([
+                    'message' => 'Criteria deleted successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
-    public function calculateScoreByUserTask(int $task_id)
+    public function calculateUserScoreByTaskCriteria(int $task_id)
     {
         try {
             $score = DB::table('criteria')->where('task_id', $task_id)->sum('score');
@@ -166,7 +217,25 @@ class CriteriaController extends Controller
         }
     }
 
-    public function calculateScoreByUserCriteria(int $user_id)
+    public function calculateUserScoreByUserCriteria(int $user_id)
+    {
+        try {
+            $score = DB::table('criteria')->where('user_id', $user_id)
+                ->where('criteria_type_id', 2)->sum('score');
+
+            return response()->json([
+                'score'     => $score,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function calculateUserScore(int $user_id)
     {
         try {
             $score = DB::table('criteria')->where('user_id', $user_id)->sum('score');
@@ -183,10 +252,12 @@ class CriteriaController extends Controller
         }
     }
 
-    public function getTaskCriteria()
+    public function getTaskCriteriaByUserID(int $user_id)
     {
         try {
-            $taskCriteria = DB::table('criteria')->where('criteria_type_id', 1)->get();
+            $taskCriteria = DB::table('criteria')
+                ->where('user_id', $user_id)
+                ->where('criteria_type_id', 1)->get();
 
             return response()->json([
                 'taskCriteria'      => $taskCriteria,
@@ -200,10 +271,12 @@ class CriteriaController extends Controller
         }
     }
 
-    public function getUserCriteria()
+    public function getUserCriteriaByUserID(int $user_id)
     {
         try {
-            $userCriteria = DB::table('criteria')->where('criteria_type_id', 2)->get();
+            $userCriteria = DB::table('criteria')
+                ->where('user_id', $user_id)
+                ->where('criteria_type_id', 2)->get();
 
             return response()->json([
                 'userCriteria'      => $userCriteria,

@@ -63,6 +63,7 @@ class PositionController extends Controller
                 'description'           => 'required|max:255',
                 'salary_id'             => 'required',
             ]);
+
             try{
                 $position = Position::create([
                     'position_name'         => request('position_name'),
@@ -118,7 +119,36 @@ class PositionController extends Controller
      */
     public function update(Request $request, Position $position)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            $this->validate($request, [
+                'position_name'         => 'required|max:255',
+                'description'           => 'required|max:255',
+                'salary_id'             => 'required',
+            ]);
+
+            try{
+                $position->position_name = request('position_name');
+                $position->description = request('description');
+                $position->salary_id = request('salary_id');
+                $position->save();
+
+                return response()->json([
+                    'position' => $position,
+                    'message'  => 'Position updated successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
     /**
@@ -129,15 +159,33 @@ class PositionController extends Controller
      */
     public function destroy(Position $position)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            try{
+                $position->delete();
+                return response()->json([
+                    'message' => 'Position deleted successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
-    public function getSalaryInfoByPosition(int $salary_id)
+    public function getSalaryInfoByPositionID(int $position_id)
     {
         try {
             $salaryInfo = DB::table('positions')->join('salaries', 'positions.salary_id', '=', 'salaries.id')
-                ->select('salary_scale', 'basic_salary', 'salary_coefficient', 'allowance_coefficient')
-                ->where('positions.salary_id', $salary_id)->get();
+                ->select('salary_scale', 'basic_salary', 'allowance_coefficient')
+                ->where('positions.id', $position_id)->get();
 
             return response()->json([
                 'salaryInfo'     => $salaryInfo,

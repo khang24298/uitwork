@@ -144,7 +144,7 @@ class CommentController extends Controller
                 $comment->save();
 
                 return response()->json([
-                    'project' => $comment,
+                    'comment' => $comment,
                     'message' => 'Comment updated successfully!'
                 ], 200);
             }
@@ -190,14 +190,13 @@ class CommentController extends Controller
         }
     }
 
-    public function getUserInfoByComment(int $user_id)
+    public function getCommentByUserID(int $user_id)
     {
         try {
-            $userInfo = DB::table('comments')->join('users', 'comments.user_id', '=', 'users.id')
-                ->select('name', 'email', 'task_id', 'content')->where('comments.user_id', $user_id)->get();
+            $userComment = DB::table('comments')->where('user_id', $user_id)->get();
 
             return response()->json([
-                'userInfo'      => $userInfo,
+                'userComment'   => $userComment,
                 'message'       => 'Success'
             ], 200);
         }
@@ -208,14 +207,14 @@ class CommentController extends Controller
         }
     }
 
-    public function getCommentByTask(int $task_id)
+    public function getCommentByTaskID(int $task_id)
     {
         try {
-            $commentByTask = DB::table('comments')->where('task_id', $task_id)->get();
+            $taskComment = DB::table('comments')->where('task_id', $task_id)->get();
 
             return response()->json([
-                'commentByTask'     => $commentByTask,
-                'message'           => 'Success'
+                'taskComment'     => $taskComment,
+                'message'         => 'Success'
             ], 200);
         }
         catch(Exception $e){

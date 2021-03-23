@@ -62,9 +62,11 @@ class ReportController extends Controller
             $this->validate($request, [
                 'title'         => 'required|max:255',
                 'content'       => 'required',
+                'type_id'       => 'required',
                 'task_id'       => 'nullable',
                 'project_id'    => 'nullable',
             ]);
+
             try{
                 $report = Report::create([
                     'title'         => request('title'),
@@ -134,7 +136,41 @@ class ReportController extends Controller
      */
     public function update(Request $request, Report $report)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            $this->validate($request, [
+                'title'         => 'required|max:255',
+                'content'       => 'required',
+                'type_id'       => 'required',
+                'task_id'       => 'nullable',
+                'project_id'    => 'nullable',
+            ]);
+
+            try{
+                $report->title = request('title');
+                $report->content = request('content');
+                $report->type_id = request('type_id');
+                $report->task_id = request('task_id');
+                $report->project_id = request('project_id');
+                $report->user_id = Auth::user()->id;
+                $report->save();
+
+                return response()->json([
+                    'report'  => $report,
+                    'message' => 'Report updated successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
     /**
@@ -145,7 +181,25 @@ class ReportController extends Controller
      */
     public function destroy(Report $report)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            try{
+                $report->delete();
+                return response()->json([
+                    'message' => 'Report deleted successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
     public function getAllReport()
@@ -190,6 +244,40 @@ class ReportController extends Controller
             return response()->json([
                 'projectReports'    => $projectReports,
                 'message'           => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getTaskReportByTaskID(int $task_id)
+    {
+        try {
+            $taskReport = DB::table('reports')->where('task_id', $task_id)->get();
+
+            return response()->json([
+                'taskReport'      => $taskReport,
+                'message'      => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getProjectReportByProjectID(int $project_id)
+    {
+        try {
+            $projectReport = DB::table('reports')->where('project_id', $project_id)->get();
+
+            return response()->json([
+                'projectReport'      => $projectReport,
+                'message'      => 'Success'
             ], 200);
         }
         catch(Exception $e){

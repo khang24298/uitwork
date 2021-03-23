@@ -138,7 +138,33 @@ class DocumentController extends Controller
      */
     public function update(Request $request, Document $document)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            try{
+                $document->file_name = request('file_name');
+                $document->file_type = request('file_type');
+                $document->path = request('path');
+                $document->size = request('size');
+                $document->task_id = request('task_id');
+                $document->user_id = Auth::user()->id;
+                $document->save();
+
+                return response()->json([
+                    'document' => $document,
+                    'message'  => 'Document updated successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
     /**
@@ -170,20 +196,20 @@ class DocumentController extends Controller
         }
     }
 
-    public function getDocumentByTaskID(int $task_id)
-    {
-        try {
-            $documentByTask = DB::table('documents')->where('task_id', $task_id)->get();
+    // public function getDocumentInfoByTaskID(int $task_id)
+    // {
+    //     try {
+    //         $documentByTask = DB::table('documents')->where('task_id', $task_id)->get();
 
-            return response()->json([
-                'documentByTask'    => $documentByTask,
-                'message'           => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'documentByTask'    => $documentByTask,
+    //             'message'           => 'Success'
+    //         ], 200);
+    //     }
+    //     catch(Exception $e){
+    //         return response()->json([
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 }

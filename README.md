@@ -21,6 +21,3 @@
     + Sử dụng Postman 
     => Liên hệ trực tiếp Khang để hiểu rõ cách làm
 
-
-#Update 22/3/2021 - DUY
-- Add all basic function.

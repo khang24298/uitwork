@@ -185,8 +185,7 @@ class ProjectsController extends Controller
         }
         else{
             return response()->json([
-                'message' => "You don't have access to this resource!
-                            Please contact with administrator for more information!"
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
             ], 403);
         }
     }

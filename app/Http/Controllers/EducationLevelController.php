@@ -115,7 +115,34 @@ class EducationLevelController extends Controller
      */
     public function update(Request $request, EducationLevel $educationLevel)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            $this->validate($request, [
+                'name'          => 'required|max:255',
+                'expertise'     => 'required|max:255',
+            ]);
+
+            try{
+                $educationLevel->name = request('name');
+                $educationLevel->expertise = request('expertise');
+                $educationLevel->save();
+
+                return response()->json([
+                    'educationLevel' => $educationLevel,
+                    'message'        => 'Education level updated successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
     /**
@@ -126,10 +153,28 @@ class EducationLevelController extends Controller
      */
     public function destroy(EducationLevel $educationLevel)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            try{
+                $educationLevel->delete();
+                return response()->json([
+                    'message' => 'Education level deleted successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
-    public function getUserEducationLevel(int $user_id)
+    public function getUserEducationLevelByUserID(int $user_id)
     {
         try {
             $userEducation = DB::table('education_levels')

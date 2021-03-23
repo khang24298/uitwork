@@ -185,11 +185,12 @@ class TaskController extends Controller
         }
     }
 
-    public function getUserInfo(int $user_id)
+    public function getUserTaskInfoByUserID(int $user_id)
     {
         try {
             $userInfo = DB::table('tasks')->join('users', 'tasks.user_id', '=', 'users.id')
-                ->select('name', 'email', 'task_name', 'description')->where('tasks.user_id', $user_id)->get();
+                ->select('name', 'email', 'task_name', 'description')
+                ->where('tasks.user_id', $user_id)->get();
 
             return response()->json([
                 'userInfo'      => $userInfo,
@@ -207,7 +208,8 @@ class TaskController extends Controller
     {
         try {
             $reports = DB::table('tasks')->join('reports', 'tasks.id', '=', 'reports.task_id')
-                ->select('title', 'content', 'type_id')->where('tasks.id', $task_id)->get();
+                ->select('title', 'content', 'type_id')
+                ->where('tasks.id', $task_id)->get();
 
             return response()->json([
                 'reports'      => $reports,
@@ -221,7 +223,7 @@ class TaskController extends Controller
         }
     }
 
-    public function getTaskCriteria(int $task_id)
+    public function getTaskCriteriaByTaskID(int $task_id)
     {
         try {
             $taskCriteria = DB::table('tasks')->join('criteria', 'tasks.id', '=', 'criteria.task_id')
@@ -244,7 +246,8 @@ class TaskController extends Controller
     {
         try {
             $taskComment = DB::table('tasks')->join('comments', 'comments.task_id', '=', 'tasks.id')
-                ->select('content', 'task_name', 'description')->where('tasks.id', $task_id)->get();
+                ->select('content', 'task_name', 'description')
+                ->where('tasks.id', $task_id)->get();
 
             return response()->json([
                 'taskComment'   => $taskComment,
@@ -262,7 +265,8 @@ class TaskController extends Controller
     {
         try {
             $taskDocument = DB::table('tasks')->join('documents', 'documents.task_id', '=', 'tasks.id')
-                ->select('task_name', 'description', 'file_name', 'size')->where('tasks.id', $task_id)->get();
+                ->select('task_name', 'description', 'file_name', 'size')
+                ->where('tasks.id', $task_id)->get();
 
             return response()->json([
                 'taskDocument'   => $taskDocument,

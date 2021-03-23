@@ -119,7 +119,36 @@ class SalaryController extends Controller
      */
     public function update(Request $request, Salary $salary)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            $this->validate($request, [
+                'salary_scale'   => 'required',
+                'basic_salary'   => 'required',
+                'allowance_coefficient'   => 'required',
+            ]);
+
+            try{
+                $salary->salary_scale = request('salary_scale');
+                $salary->basic_salary = request('basic_salary');
+                $salary->allowance_coefficient = request('allowance_coefficient');
+                $salary->save();
+
+                return response()->json([
+                    'salary'  => $salary,
+                    'message' => 'Salary updated successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
     /**
@@ -130,13 +159,30 @@ class SalaryController extends Controller
      */
     public function destroy(Salary $salary)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            try{
+                $salary->delete();
+                return response()->json([
+                    'message' => 'Salary deleted successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
-    public function calculateSalaryByUserID(int $user_id)
+    public function calculateUserSalaryByUserID(int $user_id)
     {
         try {
-
             $userPosition = DB::table('users')
                 ->join('positions', 'users.position_id', '=', 'positions.id')
                 ->select('users.id', 'users.name', 'position_id', 'salary_id', 'education_level_id')

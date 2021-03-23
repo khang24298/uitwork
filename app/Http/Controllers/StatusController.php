@@ -164,15 +164,33 @@ class StatusController extends Controller
      */
     public function destroy(Status $status)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            try{
+                $status->delete();
+                return response()->json([
+                    'message' => 'Status deleted successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
-    public function getTaskByStatusID(int $type_id)
+    public function getTaskByStatusID(int $status_id)
     {
         try {
-            $taskByStatus = DB::table('status')->join('tasks', 'status.type_id', '=', 'tasks.status_id')
+            $taskByStatus = DB::table('status')->join('tasks', 'status.id', '=', 'tasks.status_id')
                 ->select('task_name', 'description', 'name', 'user_id')
-                ->where('type_id', $type_id)->get();
+                ->where('status.id', $status_id)->get();
 
             return response()->json([
                 'taskByStatus'      => $taskByStatus,

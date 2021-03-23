@@ -67,6 +67,7 @@ class WorkProcessController extends Controller
                 'prev_status_id'        => 'required',
                 'department_id'         => 'required',
             ]);
+
             try{
                 $workProcess = WorkProcess::create([
                     'process_name'      => request('process_name'),
@@ -135,7 +136,43 @@ class WorkProcessController extends Controller
      */
     public function update(Request $request, WorkProcess $workProcess)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            $this->validate($request, [
+                'process_name'          => 'required',
+                'process_id'            => 'required',
+                'status_id'             => 'required',
+                'next_status_id'        => 'required',
+                'prev_status_id'        => 'required',
+                'department_id'         => 'required',
+            ]);
+
+            try{
+                $workProcess->process_name = request('process_name');
+                $workProcess->process_id = request('process_id');
+                $workProcess->status_id = request('status_id');
+                $workProcess->next_status_id = request('next_status_id');
+                $workProcess->prev_status_id = request('prev_status_id');
+                $workProcess->department_id = request('department_id');
+
+                $workProcess->save();
+
+                return response()->json([
+                    'workProcess'  => $workProcess,
+                    'message' => 'Work process updated successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
     /**
@@ -146,6 +183,24 @@ class WorkProcessController extends Controller
      */
     public function destroy(WorkProcess $workProcess)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            try{
+                $workProcess->delete();
+                return response()->json([
+                    'message' => 'Work process deleted successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 }

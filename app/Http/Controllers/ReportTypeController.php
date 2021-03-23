@@ -127,7 +127,35 @@ class ReportTypeController extends Controller
      */
     public function update(Request $request, ReportType $reportType)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            $this->validate($request, [
+                'type_name' => 'required|max:255',
+                'content'   => 'required',
+            ]);
+
+            try{
+                $reportType->type_name = request('type_name');
+                $reportType->content = request('content');
+                $reportType->type_id = request('type_id');
+                $reportType->save();
+
+                return response()->json([
+                    'reportType' => $reportType,
+                    'message'    => 'Report type updated successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 
     /**
@@ -138,6 +166,24 @@ class ReportTypeController extends Controller
      */
     public function destroy(ReportType $reportType)
     {
-        //
+        $role = Auth::user()->role;
+        if($role > 2){
+            try{
+                $reportType->delete();
+                return response()->json([
+                    'message' => 'Report type deleted successfully!'
+                ], 200);
+            }
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+        else{
+            return response()->json([
+                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+            ], 403);
+        }
     }
 }

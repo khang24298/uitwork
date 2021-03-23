@@ -192,8 +192,10 @@ class DepartmentController extends Controller
     public function getUserByDepartmentID(int $department_id)
     {
         try {
-            $usersInDepartment = DB::table('departments')->join('users', 'departments.id', '=', 'users.department_id')
-                ->select('name', 'email')->where('departments.id', $department_id)->get();
+            $usersInDepartment = DB::table('departments')
+                ->join('users', 'departments.id', '=', 'users.department_id')
+                ->select('name', 'email', 'department_name')
+                ->where('departments.id', $department_id)->get();
 
             return response()->json([
                 'usersInDepartment'     => $usersInDepartment,
