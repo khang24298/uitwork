@@ -14,10 +14,10 @@ class ProjectsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function __construct()
-    {
-        $this->middleware('auth.jwt');
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('auth.jwt');
+    // }
 
     public function index()
     {   
@@ -104,6 +104,7 @@ class ProjectsController extends Controller
      */
     public function show(Project $project)
     {
+        // dd($project);
         try{
             return response()->json([
                 'project' => $project,

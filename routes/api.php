@@ -23,11 +23,10 @@ Route::group(['middleware' => 'auth.jwt'], function () {
 
     // Route::get('/dashboard', 'DashboardController@create');
 
-    Route::get('/projects', 'ProjectsController@index');
 
     Route::get('/projects/create', 'ProjectsController@create');
 
-    Route::get('/projects/{project}', 'ProjectsController@show');
+    // Route::get('/projects/{project}', 'ProjectsController@show');
 
     Route::post('/projects', 'ProjectsController@store');
 
@@ -35,3 +34,5 @@ Route::group(['middleware' => 'auth.jwt'], function () {
 
     Route::put('/projects/{project} ', 'ProjectsController@update');
 });
+Route::get('/projects', 'ProjectsController@index');
+Route::get('/projects/{project}', 'ProjectsController@show');
