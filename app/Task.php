@@ -4,13 +4,20 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-
 class Task extends Model
 {
-    protected $fillable = ['user_id','assignee_id', 'name', 'description'];
+    protected $fillable = [
+        'user_id','assignee_id', 'task_name', 'description', 'start_date',
+        'end_date', 'status_id', 'qa_id', 'priority'
+    ];
 
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(Status::class, 'status_id');
     }
 }

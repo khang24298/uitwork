@@ -2,31 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Project;
-use Exception;
-use GuzzleHttp\Handler\Proxy;
+use App\Position;
 use Illuminate\Http\Request;
+
+use Exception;
 use Illuminate\Support\Facades\Auth;
-class ProjectsController extends Controller
+use Illuminate\Support\Facades\DB;
+
+class PositionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth.jwt');
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    // public function __construct()
-    // {
-    //     $this->middleware('auth.jwt');
-    // }
-
     public function index()
     {
         try{
-            $projects = Project::latest()->get();
+            $position = Position::latest()->get();
 
             return response()->json([
-                'projects' => $projects,
-                'message' => 'Success'
+                'positions'   => $position,
+                'message'     => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -36,14 +38,6 @@ class ProjectsController extends Controller
         }
     }
 
-    public function all()
-    {
-        // $projects = Project::latest()->get();
-
-        // return view('projects.index', ['projects' => $projects]);
-
-    }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -51,7 +45,7 @@ class ProjectsController extends Controller
      */
     public function create()
     {
-        return view('projects.create');
+        //
     }
 
     /**
@@ -65,18 +59,20 @@ class ProjectsController extends Controller
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'project_name'  => 'required|max:255',
-                'description'   => 'required',
+                'position_name'         => 'required|max:255',
+                'description'           => 'required|max:255',
+                'salary_id'             => 'required',
             ]);
+
             try{
-                $project = Project::create([
-                    'project_name'  => request('project_name'),
-                    'description'   => request('description'),
-                    'user_id'       => Auth::user()->id
+                $position = Position::create([
+                    'position_name'         => request('position_name'),
+                    'description'           => request('description'),
+                    'salary_id'             => request('salary_id'),
                 ]);
                 return response()->json([
-                    'project'    => $project,
-                    'message' => 'Success'
+                    'position'    => $position,
+                    'message'     => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -95,58 +91,51 @@ class ProjectsController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Project  $project
+     * @param  \App\Position  $position
      * @return \Illuminate\Http\Response
      */
-    public function show(Project $project)
+    public function show(Position $position)
     {
-        // dd($project);
-        try{
-            return response()->json([
-                'project' => $project,
-                'message' => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ],500);
-        }
+        //
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Project  $project
+     * @param  \App\Position  $position
      * @return \Illuminate\Http\Response
      */
-    public function edit(Project $project)
+    public function edit(Position $position)
     {
-        return view('projects.edit', ['project' => $project]);
+        //
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Project  $project
+     * @param  \App\Position  $position
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Project $project)
+    public function update(Request $request, Position $position)
     {
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'project_name'  => 'required|max:255',
-                'description'   => 'required',
+                'position_name'         => 'required|max:255',
+                'description'           => 'required|max:255',
+                'salary_id'             => 'required',
             ]);
+
             try{
-                $project->project_name = request('project_name');
-                $project->description = request('description');
-                $project->save();
+                $position->position_name = request('position_name');
+                $position->description = request('description');
+                $position->salary_id = request('salary_id');
+                $position->save();
+
                 return response()->json([
-                    'project' => $project,
-                    'message' => 'Project updated successfully!'
+                    'position' => $position,
+                    'message'  => 'Position updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -165,17 +154,17 @@ class ProjectsController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Project  $project
+     * @param  \App\Position  $position
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Project $project)
+    public function destroy(Position $position)
     {
         $role = Auth::user()->role;
         if($role > 2){
             try{
-                $project->delete();
+                $position->delete();
                 return response()->json([
-                    'message' => 'Project deleted successfully!'
+                    'message' => 'Position deleted successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -188,6 +177,25 @@ class ProjectsController extends Controller
             return response()->json([
                 'message' => "You don't have access to this resource! Please contact with administrator for more information!"
             ], 403);
+        }
+    }
+
+    public function getSalaryInfoByPositionID(int $position_id)
+    {
+        try {
+            $salaryInfo = DB::table('positions')->join('salaries', 'positions.salary_id', '=', 'salaries.id')
+                ->select('salary_scale', 'basic_salary', 'allowance_coefficient')
+                ->where('positions.id', $position_id)->get();
+
+            return response()->json([
+                'salaryInfo'     => $salaryInfo,
+                'message'        => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

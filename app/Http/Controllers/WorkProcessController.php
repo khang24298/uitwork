@@ -2,31 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use App\Project;
-use Exception;
-use GuzzleHttp\Handler\Proxy;
+use App\WorkProcess;
 use Illuminate\Http\Request;
+
+use Exception;
+use Illuminate\Queue\Worker;
 use Illuminate\Support\Facades\Auth;
-class ProjectsController extends Controller
+use Illuminate\Support\Facades\DB;
+
+class WorkProcessController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth.jwt');
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    // public function __construct()
-    // {
-    //     $this->middleware('auth.jwt');
-    // }
-
     public function index()
     {
         try{
-            $projects = Project::latest()->get();
+            $workProcess = WorkProcess::latest()->get();
 
             return response()->json([
-                'projects' => $projects,
-                'message' => 'Success'
+                'workProcess'    => $workProcess,
+                'message'        => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -36,14 +39,6 @@ class ProjectsController extends Controller
         }
     }
 
-    public function all()
-    {
-        // $projects = Project::latest()->get();
-
-        // return view('projects.index', ['projects' => $projects]);
-
-    }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -51,7 +46,7 @@ class ProjectsController extends Controller
      */
     public function create()
     {
-        return view('projects.create');
+        //
     }
 
     /**
@@ -65,18 +60,26 @@ class ProjectsController extends Controller
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'project_name'  => 'required|max:255',
-                'description'   => 'required',
+                'process_name'          => 'required',
+                'process_id'            => 'required',
+                'status_id'             => 'required',
+                'next_status_id'        => 'required',
+                'prev_status_id'        => 'required',
+                'department_id'         => 'required',
             ]);
+
             try{
-                $project = Project::create([
-                    'project_name'  => request('project_name'),
-                    'description'   => request('description'),
-                    'user_id'       => Auth::user()->id
+                $workProcess = WorkProcess::create([
+                    'process_name'      => request('process_name'),
+                    'process_id'        => request('process_id'),
+                    'status_id'         => request('status_id'),
+                    'next_status_id'    => request('next_status_id'),
+                    'prev_status_id'    => request('prev_status_id'),
+                    'department_id'     => request('department_id'),
                 ]);
                 return response()->json([
-                    'project'    => $project,
-                    'message' => 'Success'
+                    'workProcess'    => $workProcess,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -95,15 +98,14 @@ class ProjectsController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Project  $project
+     * @param  \App\WorkProcess  $workProcess
      * @return \Illuminate\Http\Response
      */
-    public function show(Project $project)
+    public function show(WorkProcess $workProcess)
     {
-        // dd($project);
         try{
             return response()->json([
-                'project' => $project,
+                'workProcess' => $workProcess,
                 'message' => 'Success'
             ], 200);
         }
@@ -117,36 +119,47 @@ class ProjectsController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Project  $project
+     * @param  \App\WorkProcess  $workProcess
      * @return \Illuminate\Http\Response
      */
-    public function edit(Project $project)
+    public function edit(WorkProcess $workProcess)
     {
-        return view('projects.edit', ['project' => $project]);
+        //
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Project  $project
+     * @param  \App\WorkProcess  $workProcess
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Project $project)
+    public function update(Request $request, WorkProcess $workProcess)
     {
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'project_name'  => 'required|max:255',
-                'description'   => 'required',
+                'process_name'          => 'required',
+                'process_id'            => 'required',
+                'status_id'             => 'required',
+                'next_status_id'        => 'required',
+                'prev_status_id'        => 'required',
+                'department_id'         => 'required',
             ]);
+
             try{
-                $project->project_name = request('project_name');
-                $project->description = request('description');
-                $project->save();
+                $workProcess->process_name = request('process_name');
+                $workProcess->process_id = request('process_id');
+                $workProcess->status_id = request('status_id');
+                $workProcess->next_status_id = request('next_status_id');
+                $workProcess->prev_status_id = request('prev_status_id');
+                $workProcess->department_id = request('department_id');
+
+                $workProcess->save();
+
                 return response()->json([
-                    'project' => $project,
-                    'message' => 'Project updated successfully!'
+                    'workProcess'  => $workProcess,
+                    'message' => 'Work process updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -165,17 +178,17 @@ class ProjectsController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Project  $project
+     * @param  \App\WorkProcess  $workProcess
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Project $project)
+    public function destroy(WorkProcess $workProcess)
     {
         $role = Auth::user()->role;
         if($role > 2){
             try{
-                $project->delete();
+                $workProcess->delete();
                 return response()->json([
-                    'message' => 'Project deleted successfully!'
+                    'message' => 'Work process deleted successfully!'
                 ], 200);
             }
             catch(Exception $e){

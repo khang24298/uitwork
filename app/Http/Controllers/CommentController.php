@@ -2,31 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Project;
-use Exception;
-use GuzzleHttp\Handler\Proxy;
+use App\Comment;
 use Illuminate\Http\Request;
+
+use Exception;
 use Illuminate\Support\Facades\Auth;
-class ProjectsController extends Controller
+use Illuminate\Support\Facades\DB;
+
+class CommentController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth.jwt');
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    // public function __construct()
-    // {
-    //     $this->middleware('auth.jwt');
-    // }
-
     public function index()
     {
         try{
-            $projects = Project::latest()->get();
+            $comments = Comment::latest()->get();
 
             return response()->json([
-                'projects' => $projects,
-                'message' => 'Success'
+                'comments' => $comments,
+                'message'  => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -36,14 +38,6 @@ class ProjectsController extends Controller
         }
     }
 
-    public function all()
-    {
-        // $projects = Project::latest()->get();
-
-        // return view('projects.index', ['projects' => $projects]);
-
-    }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -51,7 +45,7 @@ class ProjectsController extends Controller
      */
     public function create()
     {
-        return view('projects.create');
+        //
     }
 
     /**
@@ -65,18 +59,20 @@ class ProjectsController extends Controller
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'project_name'  => 'required|max:255',
-                'description'   => 'required',
+                'content'   => 'required',
+                'parent_id' => 'nullable'
             ]);
+
             try{
-                $project = Project::create([
-                    'project_name'  => request('project_name'),
-                    'description'   => request('description'),
-                    'user_id'       => Auth::user()->id
+                $comment = Comment::create([
+                    'content'       => request('content'),
+                    'user_id'       => Auth::user()->id,
+                    'task_id'       => request('task_id'),
+                    'parent_id'     => request('parent_id'),
                 ]);
                 return response()->json([
-                    'project'    => $project,
-                    'message' => 'Success'
+                    'comment'   => $comment,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -95,15 +91,14 @@ class ProjectsController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Project  $project
+     * @param  \App\Comment  $comment
      * @return \Illuminate\Http\Response
      */
-    public function show(Project $project)
+    public function show(Comment $comment)
     {
-        // dd($project);
         try{
             return response()->json([
-                'project' => $project,
+                'comment' => $comment,
                 'message' => 'Success'
             ], 200);
         }
@@ -117,36 +112,40 @@ class ProjectsController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Project  $project
+     * @param  \App\Comment  $comment
      * @return \Illuminate\Http\Response
      */
-    public function edit(Project $project)
+    public function edit(Comment $comment)
     {
-        return view('projects.edit', ['project' => $project]);
+        //
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Project  $project
+     * @param  \App\Comment  $comment
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Project $project)
+    public function update(Request $request, Comment $comment)
     {
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'project_name'  => 'required|max:255',
-                'description'   => 'required',
+                'content'   => 'required',
+                'parent_id' => 'nullable'
             ]);
+
             try{
-                $project->project_name = request('project_name');
-                $project->description = request('description');
-                $project->save();
+                $comment->content = request('content');
+                $comment->user_id = Auth::user()->id;
+                $comment->task_id = request('task_id');
+                $comment->parent_id = request('parent_id');
+                $comment->save();
+
                 return response()->json([
-                    'project' => $project,
-                    'message' => 'Project updated successfully!'
+                    'comment' => $comment,
+                    'message' => 'Comment updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -165,17 +164,17 @@ class ProjectsController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Project  $project
+     * @param  \App\Comment  $comment
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Project $project)
+    public function destroy(Comment $comment)
     {
         $role = Auth::user()->role;
         if($role > 2){
             try{
-                $project->delete();
+                $comment->delete();
                 return response()->json([
-                    'message' => 'Project deleted successfully!'
+                    'message' => 'Comment deleted successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -188,6 +187,57 @@ class ProjectsController extends Controller
             return response()->json([
                 'message' => "You don't have access to this resource! Please contact with administrator for more information!"
             ], 403);
+        }
+    }
+
+    public function getCommentByUserID(int $user_id)
+    {
+        try {
+            $userComment = DB::table('comments')->where('user_id', $user_id)->get();
+
+            return response()->json([
+                'userComment'   => $userComment,
+                'message'       => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getCommentByTaskID(int $task_id)
+    {
+        try {
+            $taskComment = DB::table('comments')->where('task_id', $task_id)->get();
+
+            return response()->json([
+                'taskComment'     => $taskComment,
+                'message'         => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getReplyComment(int $parent_id)
+    {
+        try {
+            $childComment = DB::table('comments')->where('parent_id', $parent_id)->get();
+
+            return response()->json([
+                'childComment'     => $childComment,
+                'message'          => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }
