@@ -14,12 +14,12 @@ class AlterUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('phone')->after('email_verified_at');
-            $table->string('gender')->after('phone');
-            $table->string('dob')->after('gender');
-            $table->integer('position_id')->after('dob');
-            $table->integer('education_level_id')->after('position_id');
-            $table->integer('department_id')->after('education_level_id');
+            $table->string('phone')->after('email_verified_at')->nullable();
+            $table->string('gender')->after('phone')->nullable();
+            $table->string('dob')->after('gender')->nullable();
+            $table->integer('position_id')->after('dob')->nullable();
+            $table->integer('education_level_id')->after('position_id')->nullable();
+            $table->integer('department_id')->after('education_level_id')->nullable();
         });
     }
 

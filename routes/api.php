@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::post('login', 'APIController@login');
-Route::group(['middleware' => 'auth.jwt'], function () {
+// Route::group(['middleware' => 'auth.jwt'], function () {
     // dd(Auth::user());
     Route::get('logout', 'APIController@logout');
     Route::get('users', 'UserController@index');
@@ -71,4 +71,4 @@ Route::group(['middleware' => 'auth.jwt'], function () {
 
     Route::resource('/educationLevels', 'EducationLevelController');
     Route::get('/getUserEducationLevelByUserID/{user_id}', 'EducationLevelController@getUserEducationLevelByUserID');
-});
+// });

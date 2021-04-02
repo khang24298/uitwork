@@ -23,8 +23,9 @@ class TaskController extends Controller
      */
     public function index()
     {
+        // dd(request()->user());
         try{
-            $tasks = request()->user()->tasks;
+            $tasks = Task::all();
             return response()->json([
                 'tasks' => $tasks,
                 'message' => 'Success'
