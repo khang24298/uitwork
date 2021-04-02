@@ -22,7 +22,7 @@ class ReportTypeController extends Controller
     public function index()
     {
         try{
-            $reportTypes = ReportType::latest()->get();
+            $reportTypes = ReportType::get();
 
             return response()->json([
                 'reports' => $reportTypes,
@@ -59,13 +59,13 @@ class ReportTypeController extends Controller
         if($role > 2){
             $this->validate($request, [
                 'type_name' => 'required|max:255',
-                'content'   => 'required',
+                'description'   => 'required',
             ]);
             try{
                 $reportType = ReportType::create([
                     'type_id'     => request('type_id'),
                     'type_name'   => request('type_name'),
-                    'content'     => request('content')
+                    'description' => request('description')
                 ]);
                 return response()->json([
                     'reportType'    => $reportType,
@@ -130,13 +130,13 @@ class ReportTypeController extends Controller
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'type_name' => 'required|max:255',
-                'content'   => 'required',
+                'type_name'     => 'required|max:255',
+                'description'   => 'required',
             ]);
 
             try{
                 $reportType->type_name = request('type_name');
-                $reportType->content = request('content');
+                $reportType->description = request('description');
                 $reportType->type_id = request('type_id');
                 $reportType->save();
 

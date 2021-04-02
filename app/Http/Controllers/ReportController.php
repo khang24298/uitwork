@@ -202,7 +202,7 @@ class ReportController extends Controller
         }
     }
 
-    public function getAllReport()
+    public function getReportList()
     {
         try {
             $reports = DB::table('reports')->get();

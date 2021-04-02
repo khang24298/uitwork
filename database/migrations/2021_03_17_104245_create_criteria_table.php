@@ -15,9 +15,9 @@ class CreateCriteriaTable extends Migration
     {
         Schema::create('criteria', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
+            $table->integer('user_id')->nullable();
             $table->integer('task_id')->nullable();
-            $table->double('score');
+            $table->double('max_score');
             $table->string('criteria_name');
             $table->integer('criteria_type_id');
             $table->text('description');
