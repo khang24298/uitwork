@@ -22,6 +22,9 @@ class APIController extends Controller
     {
         $input = $request->only('email', 'password');
         $token = null;
+
+        // $request->session()->put('data', $input);
+
         if (!$token = JWTAuth::attempt($input)) {
             return response()->json([
                 'status' => false,
@@ -47,6 +50,9 @@ class APIController extends Controller
         // ]);
 
         try {
+
+            // $request->session()->forget('data');
+
             JWTAuth::invalidate($request->token);
 
             return response()->json([

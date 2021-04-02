@@ -19,6 +19,7 @@ $factory->define(Task::class, function (Faker $faker) {
     return [
         'user_id'       => rand(1,10),
         'assignee_id'   => rand(1,10),
+        'project_id'    => rand(1,10),
         'task_name'     => $faker->name,
         'description'   => $faker->jobTitle,
         'start_date'    => $startDate,

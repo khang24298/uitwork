@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Criteria extends Model
 {
-    protected $guarded = [];
+    // protected $guarded = [];
 
-    // protected $fillable = ['user_id', 'task_id', 'score', 'criteria_name', 'criteria_type_id', 'description'];
+    protected $fillable = ['user_id', 'task_id', 'max_score', 'criteria_name', 'criteria_type_id', 'description'];
 
     public $table = "criteria";
 

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateReportTypesTable extends Migration
+class CreateEvaluationTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,12 @@ class CreateReportTypesTable extends Migration
      */
     public function up()
     {
-        Schema::create('report_types', function (Blueprint $table) {
+        Schema::create('evaluation', function (Blueprint $table) {
             $table->id();
-            $table->integer('type_id');
-            $table->string('type_name');
-            $table->string('description');
+            $table->integer('task_id')->nullable();
+            $table->integer('user_id')->nullable();
+            $table->double('score');
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ class CreateReportTypesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('report_types');
+        Schema::dropIfExists('evaluation');
     }
 }

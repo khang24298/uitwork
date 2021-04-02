@@ -7,6 +7,7 @@ use Exception;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 class ProjectsController extends Controller
 {
     /**
@@ -188,6 +189,63 @@ class ProjectsController extends Controller
             return response()->json([
                 'message' => "You don't have access to this resource! Please contact with administrator for more information!"
             ], 403);
+        }
+    }
+
+    public function getTasksByProjectID(int $project_id)
+    {
+        try {
+            $tasksList = DB::table('tasks')
+                ->join('projects', 'projects.id', '=', 'tasks.project_id')
+                ->select('tasks.*')
+                ->where('tasks.project_id', $project_id)->get();
+
+            return response()->json([
+                'tasksList' => $tasksList,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getProjectsUserJoinedOrCreated(int $user_id)
+    {
+        try {
+            $userRole = DB::table('users')->where('id', $user_id)->select('role');
+
+            if ($userRole > 2) {
+                $projectsCreated = DB::table('projects')
+                    ->where('user_id', $user_id)->get();
+
+                return response()->json([
+                    'projectsCreated'   => $projectsCreated,
+                    'message'           => 'Success'
+                ], 200);
+            }
+            else {
+                $taskInProject = DB::table('tasks')
+                    ->select('project_id')->where('user_id', $user_id)
+                    ->groupBy('project_id')->toSql();
+
+                $projectsJoined = DB::table('projects')
+                    ->joinSub($taskInProject, 'task_project', function($join) {
+                        $join->on('projects.id', '=', 'task_project.project_id');
+                    })->get();
+
+                return response()->json([
+                    'projectsJoined'    => $projectsJoined,
+                    'message'           => 'Success'
+                ], 200);
+            }
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

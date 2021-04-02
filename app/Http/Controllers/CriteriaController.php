@@ -200,63 +200,11 @@ class CriteriaController extends Controller
         }
     }
 
-    public function calculateUserScoreByTaskCriteria(int $task_id)
-    {
-        try {
-            $score = DB::table('criteria')->where('task_id', $task_id)->sum('score');
-
-            return response()->json([
-                'score'     => $score,
-                'message'   => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function calculateUserScoreByUserCriteria(int $user_id)
-    {
-        try {
-            $score = DB::table('criteria')->where('user_id', $user_id)
-                ->where('criteria_type_id', 2)->sum('score');
-
-            return response()->json([
-                'score'     => $score,
-                'message'   => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function calculateUserScore(int $user_id)
-    {
-        try {
-            $score = DB::table('criteria')->where('user_id', $user_id)->sum('score');
-
-            return response()->json([
-                'score'     => $score,
-                'message'   => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function getTaskCriteriaByUserID(int $user_id)
+    public function getTaskCriteriaByTaskID(int $task_id)
     {
         try {
             $taskCriteria = DB::table('criteria')
-                ->where('user_id', $user_id)
+                ->where('task_id', $task_id)
                 ->where('criteria_type_id', 1)->get();
 
             return response()->json([
@@ -276,6 +224,42 @@ class CriteriaController extends Controller
         try {
             $userCriteria = DB::table('criteria')
                 ->where('user_id', $user_id)
+                ->where('criteria_type_id', 2)->get();
+
+            return response()->json([
+                'userCriteria'      => $userCriteria,
+                'message'           => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getTaskCriteriaList()
+    {
+        try {
+            $taskCriteria = DB::table('criteria')
+                ->where('criteria_type_id', 1)->get();
+
+            return response()->json([
+                'taskCriteria'      => $taskCriteria,
+                'message'           => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUserCriteriaList()
+    {
+        try {
+            $userCriteria = DB::table('criteria')
                 ->where('criteria_type_id', 2)->get();
 
             return response()->json([
