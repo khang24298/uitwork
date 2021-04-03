@@ -194,10 +194,7 @@ class ProjectsController extends Controller
     public function getTasksByProjectID(int $project_id)
     {
         try {
-            $tasksList = DB::table('tasks')
-                ->join('projects', 'projects.id', '=', 'tasks.project_id')
-                ->select('tasks.*')
-                ->where('tasks.project_id', $project_id)->get();
+            $tasksList = DB::table('tasks')->where('project_id', $project_id)->get();
 
             return response()->json([
                 'tasksList' => $tasksList,
@@ -240,6 +237,27 @@ class ProjectsController extends Controller
                     'message'           => 'Success'
                 ], 200);
             }
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUsersJoinedProject(int $project_id)
+    {
+        try {
+            $usersJoined = DB::table('tasks')
+                ->join('users', 'tasks.user_id', '=', 'users.id')
+                ->select('users.*')
+                ->where('tasks.project_id', $project_id)
+                ->get();
+
+            return response()->json([
+                'usersJoined'   => $usersJoined,
+                'message'       => 'Success'
+            ], 200);
         }
         catch(Exception $e){
             return response()->json([
