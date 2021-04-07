@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Project;
+use App\Status;
 use Exception;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Task;
 class ProjectsController extends Controller
 {
     /**
@@ -195,13 +197,20 @@ class ProjectsController extends Controller
     public function getTasksByProjectID(int $project_id)
     {
         try {
-            $tasksList = DB::table('tasks')
-                ->join('projects', 'projects.id', '=', 'tasks.project_id')
-                ->select('tasks.*')
-                ->where('tasks.project_id', $project_id)->get();
-
+            
+            $tasksList = Task::all();
+            $statuses = Status::all();
+            $tasksByProject = [];
+            foreach($statuses as $status){
+                $tasksByStatus = [];
+                array_push($tasksByStatus,$tasksList->where('status_id',$status->id)->toArray());
+                array_push($tasksByProject,(Object)[
+                    "status" => $status,
+                    "tasks" => $tasksByStatus
+                ]);
+            }
             return response()->json([
-                'tasksList' => $tasksList,
+                'tasksList' => $tasksByProject,
                 'message'   => 'Success'
             ], 200);
         }
@@ -246,6 +255,14 @@ class ProjectsController extends Controller
             return response()->json([
                 'message' => $e->getMessage()
             ], 500);
+        }
+    }
+    // Get team memmber of a project
+    public function getUsersJoinedProject($projectid){
+        try {
+            $users = User::where('project');
+        } catch (\Throwable $th) {
+            //throw $th;
         }
     }
 }

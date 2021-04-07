@@ -13,7 +13,7 @@ class TaskController extends Controller
 
     public function __construct()
     {
-        // $this->middleware('auth.jwt');
+        $this->middleware('auth.jwt');
     }
 
     /**
@@ -23,7 +23,6 @@ class TaskController extends Controller
      */
     public function index()
     {
-        // dd(request()->user());
         try{
             $tasks = Task::all();
             return response()->json([

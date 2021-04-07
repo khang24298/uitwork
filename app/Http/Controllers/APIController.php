@@ -20,9 +20,9 @@ class APIController extends Controller
      */
     public function login(Request $request)
     {
+        // dd(1);
         $input = $request->only('email', 'password');
         $token = null;
-
         // $request->session()->put('data', $input);
 
         if (!$token = JWTAuth::attempt($input)) {
@@ -31,11 +31,15 @@ class APIController extends Controller
                 'message' => 'Invalid Email or Password',
             ], 401);
         }
-
+        // var_dump($input);
+        // dd($token);
         return response()->json([
             'status' => true,
             'token' => $token,
-        ]);
+        ])
+        ->header("Access-Control-Allow-Origin", "http://localhost:8080")
+        ->header("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
+        ->header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
     }
 
     /**
