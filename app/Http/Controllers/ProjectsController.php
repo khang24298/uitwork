@@ -211,11 +211,14 @@ class ProjectsController extends Controller
     public function getProjectsUserJoinedOrCreated(int $user_id)
     {
         try {
-            $userRole = DB::table('users')->where('id', $user_id)->select('role');
+            $userRole = DB::table('users')->where('id', $user_id)->select('role')->get();
 
-            if ($userRole > 2) {
-                $projectsCreated = DB::table('projects')
-                    ->where('user_id', $user_id)->get();
+            // Convert to array.
+            $userRoleArray = json_decode(json_encode($userRole), true);
+            $userRoleValue = $userRoleArray[0]['role'];
+
+            if ($userRoleValue > 2) {
+                $projectsCreated = DB::table('projects')->where('user_id', $user_id)->get();
 
                 return response()->json([
                     'projectsCreated'   => $projectsCreated,
@@ -224,7 +227,7 @@ class ProjectsController extends Controller
             }
             else {
                 $taskInProject = DB::table('tasks')
-                    ->select('project_id')->where('user_id', $user_id)
+                    ->select('project_id')->where('assignee_id', $user_id)
                     ->groupBy('project_id')->toSql();
 
                 $projectsJoined = DB::table('projects')

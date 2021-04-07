@@ -70,7 +70,7 @@ class TaskController extends Controller
                 'assignee_id'   => request('assignee_id'),
                 'start_date'    => request('start_date'),
                 'end_date'      => request('end_date'),
-                'status_id'     => request('status_id'),
+                'status_id'     => 1,
                 'qa_id'         => request('qa_id'),
                 'priority'      => request('priority'),
                 'user_id'       => Auth::user()->id
@@ -185,16 +185,48 @@ class TaskController extends Controller
         }
     }
 
-    public function getUserTaskInfoByUserID(int $user_id)
+    public function getTasksByAssignerOrAssignee(int $user_id)
+    {
+        try
+        {
+            $userRole = DB::table('users')->where('id', $user_id)->select('role')->get();
+
+            // Convert to array.
+            $userRoleArray = json_decode(json_encode($userRole), true);
+            $userRoleValue = $userRoleArray[0]['role'];
+
+            if ($userRoleValue > 2) {
+                $tasksByAssigner = DB::table('tasks')->where('user_id', $user_id)->get();
+
+                return response()->json([
+                    'tasksByAssigner'   => $tasksByAssigner,
+                    'message'           => 'Success'
+                ], 200);
+            }
+            else {
+                $tasksByAssignee = DB::table('tasks')->where('assignee_id', $user_id)->get();
+
+                return response()->json([
+                    'tasksByAssignee'   => $tasksByAssignee,
+                    'message'           => 'Success'
+                ], 200);
+            }
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getTaskInfo(int $task_id)
     {
         try {
-            $userInfo = DB::table('tasks')->join('users', 'tasks.user_id', '=', 'users.id')
-                ->select('name', 'email', 'task_name', 'description')
-                ->where('tasks.user_id', $user_id)->get();
+            $taskInfo = DB::table('tasks')->where('id', $task_id)->get();
 
             return response()->json([
-                'userInfo'      => $userInfo,
-                'message'       => 'Success'
+                'taskInfo'  => $taskInfo,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -204,6 +236,8 @@ class TaskController extends Controller
         }
     }
 
+    /*
+    *
     public function getReportByTaskID(int $task_id)
     {
         try {
@@ -271,6 +305,24 @@ class TaskController extends Controller
             return response()->json([
                 'taskDocument'   => $taskDocument,
                 'message'        => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+    */
+
+    public function getTasksByStatusID(int $status_id)
+    {
+        try {
+            $tasksByStatus = DB::table('tasks')->where('status_id', $status_id)->get();
+
+            return response()->json([
+                'tasksByStatus' => $tasksByStatus,
+                'message'       => 'Success'
             ], 200);
         }
         catch(Exception $e){

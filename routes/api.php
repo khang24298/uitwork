@@ -19,6 +19,9 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     // dd(Auth::user());
     Route::get('logout', 'APIController@logout');
     Route::get('users', 'UserController@index');
+    Route::get('/getUserInfo/{user_id}', 'UserController@getUserInfo');
+    Route::get('/getUsersWithEmployeeRole', 'UserController@getUsersWithEmployeeRole');
+    Route::get('/getUsersWithManagerRole', 'UserController@getUsersWithManagerRole');
 
     // Route::get('/dashboard', 'DashboardController@create');
 
@@ -51,11 +54,13 @@ Route::group(['middleware' => 'auth.jwt'], function () {
 
     // Tasks
     Route::resource('/tasks','TaskController');
-    Route::get('/getUserTaskInfoByUserID/{user_id}', 'TaskController@getUserTaskInfoByUserID');
-    Route::get('/getTaskCriteriaByTaskID/{task_id}', 'TaskController@getTaskCriteriaByTaskID');
-    Route::get('/getReportByTaskID/{task_id}', 'TaskController@getReportByTaskID');
-    Route::get('/getCommentByTaskID/{task_id}', 'TaskController@getCommentByTaskID');
-    Route::get('/getDocumentByTaskID/{task_id}', 'TaskController@getDocumentByTaskID');
+    Route::get('/getTaskInfo/{task_id}', 'TaskController@getTaskInfo');
+    Route::get('/getTasksByAssignerOrAssignee/{user_id}', 'TaskController@getTasksByAssignerOrAssignee');
+    // Route::get('/getTaskCriteriaByTaskID/{task_id}', 'TaskController@getTaskCriteriaByTaskID');
+    // Route::get('/getReportByTaskID/{task_id}', 'TaskController@getReportByTaskID');
+    // Route::get('/getCommentByTaskID/{task_id}', 'TaskController@getCommentByTaskID');
+    // Route::get('/getDocumentByTaskID/{task_id}', 'TaskController@getDocumentByTaskID');
+    Route::get('/getTasksByStatusID/{status_id}', 'TaskController@getTasksByStatusID');
 
     // Comments
     Route::resource('/comments', 'CommentController');
