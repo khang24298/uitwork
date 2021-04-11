@@ -92,4 +92,55 @@ class UserController extends Controller
     {
         //
     }
+
+    public function getUserInfo(int $user_id)
+    {
+        try {
+            $userInfo = DB::table('users')->where('id', $user_id)->get();
+
+            return response()->json([
+                'userInfo'  => $userInfo,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUsersWithEmployeeRole()
+    {
+        try {
+            $userWithEmployeeRole = DB::table('users')->where('role', '<=', 2)->get();
+
+            return response()->json([
+                'userWithEmployeeRole'  => $userWithEmployeeRole,
+                'message'               => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUsersWithManagerRole()
+    {
+        try {
+            $userWithManagerRole = DB::table('users')->where('role', '>', 2)->get();
+
+            return response()->json([
+                'userWithManagerRole'   => $userWithManagerRole,
+                'message'               => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

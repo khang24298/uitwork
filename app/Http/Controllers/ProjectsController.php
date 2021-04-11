@@ -196,8 +196,7 @@ class ProjectsController extends Controller
 
     public function getTasksByProjectID(int $project_id)
     {
-        try {
-            
+        try {   
             $tasksList = Task::all();
             $statuses = Status::all();
             $tasksByProject = [];
@@ -224,11 +223,14 @@ class ProjectsController extends Controller
     public function getProjectsUserJoinedOrCreated(int $user_id)
     {
         try {
-            $userRole = DB::table('users')->where('id', $user_id)->select('role');
+            $userRole = DB::table('users')->where('id', $user_id)->select('role')->get();
 
-            if ($userRole > 2) {
-                $projectsCreated = DB::table('projects')
-                    ->where('user_id', $user_id)->get();
+            // Convert to array.
+            $userRoleArray = json_decode(json_encode($userRole), true);
+            $userRoleValue = $userRoleArray[0]['role'];
+
+            if ($userRoleValue > 2) {
+                $projectsCreated = DB::table('projects')->where('user_id', $user_id)->get();
 
                 return response()->json([
                     'projectsCreated'   => $projectsCreated,
@@ -237,7 +239,7 @@ class ProjectsController extends Controller
             }
             else {
                 $taskInProject = DB::table('tasks')
-                    ->select('project_id')->where('user_id', $user_id)
+                    ->select('project_id')->where('assignee_id', $user_id)
                     ->groupBy('project_id')->toSql();
 
                 $projectsJoined = DB::table('projects')
@@ -257,12 +259,25 @@ class ProjectsController extends Controller
             ], 500);
         }
     }
-    // Get team memmber of a project
-    public function getUsersJoinedProject($projectid){
+
+    public function getUsersJoinedProject(int $project_id)
+    {
         try {
-            $users = User::where('project');
-        } catch (\Throwable $th) {
-            //throw $th;
+            $usersJoined = DB::table('tasks')
+                ->join('users', 'tasks.user_id', '=', 'users.id')
+                ->select('users.*')
+                ->where('tasks.project_id', $project_id)
+                ->get();
+
+            return response()->json([
+                'usersJoined'   => $usersJoined,
+                'message'       => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

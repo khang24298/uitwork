@@ -427,17 +427,25 @@ class RankingController extends Controller
             // Insert for all user.
             foreach ($userIDArrays as $user_id)
             {
-                $this->calcValuesForOneUser($user_id['id']);
+                $temp = $this->calcValuesForOneUser($user_id['id']);
+
+                $userRankValues = json_decode(json_encode($temp), true)['original']['rankValues'];
+
+                // Get current date and time.
+                date_default_timezone_set('Asia/Ho_Chi_Minh');
+	            $date = date('Y-m-d h:i:s');
+
+                DB::table('rankings')->insert([
+                    'user_id'                       => $user_id['id'],
+                    'rank_by_task_criteria_score'   => $userRankValues[0],
+                    'rank_by_user_criteria_score'   => $userRankValues[1],
+                    'total_rank'                    => $userRankValues[2],
+                    'created_at'                    => $date,
+                    'updated_at'                    => $date
+                ]);
             }
 
-            // for ($i = 0; $i < count($userIDArrays); $i++) {
-            //     $this->calcValuesForOneUser($userIDArrays[$i]['id']);
-            // }
-
-            // $a = count($userIDArrays);
-
             return response()->json([
-                // 'count'     => $a,
                 'message'   => 'Success'
             ], 200);
         }
@@ -452,19 +460,17 @@ class RankingController extends Controller
     {
         try {
 
-            $firstRank = '';
-            $secondRank = '';
-            $totalRank = '';
-
             // Get first rank.
             $rankByTaskCriteriaScore = $this->getTaskCriteriaScoreRankList();
 
             $userRankByTaskCriteriaScore = json_decode(json_encode($rankByTaskCriteriaScore), true);
 
-            for ($i = 0; $i < count($userRankByTaskCriteriaScore); $i++) {
-                $userID = $userRankByTaskCriteriaScore['original']['userRank'][$i]['user_id'];
+            $userFirstRankArray = $userRankByTaskCriteriaScore['original']['userRank'];
+
+            for ($i = 0; $i < count($userFirstRankArray); $i++) {
+                $userID = $userFirstRankArray[$i]['user_id'];
                 if ($userID == $user_id) {
-                    $firstRank = $userRankByTaskCriteriaScore['original']['userRank'][$i]['rank'];
+                    $firstRank = $userFirstRankArray[$i]['rank'];
                     break;
                 }
             }
@@ -474,10 +480,12 @@ class RankingController extends Controller
 
             $userRankByUserCriteriaScore = json_decode(json_encode($rankByUserCriteriaScore), true);
 
-            for ($i = 0; $i < count($userRankByUserCriteriaScore); $i++) {
-                $userID = $userRankByUserCriteriaScore['original']['userRank'][$i]['user_id'];
+            $userSecondRankArray = $userRankByUserCriteriaScore['original']['userRank'];
+
+            for ($i = 0; $i < count($userSecondRankArray); $i++) {
+                $userID = $userSecondRankArray[$i]['user_id'];
                 if ($userID == $user_id) {
-                    $secondRank = $userRankByUserCriteriaScore['original']['userRank'][$i]['rank'];
+                    $secondRank = $userSecondRankArray[$i]['rank'];
                     break;
                 }
             }
@@ -487,20 +495,15 @@ class RankingController extends Controller
 
             $userTotalRank = json_decode(json_encode($rankByTotalScore), true);
 
-            for ($i = 0; $i < count($userTotalRank); $i++) {
-                $userID = $userTotalRank['original']['userRank'][$i]['user_id'];
+            $userTotalRankArray = $userTotalRank['original']['userRank'];
+
+            for ($i = 0; $i < count($userTotalRankArray); $i++) {
+                $userID = $userTotalRankArray[$i]['user_id'];
                 if ($userID == $user_id) {
-                    $totalRank = $userTotalRank['original']['userRank'][$i]['rank'];
+                    $totalRank = $userTotalRankArray[$i]['rank'];
                     break;
                 }
             }
-
-            // DB::table('rankings')->insert([
-            //     'user_id'                       => $user_id,
-            //     'rank_by_task_criteria_score'   => $firstRank,
-            //     'rank_by_user_criteria_score'   => $secondRank,
-            //     'total_rank'                    => $totalRank
-            // ]);
 
             $rankValues = array();
             array_push($rankValues, $firstRank, $secondRank, $totalRank);
@@ -533,21 +536,35 @@ class RankingController extends Controller
         // Get user list.
         // $userID = DB::table('users')->select('id')->get();
 
-        $rankByTaskCriteriaScore = $this->getTaskCriteriaScoreRankList();
+        // Test get first rank value.
+        // $rankByTaskCriteriaScore = $this->getTaskCriteriaScoreRankList();
 
-        $userRankByTaskCriteriaScore = json_decode(json_encode($rankByTaskCriteriaScore), true);
+        // $userRankByTaskCriteriaScore = json_decode(json_encode($rankByTaskCriteriaScore), true);
 
-        $firstRank = '';
+        // $userRankArray = $userRankByTaskCriteriaScore['original']['userRank'];
 
-        // Error here?
-        for ($i = 0; $i < count($userRankByTaskCriteriaScore); $i++) {
-            $userID = $userRankByTaskCriteriaScore['original']['userRank'][$i]['user_id'];
-            if ($userID == 2) {
-                $firstRank = $userRankByTaskCriteriaScore['original']['userRank'][$i]['rank'];
-                break;
-            }
-        }
+        // for ($i = 0; $i < count($userRankArray); $i++) {
+        //     $userID = $userRankArray[$i]['user_id'];
+        //     if ($userID == 6) {
+        //         $firstRank = $userRankArray[$i]['rank'];
+        //         break;
+        //     }
+        // }
 
-        return $firstRank;
+        // return $firstRank;
+
+        // $a = $this->calcValuesForOneUser(2);
+
+        // $aArray = json_decode(json_encode($a), true)['original']['rankValues'];
+
+        // return $aArray[0];
+
+        $userRole = DB::table('users')->where('id', 1)->select('role')->get();
+
+        // Convert to array.
+        $userRoleArray = json_decode(json_encode($userRole), true);
+        $userRoleValue = $userRoleArray[0]['role'];
+
+        return $userRoleValue;
     }
 }
