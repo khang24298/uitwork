@@ -118,5 +118,5 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/insertToDatabase', 'RankingController@insertToDatabase');
 
     // Just for some testing.
-    Route::get('/draftFunction', 'RankingController@draftFunction');
+    Route::get('/draftFunction', 'TestingController@draftFunction');
 });

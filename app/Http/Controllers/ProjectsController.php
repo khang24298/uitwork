@@ -238,14 +238,10 @@ class ProjectsController extends Controller
                 ], 200);
             }
             else {
-                $taskInProject = DB::table('tasks')
-                    ->select('project_id')->where('assignee_id', $user_id)
-                    ->groupBy('project_id')->toSql();
-
-                $projectsJoined = DB::table('projects')
-                    ->joinSub($taskInProject, 'task_project', function($join) {
-                        $join->on('projects.id', '=', 'task_project.project_id');
-                    })->get();
+                $projectsJoined = DB::table('tasks')
+                    ->join('projects', 'tasks.project_id', '=', 'projects.id')
+                    ->select('projects.*')
+                    ->where('tasks.assignee_id', $user_id)->get();
 
                 return response()->json([
                     'projectsJoined'    => $projectsJoined,
