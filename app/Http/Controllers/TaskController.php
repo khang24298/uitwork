@@ -62,7 +62,6 @@ class TaskController extends Controller
             'end_date'          => 'required|date|after:start_date',
             'priority'          => 'required',
         ]);
-
         try{
             $task = Task::create([
                 'task_name'     => request('task_name'),

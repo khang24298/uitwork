@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Tymon\JWTAuth\Facades\JWTAuth;
-use App\User;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
@@ -20,11 +19,8 @@ class APIController extends Controller
      */
     public function login(Request $request)
     {
-        // dd(1);
         $input = $request->only('email', 'password');
         $token = null;
-        // $request->session()->put('data', $input);
-
         if (!$token = JWTAuth::attempt($input)) {
             return response()->json([
                 'status' => false,
@@ -36,10 +32,7 @@ class APIController extends Controller
         return response()->json([
             'status' => true,
             'token' => $token,
-        ])
-        ->header("Access-Control-Allow-Origin", "http://localhost:8080")
-        ->header("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
-        ->header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+        ]);
     }
 
     /**
@@ -49,15 +42,11 @@ class APIController extends Controller
      */
     public function logout(Request $request)
     {
-        // $this->validate($request, [
-        //     'token' => 'required'
-        // ]);
-
+        $brtoken = $request->header('authorization');
+        $token = explode(" ",$brtoken);
+        // dd($token);
         try {
-
-            // $request->session()->forget('data');
-
-            JWTAuth::invalidate($request->token);
+            JWTAuth::invalidate($token[1]);
 
             return response()->json([
                 'status' => true,

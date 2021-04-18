@@ -15,10 +15,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::post('login', 'APIController@login');
+
 Route::group(['middleware' => 'auth.jwt'], function () {
     // dd(Auth::user());
-    Route::get('logout', 'APIController@logout');
-    Route::get('users', 'UserController@index');
+    Route::get('/logout', 'APIController@logout');
+
+    Route::get('/users', 'UserController@index');
+    Route::get('/currentUser', 'UserController@currentUser');
+
     Route::get('/getUserInfo/{user_id}', 'UserController@getUserInfo');
     Route::get('/getUsersWithEmployeeRole', 'UserController@getUsersWithEmployeeRole');
     Route::get('/getUsersWithManagerRole', 'UserController@getUsersWithManagerRole');
