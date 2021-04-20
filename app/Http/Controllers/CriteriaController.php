@@ -26,7 +26,7 @@ class CriteriaController extends Controller
     public function index()
     {
         try{
-            $criteria = Criteria::latest()->get();
+            $criteria = Criteria::get();
 
             return response()->json([
                 'criteria' => $criteria,
@@ -65,14 +65,16 @@ class CriteriaController extends Controller
                 'criteria_name'     => 'required|max:255',
                 'criteria_type_id'  => 'required',
                 'description'       => 'required',
-                'score'             => 'required',
+                'max_score'         => 'required',
+                'task_id'           => 'nullable',
+                'user_id'           => 'nullable',
             ]);
             try{
                 $criteria = Criteria::create([
                     'criteria_name'     => request('criteria_name'),
                     'criteria_type_id'  => request('criteria_type_id'),
                     'description'       => request('description'),
-                    'score'             => request('score'),
+                    'max_score'         => request('max_score'),
                     'task_id'           => request('task_id'),
                     'user_id'           => Auth::user()->id
                 ]);
@@ -141,7 +143,9 @@ class CriteriaController extends Controller
                 'criteria_name'     => 'required|max:255',
                 'criteria_type_id'  => 'required',
                 'description'       => 'required',
-                'score'             => 'required',
+                'max_score'         => 'required',
+                'task_id'           => 'nullable',
+                'user_id'           => 'nullable',
             ]);
 
             try{
@@ -150,7 +154,7 @@ class CriteriaController extends Controller
                 $criteria->task_id = request('task_id');
                 $criteria->criteria_type_id = request('criteria_type_id');
                 $criteria->description = request('description');
-                $criteria->score = request('score');
+                $criteria->max_score = request('max_score');
                 $criteria->save();
 
                 return response()->json([

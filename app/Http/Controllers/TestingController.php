@@ -127,13 +127,18 @@ class TestingController extends Controller
         // return $aArray[0];
 
 
-        // Test get user role.
-        $userRole = DB::table('users')->where('id', 1)->select('role')->get();
+        // // Test get user role.
+        // $userRole = DB::table('users')->where('id', 1)->select('role')->get();
 
-        // Convert to array.
-        $userRoleArray = json_decode(json_encode($userRole), true);
-        $userRoleValue = $userRoleArray[0]['role'];
+        // // Convert to array.
+        // $userRoleArray = json_decode(json_encode($userRole), true);
+        // $userRoleValue = $userRoleArray[0]['role'];
 
-        return $userRoleValue;
+        // return $userRoleValue;
+
+        // $roleArray = array(5,10,15,20);
+        // $result =  $roleArray[array_rand($roleArray,1)];
+
+        // return $result;
     }
 }
