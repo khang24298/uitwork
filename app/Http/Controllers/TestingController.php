@@ -134,11 +134,26 @@ class TestingController extends Controller
         // $userRoleArray = json_decode(json_encode($userRole), true);
         // $userRoleValue = $userRoleArray[0]['role'];
 
-        // return $userRoleValue;
+        // $randomUserID = rand(1,10);
+
+        // $randomTaskID = rand(1, 20);
+        // $randomValue = [$randomTaskID, null];
+
+        // $random = $randomValue[rand(0, count($randomValue) - 1)];
+        // $a = DB::table('criteria')->select('id')->where('task_id', 17)->get();
+        // $b = json_decode(json_encode($a), true);
+        // return $b[array_rand($b,1)]['id'];
 
         // $roleArray = array(5,10,15,20);
         // $result =  $roleArray[array_rand($roleArray,1)];
 
         // return $result;
+
+        $maxScore = DB::table('criteria')->select('max_score')->where('id', 1)->get();
+        // $maxScoreInt = (int)$maxScore;
+        $maxScoreArray = json_decode(json_encode($maxScore), true);
+        $maxScoreInt = $maxScoreArray[0]['max_score'];
+
+        return $maxScoreInt;
     }
 }

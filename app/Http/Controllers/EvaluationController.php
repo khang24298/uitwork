@@ -60,19 +60,24 @@ class EvaluationController extends Controller
     {
         $role = Auth::user()->role;
         if($role > 2){
+            $criteriaID = request('criteria_id');
+            $maxScore = DB::table('criteria')->select('max_score')->where('id', $criteriaID)->get();
+
             $this->validate($request, [
-                'score'     => 'required',
-                'user_id'   => 'nullable',
-                'task_id'   => 'nullable',
-                'note'      => 'nullable'
+                'score'         => 'required|max:$maxScore',
+                'criteria_id'   => 'required',
+                'user_id'       => 'nullable',
+                'task_id'       => 'nullable',
+                'note'          => 'nullable'
             ]);
 
             try{
                 $criteria = Evaluation::create([
-                    'task_id'   => request('task_id'),
-                    'user_id'   => Auth::user()->id,
-                    'score'     => request('score'),
-                    'note'      => request('note'),
+                    'task_id'       => request('task_id'),
+                    'user_id'       => Auth::user()->id,
+                    'criteria_id'   => request('criteria_id'),
+                    'score'         => request('score'),
+                    'note'          => request('note'),
                 ]);
                 return response()->json([
                     'criteria'    => $criteria,
@@ -137,13 +142,16 @@ class EvaluationController extends Controller
         if($role > 2){
             $this->validate($request, [
                 'score'             => 'required',
+                'criteria_id'       => 'required',
                 'user_id'           => 'nullable',
                 'task_id'           => 'nullable',
+                'note'              => 'nullable',
             ]);
 
             try{
                 $evaluation->user_id = Auth::user()->id;
                 $evaluation->task_id = request('task_id');
+                $evaluation->criteria_id = request('criteria_id');
                 $evaluation->note = request('note');
                 $evaluation->score = request('score');
                 $evaluation->save();
