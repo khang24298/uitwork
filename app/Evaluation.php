@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Evaluation extends Model
 {
-    protected $fillable = ['task_id', 'user_id', 'score', 'note'];
+    protected $fillable = ['task_id', 'user_id', 'criteria_id', 'score', 'note'];
 
     public $table = 'evaluation';
 
@@ -18,6 +18,11 @@ class Evaluation extends Model
     public function task()
     {
         return $this->belongsTo(Task::class, 'task_id');
+    }
+
+    public function criteria()
+    {
+        return $this->belongsTo(Criteria::class, 'criteria_id');
     }
 
     public function getCreatedAttribute()

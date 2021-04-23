@@ -17,6 +17,7 @@ class CreateEvaluationTable extends Migration
             $table->id();
             $table->integer('task_id')->nullable();
             $table->integer('user_id')->nullable();
+            $table->integer('criteria_id');
             $table->double('score');
             $table->string('note')->nullable();
             $table->timestamps();
