@@ -29,8 +29,8 @@ class CriteriaController extends Controller
             $criteria = Criteria::get();
 
             return response()->json([
-                'criteria' => $criteria,
-                'message' => 'Success'
+                'data'      => $criteria,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -79,7 +79,7 @@ class CriteriaController extends Controller
                     'user_id'           => Auth::user()->id
                 ]);
                 return response()->json([
-                    'criteria'    => $criteria,
+                    'data'    => $criteria,
                     'message' => 'Success'
                 ], 200);
             }
@@ -106,8 +106,8 @@ class CriteriaController extends Controller
     {
         try{
             return response()->json([
-                'criteria' => $criteria,
-                'message' => 'Success'
+                'data'      => $criteria,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -158,8 +158,8 @@ class CriteriaController extends Controller
                 $criteria->save();
 
                 return response()->json([
-                    'criteria' => $criteria,
-                    'message'  => 'Criteria updated successfully!'
+                    'data'      => $criteria,
+                    'message'   => 'Criteria updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -212,8 +212,8 @@ class CriteriaController extends Controller
                 ->where('criteria_type_id', 1)->get();
 
             return response()->json([
-                'taskCriteria'      => $taskCriteria,
-                'message'           => 'Success'
+                'data'      => $taskCriteria,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -231,8 +231,8 @@ class CriteriaController extends Controller
                 ->where('criteria_type_id', 2)->get();
 
             return response()->json([
-                'userCriteria'      => $userCriteria,
-                'message'           => 'Success'
+                'data'      => $userCriteria,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -249,8 +249,8 @@ class CriteriaController extends Controller
                 ->where('criteria_type_id', 1)->get();
 
             return response()->json([
-                'taskCriteria'      => $taskCriteria,
-                'message'           => 'Success'
+                'data'      => $taskCriteria,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -267,8 +267,8 @@ class CriteriaController extends Controller
                 ->where('criteria_type_id', 2)->get();
 
             return response()->json([
-                'userCriteria'      => $userCriteria,
-                'message'           => 'Success'
+                'data'      => $userCriteria,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){

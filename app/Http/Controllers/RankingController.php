@@ -29,8 +29,8 @@ class RankingController extends Controller
             $ranking = Ranking::get();
 
             return response()->json([
-                'ranking' => $ranking,
-                'message' => 'Success'
+                'data'      => $ranking,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -69,7 +69,7 @@ class RankingController extends Controller
                     'total_rank'                    => request('total_rank'),
                 ]);
                 return response()->json([
-                    'ranking'   => $ranking,
+                    'data'      => $ranking,
                     'message'   => 'Success'
                 ], 200);
             }
@@ -96,8 +96,8 @@ class RankingController extends Controller
     {
         try{
             return response()->json([
-                'ranking' => $ranking,
-                'message' => 'Success'
+                'data'      => $ranking,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -137,7 +137,7 @@ class RankingController extends Controller
                 $ranking->save();
 
                 return response()->json([
-                    'ranking'   => $ranking,
+                    'data'      => $ranking,
                     'message'   => 'Ranking updated successfully!'
                 ], 200);
             }
@@ -197,7 +197,7 @@ class RankingController extends Controller
                 ->where('user_id', $user_id)->get();
 
             return response()->json([
-                'userRank'  => $userRankByTaskCriteriaScore,
+                'data'      => $userRankByTaskCriteriaScore,
                 'message'   => 'Success'
             ], 200);
         }
@@ -216,7 +216,7 @@ class RankingController extends Controller
                 ->where('user_id', $user_id)->get();
 
             return response()->json([
-                'userRank'  => $userRankByUserCriteriaScore,
+                'data'      => $userRankByUserCriteriaScore,
                 'message'   => 'Success'
             ], 200);
         }
@@ -235,7 +235,7 @@ class RankingController extends Controller
                 ->where('user_id', $user_id)->get();
 
             return response()->json([
-                'userRank'  => $userTotalRank,
+                'data'      => $userTotalRank,
                 'message'   => 'Success'
             ], 200);
         }
@@ -252,9 +252,9 @@ class RankingController extends Controller
 
             // Get task criteria score group by task id.
             $taskCriteriaScore = DB::table('tasks')
-                ->join('users', 'tasks.user_id', '=', 'users.id')
+                ->join('users', 'tasks.assignee_id', '=', 'users.id')
                 ->join('evaluation', 'tasks.id', '=', 'evaluation.task_id')
-                ->select('users.name', 'tasks.user_id', 'evaluation.task_id',
+                ->select('users.name', 'tasks.assignee_id as user_id', 'evaluation.task_id',
                     DB::raw('SUM(score) as totalScore'))
                 ->groupBy('evaluation.task_id')
                 ->orderByDesc('totalScore')->get();
@@ -297,7 +297,7 @@ class RankingController extends Controller
             }
 
             return response()->json([
-                'userRank'  => $userRankByTaskCriteriaScore,
+                'data'      => $userRankByTaskCriteriaScore,
                 'message'   => 'Success'
             ], 200);
         }
@@ -333,8 +333,8 @@ class RankingController extends Controller
             }
 
             return response()->json([
-                'userRank' => $userRankByUserCriteriaScore,
-                'message'  => 'Success'
+                'data'      => $userRankByUserCriteriaScore,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -363,7 +363,7 @@ class RankingController extends Controller
                 $score_1 = DB::table('evaluation')->where('user_id', $user_id)->sum('score');
 
                 $userTask = DB::table('users')
-                    ->join('tasks', 'users.id', '=', 'tasks.user_id')
+                    ->join('tasks', 'users.id', '=', 'tasks.assignee_id')
                     ->select('users.id AS userID', 'users.name', 'tasks.id')
                     ->toSql();
 
@@ -402,8 +402,8 @@ class RankingController extends Controller
             }
 
             return response()->json([
-                'userRank' => $totalRank,
-                'message'  => 'Success'
+                'data'      => $totalRank,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -429,7 +429,7 @@ class RankingController extends Controller
             {
                 $temp = $this->calcValuesForOneUser($user_id['id']);
 
-                $userRankValues = json_decode(json_encode($temp), true)['original']['rankValues'];
+                $userRankValues = json_decode(json_encode($temp), true)['original']['data'];
 
                 // Get current date and time.
                 date_default_timezone_set('Asia/Ho_Chi_Minh');
@@ -465,7 +465,7 @@ class RankingController extends Controller
 
             $userRankByTaskCriteriaScore = json_decode(json_encode($rankByTaskCriteriaScore), true);
 
-            $userFirstRankArray = $userRankByTaskCriteriaScore['original']['userRank'];
+            $userFirstRankArray = $userRankByTaskCriteriaScore['original']['data'];
 
             for ($i = 0; $i < count($userFirstRankArray); $i++) {
                 $userID = $userFirstRankArray[$i]['user_id'];
@@ -480,7 +480,7 @@ class RankingController extends Controller
 
             $userRankByUserCriteriaScore = json_decode(json_encode($rankByUserCriteriaScore), true);
 
-            $userSecondRankArray = $userRankByUserCriteriaScore['original']['userRank'];
+            $userSecondRankArray = $userRankByUserCriteriaScore['original']['data'];
 
             for ($i = 0; $i < count($userSecondRankArray); $i++) {
                 $userID = $userSecondRankArray[$i]['user_id'];
@@ -495,7 +495,7 @@ class RankingController extends Controller
 
             $userTotalRank = json_decode(json_encode($rankByTotalScore), true);
 
-            $userTotalRankArray = $userTotalRank['original']['userRank'];
+            $userTotalRankArray = $userTotalRank['original']['data'];
 
             for ($i = 0; $i < count($userTotalRankArray); $i++) {
                 $userID = $userTotalRankArray[$i]['user_id'];
@@ -509,8 +509,8 @@ class RankingController extends Controller
             array_push($rankValues, $firstRank, $secondRank, $totalRank);
 
             return response()->json([
-                'rankValues'    => $rankValues,
-                'message'       => 'Success'
+                'data'      => $rankValues,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){

@@ -25,8 +25,8 @@ class ReportTypeController extends Controller
             $reportTypes = ReportType::get();
 
             return response()->json([
-                'reports' => $reportTypes,
-                'message' => 'Success'
+                'data'      => $reportTypes,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -58,7 +58,7 @@ class ReportTypeController extends Controller
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'type_name' => 'required|max:255',
+                'type_name'     => 'required|max:255',
                 'description'   => 'required',
             ]);
             try{
@@ -68,8 +68,8 @@ class ReportTypeController extends Controller
                     'description' => request('description')
                 ]);
                 return response()->json([
-                    'reportType'    => $reportType,
-                    'message' => 'Success'
+                    'data'      => $reportType,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -96,8 +96,8 @@ class ReportTypeController extends Controller
         //
         try{
             return response()->json([
-                'reportType' => $reportType,
-                'message' => 'Success'
+                'data'      => $reportType,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -141,8 +141,8 @@ class ReportTypeController extends Controller
                 $reportType->save();
 
                 return response()->json([
-                    'reportType' => $reportType,
-                    'message'    => 'Report type updated successfully!'
+                    'data'      => $reportType,
+                    'message'   => 'Report type updated successfully!'
                 ], 200);
             }
             catch(Exception $e){

@@ -29,8 +29,8 @@ class EvaluationController extends Controller
             $evaluation = Evaluation::get();
 
             return response()->json([
-                'evaluation' => $evaluation,
-                'message' => 'Success'
+                'data'      => $evaluation,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -80,8 +80,8 @@ class EvaluationController extends Controller
                     'note'          => request('note'),
                 ]);
                 return response()->json([
-                    'criteria'    => $criteria,
-                    'message' => 'Success'
+                    'data'      => $criteria,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -107,8 +107,8 @@ class EvaluationController extends Controller
     {
         try{
             return response()->json([
-                'evaluation' => $evaluation,
-                'message' => 'Success'
+                'data'      => $evaluation,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -157,8 +157,8 @@ class EvaluationController extends Controller
                 $evaluation->save();
 
                 return response()->json([
-                    'evaluation' => $evaluation,
-                    'message'    => 'Evaluation updated successfully!'
+                    'data'      => $evaluation,
+                    'message'   => 'Evaluation updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -209,8 +209,8 @@ class EvaluationController extends Controller
             $taskEvaluation = DB::table('evaluation')->where('task_id', $task_id)->get();
 
             return response()->json([
-                'taskEvaluation'    => $taskEvaluation,
-                'message'           => 'Success'
+                'data'      => $taskEvaluation,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -223,11 +223,11 @@ class EvaluationController extends Controller
     public function getTaskEvaluationList()
     {
         try {
-            $taskEvaluation = DB::table('evaluation')->where('task_id', '<>', null)->get();
+            $taskEvaluationList = DB::table('evaluation')->where('task_id', '<>', null)->get();
 
             return response()->json([
-                'taskEvaluation'    => $taskEvaluation,
-                'message'           => 'Success'
+                'data'      => $taskEvaluationList,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -243,8 +243,8 @@ class EvaluationController extends Controller
             $userEvaluation = DB::table('evaluation')->where('user_id', $user_id)->get();
 
             return response()->json([
-                'userEvaluation'    => $userEvaluation,
-                'message'           => 'Success'
+                'data'      => $userEvaluation,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -257,11 +257,11 @@ class EvaluationController extends Controller
     public function getUserEvaluationList()
     {
         try {
-            $userEvaluation = DB::table('evaluation')->where('user_id', '<>', null)->get();
+            $userEvaluationList = DB::table('evaluation')->where('user_id', '<>', null)->get();
 
             return response()->json([
-                'userEvaluation'    => $userEvaluation,
-                'message'           => 'Success'
+                'data'      => $userEvaluationList,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -277,7 +277,7 @@ class EvaluationController extends Controller
             $score = DB::table('evaluation')->where('task_id', $task_id)->sum('score');
 
             return response()->json([
-                'score'     => $score,
+                'data'      => $score,
                 'message'   => 'Success'
             ], 200);
         }
@@ -294,7 +294,7 @@ class EvaluationController extends Controller
             $score = DB::table('evaluation')->where('user_id', $user_id)->sum('score');
 
             return response()->json([
-                'score'     => $score,
+                'data'      => $score,
                 'message'   => 'Success'
             ], 200);
         }
@@ -321,7 +321,7 @@ class EvaluationController extends Controller
             ->where('user_task.userID', $user_id)->sum('score');
 
             return response()->json([
-                'score'     => $score,
+                'data'      => $score,
                 'message'   => 'Success'
             ], 200);
         }
@@ -352,7 +352,7 @@ class EvaluationController extends Controller
             $score = $score_1 + $score_2;
 
             return response()->json([
-                'score'     => $score,
+                'data'      => $score,
                 'message'   => 'Success'
             ], 200);
         }

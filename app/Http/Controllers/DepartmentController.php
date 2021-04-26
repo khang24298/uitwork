@@ -27,8 +27,8 @@ class DepartmentController extends Controller
             $departments = Department::latest()->get();
 
             return response()->json([
-                'departments' => $departments,
-                'message'     => 'Success'
+                'data'      => $departments,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -70,8 +70,8 @@ class DepartmentController extends Controller
                     'phone'             => request('phone'),
                 ]);
                 return response()->json([
-                    'department'    => $department,
-                    'message'       => 'Success'
+                    'data'      => $department,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -97,8 +97,8 @@ class DepartmentController extends Controller
     {
         try{
             return response()->json([
-                'department' => $department,
-                'message'    => 'Success'
+                'data'      => $department,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -143,8 +143,8 @@ class DepartmentController extends Controller
                 $department->save();
 
                 return response()->json([
-                    'department' => $department,
-                    'message' => 'Department updated successfully!'
+                    'data'      => $department,
+                    'message'   => 'Department updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -198,8 +198,8 @@ class DepartmentController extends Controller
                 ->where('departments.id', $department_id)->get();
 
             return response()->json([
-                'usersInDepartment'     => $usersInDepartment,
-                'message'               => 'Success'
+                'data'      => $usersInDepartment,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){

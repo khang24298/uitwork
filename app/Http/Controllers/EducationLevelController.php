@@ -23,11 +23,11 @@ class EducationLevelController extends Controller
     public function index()
     {
         try{
-            $educationLevel = EducationLevel::latest()->get();
+            $educationLevel = EducationLevel::get();
 
             return response()->json([
-                'educationLevel' => $educationLevel,
-                'message'        => 'Success'
+                'data'      => $educationLevel,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -67,8 +67,8 @@ class EducationLevelController extends Controller
                     'expertise'      => request('expertise'),
                 ]);
                 return response()->json([
-                    'educationLevel'    => $educationLevel,
-                    'message'           => 'Success'
+                    'data'      => $educationLevel,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -128,8 +128,8 @@ class EducationLevelController extends Controller
                 $educationLevel->save();
 
                 return response()->json([
-                    'educationLevel' => $educationLevel,
-                    'message'        => 'Education level updated successfully!'
+                    'data'      => $educationLevel,
+                    'message'   => 'Education level updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -182,8 +182,8 @@ class EducationLevelController extends Controller
                 ->select('education_levels.name', 'expertise')->where('users.id', $user_id)->get();
 
             return response()->json([
-                'userEducation'     => $userEducation,
-                'message'           => 'Success'
+                'data'      => $userEducation,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){

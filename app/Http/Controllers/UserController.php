@@ -20,8 +20,9 @@ class UserController extends Controller
     {
         $users = User::all();
         return response()->json([
-            'users' => $users,
-            ], 200);
+            'data'      => $users,
+            'message'   => 'Success'
+        ], 200);
     }
 
     /**
@@ -55,7 +56,8 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         return response()->json([
-            'users' => $user,
+            'data'      => $user,
+            'message'   => 'Success'
         ],200);
     }
 
@@ -99,7 +101,7 @@ class UserController extends Controller
             $userInfo = DB::table('users')->where('id', $user_id)->get();
 
             return response()->json([
-                'userInfo'  => $userInfo,
+                'data'      => $userInfo,
                 'message'   => 'Success'
             ], 200);
         }
@@ -116,8 +118,8 @@ class UserController extends Controller
             $userWithEmployeeRole = DB::table('users')->where('role', '<=', 2)->get();
 
             return response()->json([
-                'userWithEmployeeRole'  => $userWithEmployeeRole,
-                'message'               => 'Success'
+                'data'      => $userWithEmployeeRole,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -133,8 +135,8 @@ class UserController extends Controller
             $userWithManagerRole = DB::table('users')->where('role', '>', 2)->get();
 
             return response()->json([
-                'userWithManagerRole'   => $userWithManagerRole,
-                'message'               => 'Success'
+                'data'      => $userWithManagerRole,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){

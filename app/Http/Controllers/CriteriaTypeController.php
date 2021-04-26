@@ -25,11 +25,11 @@ class CriteriaTypeController extends Controller
     public function index()
     {
         try{
-            $criteriaTypes = CriteriaType::latest()->get();
+            $criteriaTypes = CriteriaType::get();
 
             return response()->json([
-                'criteriaTypes' => $criteriaTypes,
-                'message'       => 'Success'
+                'data'      => $criteriaTypes,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -71,8 +71,8 @@ class CriteriaTypeController extends Controller
                     'description'   => request('description'),
                 ]);
                 return response()->json([
-                    'criteriaTypes'     => $criteriaTypes,
-                    'message'           => 'Success'
+                    'data'      => $criteriaTypes,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -98,8 +98,8 @@ class CriteriaTypeController extends Controller
     {
         try{
             return response()->json([
-                'criteriaType'  => $criteriaType,
-                'message'       => 'Success'
+                'data'      => $criteriaType,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -144,8 +144,8 @@ class CriteriaTypeController extends Controller
                 $criteriaType->save();
 
                 return response()->json([
-                    'criteriaType'  => $criteriaType,
-                    'message'       => 'Criteria type updated successfully!'
+                    'data'      => $criteriaType,
+                    'message'   => 'Criteria type updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
