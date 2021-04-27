@@ -69,10 +69,11 @@ class TaskController extends Controller
                 'assignee_id'   => request('assignee_id'),
                 'start_date'    => request('start_date'),
                 'end_date'      => request('end_date'),
-                'status_id'     => 1,
+                'status_id'     => 0,
                 'qa_id'         => request('qa_id'),
                 'priority'      => request('priority'),
-                'user_id'       => Auth::user()->id
+                'user_id'       => Auth::user()->id,
+                'project_id'    => request('project_id')
             ]);
 
             return response()->json([
@@ -152,7 +153,8 @@ class TaskController extends Controller
             $task->save();
 
             return response()->json([
-                    'message' => 'Task updated successfully!'
+                    'data'    => $task,
+                    'message' => 'Success'
                     ], 200);
         }
         catch(Exception $e){
@@ -174,7 +176,7 @@ class TaskController extends Controller
         try{
             $task->delete();
             return response()->json([
-                'message' => 'Task deleted successfully!'
+                'message' => 'Success'
             ], 200);
         }
         catch(Exception $e){

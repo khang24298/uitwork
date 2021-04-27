@@ -197,15 +197,21 @@ class ProjectsController extends Controller
     public function getTasksByProjectID(int $project_id)
     {
         try {   
-            $tasksList = Task::all();
-            $statuses = Status::all();
+            $statuses = Status::orderBy('type_id','ASC')->get();
+            // dd($statuses);
             $tasksByProject = [];
             foreach($statuses as $status){
-                $tasksByStatus = [];
-                array_push($tasksByStatus,$tasksList->where('status_id',$status->id)->toArray());
+                $taskList = Task::where([
+                    [
+                        'status_id',$status->id
+                    ],
+                    [
+                        'project_id',$project_id
+                    ]
+                    ])->get()->toArray();
                 array_push($tasksByProject,(Object)[
                     "status" => $status,
-                    "tasks" => $tasksByStatus
+                    "tasks" => $taskList
                 ]);
             }
             return response()->json([
@@ -233,7 +239,7 @@ class ProjectsController extends Controller
                 $projectsCreated = DB::table('projects')->where('user_id', $user_id)->get();
 
                 return response()->json([
-                    'projectsCreated'   => $projectsCreated,
+                    'data'   => $projectsCreated,
                     'message'           => 'Success'
                 ], 200);
             }
@@ -244,7 +250,7 @@ class ProjectsController extends Controller
                     ->where('tasks.assignee_id', $user_id)->get();
 
                 return response()->json([
-                    'projectsJoined'    => $projectsJoined,
+                    'data'    => $projectsJoined,
                     'message'           => 'Success'
                 ], 200);
             }
@@ -266,7 +272,7 @@ class ProjectsController extends Controller
                 ->get();
 
             return response()->json([
-                'usersJoined'   => $usersJoined,
+                'data'   => $usersJoined,
                 'message'       => 'Success'
             ], 200);
         }
