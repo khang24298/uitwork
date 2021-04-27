@@ -27,8 +27,8 @@ class CommentController extends Controller
             $comments = Comment::latest()->get();
 
             return response()->json([
-                'comments' => $comments,
-                'message'  => 'Success'
+                'data'      => $comments,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -71,7 +71,7 @@ class CommentController extends Controller
                     'parent_id'     => request('parent_id'),
                 ]);
                 return response()->json([
-                    'comment'   => $comment,
+                    'data'      => $comment,
                     'message'   => 'Success'
                 ], 200);
             }
@@ -98,8 +98,8 @@ class CommentController extends Controller
     {
         try{
             return response()->json([
-                'comment' => $comment,
-                'message' => 'Success'
+                'data'      => $comment,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -144,8 +144,8 @@ class CommentController extends Controller
                 $comment->save();
 
                 return response()->json([
-                    'comment' => $comment,
-                    'message' => 'Comment updated successfully!'
+                    'data'      => $comment,
+                    'message'   => 'Comment updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -196,8 +196,8 @@ class CommentController extends Controller
             $userComment = DB::table('comments')->where('user_id', $user_id)->get();
 
             return response()->json([
-                'userComment'   => $userComment,
-                'message'       => 'Success'
+                'data'      => $userComment,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -213,8 +213,8 @@ class CommentController extends Controller
             $taskComment = DB::table('comments')->where('task_id', $task_id)->get();
 
             return response()->json([
-                'taskComment'     => $taskComment,
-                'message'         => 'Success'
+                'data'      => $taskComment,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -230,8 +230,8 @@ class CommentController extends Controller
             $childComment = DB::table('comments')->where('parent_id', $parent_id)->get();
 
             return response()->json([
-                'childComment'     => $childComment,
-                'message'          => 'Success'
+                'data'      => $childComment,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){

@@ -28,8 +28,8 @@ class WorkProcessController extends Controller
             $workProcess = WorkProcess::latest()->get();
 
             return response()->json([
-                'workProcess'    => $workProcess,
-                'message'        => 'Success'
+                'data'      => $workProcess,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -78,7 +78,7 @@ class WorkProcessController extends Controller
                     'department_id'     => request('department_id'),
                 ]);
                 return response()->json([
-                    'workProcess'    => $workProcess,
+                    'data'      => $workProcess,
                     'message'   => 'Success'
                 ], 200);
             }
@@ -105,8 +105,8 @@ class WorkProcessController extends Controller
     {
         try{
             return response()->json([
-                'workProcess' => $workProcess,
-                'message' => 'Success'
+                'data'      => $workProcess,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -158,8 +158,8 @@ class WorkProcessController extends Controller
                 $workProcess->save();
 
                 return response()->json([
-                    'workProcess'  => $workProcess,
-                    'message' => 'Work process updated successfully!'
+                    'data'      => $workProcess,
+                    'message'   => 'Work process updated successfully!'
                 ], 200);
             }
             catch(Exception $e){

@@ -25,11 +25,11 @@ class ReportController extends Controller
     public function index()
     {
         try{
-            $reports = Report::latest()->get();
+            $reports = Report::get();
 
             return response()->json([
-                'reports' => $reports,
-                'message' => 'Success'
+                'data'      => $reports,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -77,8 +77,8 @@ class ReportController extends Controller
                     'project_id'    => request('project_id'),
                 ]);
                 return response()->json([
-                    'report'    => $report,
-                    'message' => 'Success'
+                    'data'      => $report,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -105,8 +105,8 @@ class ReportController extends Controller
         //
         try{
             return response()->json([
-                'report' => $report,
-                'message' => 'Success'
+                'data'      => $report,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -156,8 +156,8 @@ class ReportController extends Controller
                 $report->save();
 
                 return response()->json([
-                    'report'  => $report,
-                    'message' => 'Report updated successfully!'
+                    'data'      => $report,
+                    'message'   => 'Report updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -208,8 +208,8 @@ class ReportController extends Controller
             $reports = DB::table('reports')->get();
 
             return response()->json([
-                'reports'      => $reports,
-                'message'      => 'Success'
+                'data'      => $reports,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -225,8 +225,8 @@ class ReportController extends Controller
             $taskReports = DB::table('reports')->where('task_id', '<>', null)->get();
 
             return response()->json([
-                'taskReports'      => $taskReports,
-                'message'      => 'Success'
+                'data'      => $taskReports,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -242,8 +242,8 @@ class ReportController extends Controller
             $projectReports = DB::table('reports')->where('project_id', '<>', null)->get();
 
             return response()->json([
-                'projectReports'    => $projectReports,
-                'message'           => 'Success'
+                'data'      => $projectReports,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -259,8 +259,8 @@ class ReportController extends Controller
             $taskReport = DB::table('reports')->where('task_id', $task_id)->get();
 
             return response()->json([
-                'taskReport'      => $taskReport,
-                'message'      => 'Success'
+                'data'      => $taskReport,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -276,8 +276,8 @@ class ReportController extends Controller
             $projectReport = DB::table('reports')->where('project_id', $project_id)->get();
 
             return response()->json([
-                'projectReport'      => $projectReport,
-                'message'      => 'Success'
+                'data'      => $projectReport,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){

@@ -8,6 +8,7 @@ use GuzzleHttp\Handler\Proxy;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Exception;
 
 class TestingController extends Controller
 {

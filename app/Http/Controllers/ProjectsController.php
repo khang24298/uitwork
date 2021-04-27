@@ -25,11 +25,11 @@ class ProjectsController extends Controller
     public function index()
     {
         try{
-            $projects = Project::latest()->get();
+            $projects = Project::get();
 
             return response()->json([
-                'projects' => $projects,
-                'message' => 'Success'
+                'data'      => $projects,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -78,8 +78,8 @@ class ProjectsController extends Controller
                     'user_id'       => Auth::user()->id
                 ]);
                 return response()->json([
-                    'project'    => $project,
-                    'message' => 'Success'
+                    'data'      => $project,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -106,8 +106,8 @@ class ProjectsController extends Controller
         // dd($project);
         try{
             return response()->json([
-                'project' => $project,
-                'message' => 'Success'
+                'data'      => $project,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -148,8 +148,8 @@ class ProjectsController extends Controller
                 $project->description = request('description');
                 $project->save();
                 return response()->json([
-                    'project' => $project,
-                    'message' => 'Project updated successfully!'
+                    'data'      => $project,
+                    'message'   => 'Project updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -215,7 +215,7 @@ class ProjectsController extends Controller
                 ]);
             }
             return response()->json([
-                'tasksList' => $tasksByProject,
+                'data'      => $tasksList,
                 'message'   => 'Success'
             ], 200);
         }
@@ -239,8 +239,8 @@ class ProjectsController extends Controller
                 $projectsCreated = DB::table('projects')->where('user_id', $user_id)->get();
 
                 return response()->json([
-                    'data'   => $projectsCreated,
-                    'message'           => 'Success'
+                    'data'      => $projectsCreated,
+                    'message'   => 'Success'
                 ], 200);
             }
             else {
@@ -250,8 +250,8 @@ class ProjectsController extends Controller
                     ->where('tasks.assignee_id', $user_id)->get();
 
                 return response()->json([
-                    'data'    => $projectsJoined,
-                    'message'           => 'Success'
+                    'data'      => $projectsJoined,
+                    'message'   => 'Success'
                 ], 200);
             }
         }
@@ -272,8 +272,8 @@ class ProjectsController extends Controller
                 ->get();
 
             return response()->json([
-                'data'   => $usersJoined,
-                'message'       => 'Success'
+                'data'      => $usersJoined,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
