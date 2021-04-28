@@ -11,11 +11,18 @@ use Exception;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth.jwt');
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
+
+    
     public function index()
     {
         $users = User::all();
@@ -61,6 +68,13 @@ class UserController extends Controller
         ],200);
     }
 
+    public function currentUser(){
+        $user = Auth::user();
+        return response()->json([
+            'data' => $user,
+            'message' => "Success"
+        ],200);
+    }
     /**
      * Show the form for editing the specified resource.
      *

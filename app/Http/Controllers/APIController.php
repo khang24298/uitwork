@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Tymon\JWTAuth\Facades\JWTAuth;
-use App\User;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
@@ -22,16 +21,14 @@ class APIController extends Controller
     {
         $input = $request->only('email', 'password');
         $token = null;
-
-        // $request->session()->put('data', $input);
-
         if (!$token = JWTAuth::attempt($input)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid Email or Password',
             ], 401);
         }
-
+        // var_dump($input);
+        // dd($token);
         return response()->json([
             'status' => true,
             'token' => $token,
@@ -45,15 +42,11 @@ class APIController extends Controller
      */
     public function logout(Request $request)
     {
-        // $this->validate($request, [
-        //     'token' => 'required'
-        // ]);
-
+        $brtoken = $request->header('authorization');
+        $token = explode(" ",$brtoken);
+        // dd($token);
         try {
-
-            // $request->session()->forget('data');
-
-            JWTAuth::invalidate($request->token);
+            JWTAuth::invalidate($token[1]);
 
             return response()->json([
                 'status' => true,

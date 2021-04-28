@@ -24,7 +24,7 @@ class TaskController extends Controller
     public function index()
     {
         try{
-            $tasks = request()->user()->tasks;
+            $tasks = Task::all();
             return response()->json([
                 'data'      => $tasks,
                 'message'   => 'Success'
@@ -65,7 +65,6 @@ class TaskController extends Controller
             'qa_id'             => 'required',
             'priority'          => 'required'
         ]);
-
         try{
             $task = Task::create([
                 'task_name'     => request('task_name'),
@@ -75,7 +74,7 @@ class TaskController extends Controller
                 'assignee_id'   => request('assignee_id'),
                 'start_date'    => request('start_date'),
                 'end_date'      => request('end_date'),
-                'status_id'     => 1,
+                'status_id'     => 0,
                 'qa_id'         => request('qa_id'),
                 'priority'      => request('priority')
             ]);
@@ -184,7 +183,7 @@ class TaskController extends Controller
         try{
             $task->delete();
             return response()->json([
-                'message' => 'Task deleted successfully!'
+                'message' => 'Success'
             ], 200);
         }
         catch(Exception $e){

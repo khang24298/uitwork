@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Project;
+use App\Status;
 use Exception;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Task;
 class ProjectsController extends Controller
 {
     /**
@@ -101,6 +103,7 @@ class ProjectsController extends Controller
      */
     public function show(Project $project)
     {
+        // dd($project);
         try{
             return response()->json([
                 'data'      => $project,
@@ -193,11 +196,25 @@ class ProjectsController extends Controller
 
     public function getTasksByProjectID(int $project_id)
     {
-        try {
-            $tasksList = DB::table('tasks')->where('project_id', $project_id)->get();
-
+        try {   
+            $statuses = Status::orderBy('type_id','ASC')->get();
+            $tasksByProject = [];
+            foreach($statuses as $status){
+                $taskList = Task::where([
+                    [
+                        'status_id',$status->id
+                    ],
+                    [
+                        'project_id',$project_id
+                    ]
+                    ])->get()->toArray();
+                array_push($tasksByProject,(Object)[
+                    "status" => $status,
+                    "tasks" => $taskList
+                ]);
+            }
             return response()->json([
-                'data'      => $tasksList,
+                'data'      => $tasksByProject,
                 'message'   => 'Success'
             ], 200);
         }

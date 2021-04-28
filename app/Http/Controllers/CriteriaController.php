@@ -64,7 +64,6 @@ class CriteriaController extends Controller
             $this->validate($request, [
                 'criteria_name'     => 'required|max:255',
                 'criteria_type_id'  => 'required',
-                'description'       => 'required',
                 'max_score'         => 'required',
                 'task_id'           => 'nullable',
                 'user_id'           => 'nullable',
@@ -73,7 +72,7 @@ class CriteriaController extends Controller
                 $criteria = Criteria::create([
                     'criteria_name'     => request('criteria_name'),
                     'criteria_type_id'  => request('criteria_type_id'),
-                    'description'       => request('description'),
+                    'description'       => (request('description')) ? request('description') : "",
                     'max_score'         => request('max_score'),
                     'task_id'           => request('task_id'),
                     'user_id'           => Auth::user()->id
@@ -102,9 +101,10 @@ class CriteriaController extends Controller
      * @param  \App\Criteria  $criteria
      * @return \Illuminate\Http\Response
      */
-    public function show(Criteria $criteria)
+    public function show($id)
     {
         try{
+            $criteria = Criteria::findOrFail($id);
             return response()->json([
                 'data'      => $criteria,
                 'message'   => 'Success'
@@ -209,7 +209,7 @@ class CriteriaController extends Controller
         try {
             $taskCriteria = DB::table('criteria')
                 ->where('task_id', $task_id)
-                ->where('criteria_type_id', 1)->get();
+                ->where('criteria_type_id', 1)->get()->toArray();
 
             return response()->json([
                 'data'      => $taskCriteria,
