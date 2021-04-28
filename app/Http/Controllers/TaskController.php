@@ -60,20 +60,24 @@ class TaskController extends Controller
             'description'       => 'required',
             'start_date'        => 'required|date',
             'end_date'          => 'required|date|after:start_date',
-            'priority'          => 'required',
+            'project_id'        => 'required',
+            'assignee_id'       => 'required',
+            'qa_id'             => 'required',
+            'priority'          => 'required'
         ]);
 
         try{
             $task = Task::create([
                 'task_name'     => request('task_name'),
                 'description'   => request('description'),
+                'user_id'       => Auth::user()->id,
+                'project_id'    => request('project_id'),
                 'assignee_id'   => request('assignee_id'),
                 'start_date'    => request('start_date'),
                 'end_date'      => request('end_date'),
                 'status_id'     => 1,
                 'qa_id'         => request('qa_id'),
-                'priority'      => request('priority'),
-                'user_id'       => Auth::user()->id
+                'priority'      => request('priority')
             ]);
 
             return response()->json([
@@ -134,15 +138,19 @@ class TaskController extends Controller
         $this->validate($request, [
             'task_name'         => 'required|max:255',
             'description'       => 'required',
-            'start_date'        => 'required',
-            'end_date'          => 'required',
-            'priority'          => 'required',
+            'start_date'        => 'required|date',
+            'end_date'          => 'required|date|after:start_date',
+            'project_id'        => 'required',
+            'assignee_id'       => 'required',
+            'qa_id'             => 'required',
+            'priority'          => 'required'
         ]);
 
         try{
             $task->task_name = request('task_name');
             $task->description = request('description');
             $task->assignee_id = request('assignee_id');
+            $task->project_id = request('project_id');
             $task->start_date = request('start_date');
             $task->end_date = request('end_date');
             $task->status_id = request('status_id');

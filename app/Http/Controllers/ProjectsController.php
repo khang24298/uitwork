@@ -229,7 +229,7 @@ class ProjectsController extends Controller
                 $projectsJoined = DB::table('tasks')
                     ->join('projects', 'tasks.project_id', '=', 'projects.id')
                     ->select('projects.*')
-                    ->where('tasks.assignee_id', $user_id)->get();
+                    ->where('tasks.assignee_id', $user_id)->distinct()->get();
 
                 return response()->json([
                     'data'      => $projectsJoined,
