@@ -198,7 +198,6 @@ class ProjectsController extends Controller
     {
         try {   
             $statuses = Status::orderBy('type_id','ASC')->get();
-            // dd($statuses);
             $tasksByProject = [];
             foreach($statuses as $status){
                 $taskList = Task::where([
@@ -215,7 +214,7 @@ class ProjectsController extends Controller
                 ]);
             }
             return response()->json([
-                'data'      => $tasksList,
+                'data'      => $tasksByProject,
                 'message'   => 'Success'
             ], 200);
         }

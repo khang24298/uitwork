@@ -63,13 +63,8 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         return response()->json([
-<<<<<<< HEAD
-            'data' => $user,
-            'message' => "Success"
-=======
             'data'      => $user,
             'message'   => 'Success'
->>>>>>> 0cb59f00861af31cf9370ba0513b5cb22a5c5b8c
         ],200);
     }
 

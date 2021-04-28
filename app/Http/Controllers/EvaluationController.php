@@ -6,8 +6,7 @@ use App\Evaluation;
 
 use Exception;
 use Illuminate\Http\Request;
-
-use GuzzleHttp\Handler\Proxy;
+use App\Task;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -64,7 +63,7 @@ class EvaluationController extends Controller
             $maxScore = DB::table('criteria')->select('max_score')->where('id', $criteriaID)->get();
 
             $this->validate($request, [
-                'score'         => 'required|max:$maxScore',
+                'score'         => 'required',
                 'criteria_id'   => 'required',
                 'user_id'       => 'nullable',
                 'task_id'       => 'nullable',
@@ -79,6 +78,7 @@ class EvaluationController extends Controller
                     'score'         => request('score'),
                     'note'          => request('note'),
                 ]);
+                Task::where('task_id',request('task_id'))->update(['task_id' => 4]);
                 return response()->json([
                     'data'      => $criteria,
                     'message'   => 'Success'
