@@ -78,7 +78,7 @@ class EvaluationController extends Controller
                     'score'         => request('score'),
                     'note'          => request('note'),
                 ]);
-                Task::where('task_id',request('task_id'))->update(['task_id' => 4]);
+                Task::where('id',request('task_id'))->update(['status_id' => 4]);
                 return response()->json([
                     'data'      => $criteria,
                     'message'   => 'Success'
@@ -206,7 +206,7 @@ class EvaluationController extends Controller
     public function getTaskEvaluationByTaskID(int $task_id)
     {
         try {
-            $taskEvaluation = DB::table('evaluation')->where('task_id', $task_id)->get();
+            $taskEvaluation = DB::table('evaluation')->where('task_id', $task_id)->orderBy('criteria_id','ASC')->get()->toArray();
 
             return response()->json([
                 'data'      => $taskEvaluation,
