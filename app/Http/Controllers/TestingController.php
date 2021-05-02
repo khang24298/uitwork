@@ -150,11 +150,41 @@ class TestingController extends Controller
 
         // return $result;
 
-        $maxScore = DB::table('criteria')->select('max_score')->where('id', 1)->get();
-        // $maxScoreInt = (int)$maxScore;
-        $maxScoreArray = json_decode(json_encode($maxScore), true);
-        $maxScoreInt = $maxScoreArray[0]['max_score'];
+        // $maxScore = DB::table('criteria')->select('max_score')->where('id', 1)->get();
+        // // $maxScoreInt = (int)$maxScore;
+        // $maxScoreArray = json_decode(json_encode($maxScore), true);
+        // $maxScoreInt = $maxScoreArray[0]['max_score'];
 
-        return $maxScoreInt;
+        // return $maxScoreInt;
+
+        $task_id = 1;
+        $taskIDList = DB::table('evaluation')
+            ->select('task_id')->where('task_id', '<>', null)->get();
+
+        $taskIDListArray = json_decode(json_encode($taskIDList), true);
+
+        $temp = array();
+
+        for ($i = 0; $i < count($taskIDListArray) - 1; $i++){
+            // if (in_array($task_id, $taskIDListArray[$i]['task_id'])){
+            //     return "Success";
+            // }
+            // $taskIDListArray[$i]['task_id'];
+            array_push($temp, $taskIDListArray[$i]['task_id']);
+        }
+
+        // if (in_array($task_id, $taskIDList)) {
+        //     return "Success";
+        // } else
+        // {
+        //     return "Failed";
+        // }
+        // return count($taskIDListArray);
+        // return $temp;
+
+        if (in_array($task_id, $temp)){
+            return "Success";
+        }
+        return "Failed";
     }
 }

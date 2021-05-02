@@ -59,11 +59,32 @@ class EvaluationController extends Controller
     {
         $role = Auth::user()->role;
         if($role > 2){
+            // Get maxScore of criteriaID.
             $criteriaID = request('criteria_id');
             $maxScore = DB::table('criteria')->select('max_score')->where('id', $criteriaID)->get();
 
+            // Check if task_id already exists in evaluation.
+            $task_id = request('task_id');
+            $taskIDList = DB::table('evaluation')->select('task_id')->where('task_id', '<>', null)->get();
+            $taskIDListArray = json_decode(json_encode($taskIDList), true);
+            $temp = array();
+
+            for ($i = 0; $i < count($taskIDListArray) - 1; $i++) {
+                array_push($temp, $taskIDListArray[$i]['task_id']);
+            }
+
+            if (!in_array($task_id, $temp)){
+                return response()->json([
+                    'message' => "Success"
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => "The criteria_id value already exists with this same task_id. Please try another value."
+                ], 200);
+            }
+
             $this->validate($request, [
-                'score'         => 'required',
+                'score'         => "required|max:$maxScore",
                 'criteria_id'   => 'required',
                 'user_id'       => 'nullable',
                 'task_id'       => 'nullable',
@@ -71,7 +92,7 @@ class EvaluationController extends Controller
             ]);
 
             try{
-                $criteria = Evaluation::create([
+                $evaluation = Evaluation::create([
                     'task_id'       => request('task_id'),
                     'user_id'       => Auth::user()->id,
                     'criteria_id'   => request('criteria_id'),
@@ -80,7 +101,7 @@ class EvaluationController extends Controller
                 ]);
                 Task::where('id',request('task_id'))->update(['status_id' => 4]);
                 return response()->json([
-                    'data'      => $criteria,
+                    'data'      => $evaluation,
                     'message'   => 'Success'
                 ], 200);
             }
@@ -140,8 +161,32 @@ class EvaluationController extends Controller
     {
         $role = Auth::user()->role;
         if($role > 2){
+            // Get maxScore of criteriaID.
+            $criteriaID = request('criteria_id');
+            $maxScore = DB::table('criteria')->select('max_score')->where('id', $criteriaID)->get();
+
+            // Check if task_id already exists in evaluation.
+            $task_id = request('task_id');
+            $taskIDList = DB::table('evaluation')->select('task_id')->where('task_id', '<>', null)->get();
+            $taskIDListArray = json_decode(json_encode($taskIDList), true);
+            $temp = array();
+
+            for ($i = 0; $i < count($taskIDListArray) - 1; $i++) {
+                array_push($temp, $taskIDListArray[$i]['task_id']);
+            }
+
+            if (!in_array($task_id, $temp)){
+                return response()->json([
+                    'message' => "Success"
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => "The criteria_id value already exists with this same task_id. Please try another value."
+                ], 200);
+            }
+
             $this->validate($request, [
-                'score'             => 'required',
+                'score'             => "required|max:$maxScore",
                 'criteria_id'       => 'required',
                 'user_id'           => 'nullable',
                 'task_id'           => 'nullable',
