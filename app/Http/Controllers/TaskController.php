@@ -23,12 +23,11 @@ class TaskController extends Controller
      */
     public function index()
     {
-        // dd(request()->user());
         try{
             $tasks = Task::all();
             return response()->json([
-                'tasks' => $tasks,
-                'message' => 'Success'
+                'data'      => $tasks,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -61,25 +60,28 @@ class TaskController extends Controller
             'description'       => 'required',
             'start_date'        => 'required|date',
             'end_date'          => 'required|date|after:start_date',
-            'priority'          => 'required',
+            'project_id'        => 'required',
+            'assignee_id'       => 'required',
+            'qa_id'             => 'required',
+            'priority'          => 'required'
         ]);
-
         try{
             $task = Task::create([
                 'task_name'     => request('task_name'),
                 'description'   => request('description'),
+                'user_id'       => Auth::user()->id,
+                'project_id'    => request('project_id'),
                 'assignee_id'   => request('assignee_id'),
                 'start_date'    => request('start_date'),
                 'end_date'      => request('end_date'),
-                'status_id'     => request('status_id'),
+                'status_id'     => 0,
                 'qa_id'         => request('qa_id'),
-                'priority'      => request('priority'),
-                'user_id'       => Auth::user()->id
+                'priority'      => request('priority')
             ]);
 
             return response()->json([
-                'task'    => $task,
-                'message' => 'Success'
+                'data'      => $task,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -101,8 +103,8 @@ class TaskController extends Controller
     {
         try{
             return response()->json([
-                'task' => $task,
-                'message' => 'Success'
+                'data'      => $task,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -135,15 +137,19 @@ class TaskController extends Controller
         $this->validate($request, [
             'task_name'         => 'required|max:255',
             'description'       => 'required',
-            'start_date'        => 'required',
-            'end_date'          => 'required',
-            'priority'          => 'required',
+            'start_date'        => 'required|date',
+            'end_date'          => 'required|date|after:start_date',
+            'project_id'        => 'required',
+            'assignee_id'       => 'required',
+            'qa_id'             => 'required',
+            'priority'          => 'required'
         ]);
 
         try{
             $task->task_name = request('task_name');
             $task->description = request('description');
             $task->assignee_id = request('assignee_id');
+            $task->project_id = request('project_id');
             $task->start_date = request('start_date');
             $task->end_date = request('end_date');
             $task->status_id = request('status_id');
@@ -154,8 +160,9 @@ class TaskController extends Controller
             $task->save();
 
             return response()->json([
-                    'message' => 'Task updated successfully!'
-                    ], 200);
+                'data'      => $task,
+                'message'   => 'Task updated successfully!'
+            ], 200);
         }
         catch(Exception $e){
             return response()->json([
@@ -176,7 +183,7 @@ class TaskController extends Controller
         try{
             $task->delete();
             return response()->json([
-                'message' => 'Task deleted successfully!'
+                'message' => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -186,16 +193,48 @@ class TaskController extends Controller
         }
     }
 
-    public function getUserTaskInfoByUserID(int $user_id)
+    public function getTasksByAssignerOrAssignee(int $user_id)
+    {
+        try
+        {
+            $userRole = DB::table('users')->where('id', $user_id)->select('role')->get();
+
+            // Convert to array.
+            $userRoleArray = json_decode(json_encode($userRole), true);
+            $userRoleValue = $userRoleArray[0]['role'];
+
+            if ($userRoleValue > 2) {
+                $tasksByAssigner = DB::table('tasks')->where('user_id', $user_id)->get();
+
+                return response()->json([
+                    'data'      => $tasksByAssigner,
+                    'message'   => 'Success'
+                ], 200);
+            }
+            else {
+                $tasksByAssignee = DB::table('tasks')->where('assignee_id', $user_id)->get();
+
+                return response()->json([
+                    'data'      => $tasksByAssignee,
+                    'message'   => 'Success'
+                ], 200);
+            }
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getTaskInfo(int $task_id)
     {
         try {
-            $userInfo = DB::table('tasks')->join('users', 'tasks.user_id', '=', 'users.id')
-                ->select('name', 'email', 'task_name', 'description')
-                ->where('tasks.user_id', $user_id)->get();
+            $taskInfo = DB::table('tasks')->where('id', $task_id)->get();
 
             return response()->json([
-                'userInfo'      => $userInfo,
-                'message'       => 'Success'
+                'data'      => $taskInfo,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -205,6 +244,8 @@ class TaskController extends Controller
         }
     }
 
+    /*
+    *
     public function getReportByTaskID(int $task_id)
     {
         try {
@@ -213,8 +254,8 @@ class TaskController extends Controller
                 ->where('tasks.id', $task_id)->get();
 
             return response()->json([
-                'reports'      => $reports,
-                'message'      => 'Success'
+                'data'      => $reports,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -232,8 +273,8 @@ class TaskController extends Controller
                 ->where('tasks.id', $task_id)->get();
 
             return response()->json([
-                'taskCriteria'  => $taskCriteria,
-                'message'       => 'Success'
+                'data'      => $taskCriteria,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -251,8 +292,8 @@ class TaskController extends Controller
                 ->where('tasks.id', $task_id)->get();
 
             return response()->json([
-                'taskComment'   => $taskComment,
-                'message'       => 'Success'
+                'data'      => $taskComment,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -270,8 +311,26 @@ class TaskController extends Controller
                 ->where('tasks.id', $task_id)->get();
 
             return response()->json([
-                'taskDocument'   => $taskDocument,
-                'message'        => 'Success'
+                'data'      => $taskDocument,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+    */
+
+    public function getTasksByStatusID(int $status_id)
+    {
+        try {
+            $tasksByStatus = DB::table('tasks')->where('status_id', $status_id)->get();
+
+            return response()->json([
+                'data'      => $tasksByStatus,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){

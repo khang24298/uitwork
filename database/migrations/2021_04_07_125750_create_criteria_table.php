@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateReportTypesTable extends Migration
+class CreateCriteriaTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,14 @@ class CreateReportTypesTable extends Migration
      */
     public function up()
     {
-        Schema::create('report_types', function (Blueprint $table) {
+        Schema::create('criteria', function (Blueprint $table) {
             $table->id();
-            $table->integer('type_id');
-            $table->string('type_name');
-            $table->string('description');
+            $table->integer('user_id')->nullable();
+            $table->integer('task_id')->nullable();
+            $table->double('max_score');
+            $table->string('criteria_name');
+            $table->integer('criteria_type_id');
+            $table->text('description');
             $table->timestamps();
         });
     }
@@ -29,6 +32,6 @@ class CreateReportTypesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('report_types');
+        Schema::dropIfExists('criteria');
     }
 }

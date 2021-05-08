@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Project;
+use App\Status;
 use Exception;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Task;
 class ProjectsController extends Controller
 {
     /**
@@ -22,11 +25,11 @@ class ProjectsController extends Controller
     public function index()
     {
         try{
-            $projects = Project::latest()->get();
+            $projects = Project::get();
 
             return response()->json([
-                'projects' => $projects,
-                'message' => 'Success'
+                'data'      => $projects,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -75,8 +78,8 @@ class ProjectsController extends Controller
                     'user_id'       => Auth::user()->id
                 ]);
                 return response()->json([
-                    'project'    => $project,
-                    'message' => 'Success'
+                    'data'      => $project,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -103,8 +106,8 @@ class ProjectsController extends Controller
         // dd($project);
         try{
             return response()->json([
-                'project' => $project,
-                'message' => 'Success'
+                'data'      => $project,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -145,8 +148,8 @@ class ProjectsController extends Controller
                 $project->description = request('description');
                 $project->save();
                 return response()->json([
-                    'project' => $project,
-                    'message' => 'Project updated successfully!'
+                    'data'      => $project,
+                    'message'   => 'Project updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -188,6 +191,94 @@ class ProjectsController extends Controller
             return response()->json([
                 'message' => "You don't have access to this resource! Please contact with administrator for more information!"
             ], 403);
+        }
+    }
+
+    public function getTasksByProjectID(int $project_id)
+    {
+        try {   
+            $statuses = Status::orderBy('type_id','ASC')->get();
+            $tasksByProject = [];
+            foreach($statuses as $status){
+                $taskList = Task::where([
+                    [
+                        'status_id',$status->id
+                    ],
+                    [
+                        'project_id',$project_id
+                    ]
+                    ])->get()->toArray();
+                array_push($tasksByProject,(Object)[
+                    "status" => $status,
+                    "tasks" => $taskList
+                ]);
+            }
+            return response()->json([
+                'data'      => $tasksByProject,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getProjectsUserJoinedOrCreated(int $user_id)
+    {
+        try {
+            $userRole = DB::table('users')->where('id', $user_id)->select('role')->get();
+
+            // Convert to array.
+            $userRoleArray = json_decode(json_encode($userRole), true);
+            $userRoleValue = $userRoleArray[0]['role'];
+
+            if ($userRoleValue > 2) {
+                $projectsCreated = DB::table('projects')->where('user_id', $user_id)->get();
+
+                return response()->json([
+                    'data'      => $projectsCreated,
+                    'message'   => 'Success'
+                ], 200);
+            }
+            else {
+                $projectsJoined = DB::table('tasks')
+                    ->join('projects', 'tasks.project_id', '=', 'projects.id')
+                    ->select('projects.*')
+                    ->where('tasks.assignee_id', $user_id)->distinct()->get();
+
+                return response()->json([
+                    'data'      => $projectsJoined,
+                    'message'   => 'Success'
+                ], 200);
+            }
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUsersJoinedProject(int $project_id)
+    {
+        try {
+            $usersJoined = DB::table('tasks')
+                ->join('users', 'tasks.user_id', '=', 'users.id')
+                ->select('users.*')
+                ->where('tasks.project_id', $project_id)
+                ->get();
+
+            return response()->json([
+                'data'      => $usersJoined,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

@@ -29,7 +29,7 @@ class DocumentController extends Controller
             $documents = Document::latest()->get();
 
             return response()->json([
-                'documents' => $documents,
+                'data'      => $documents,
                 'message'   => 'Success'
             ],200);
         }
@@ -80,7 +80,7 @@ class DocumentController extends Controller
                     'user_id'       => Auth::user()->id,
                 ]);
                 return response()->json([
-                    'document'  => $document,
+                    'data'      => $document,
                     'message'   => 'Success'
                 ], 200);
             }
@@ -107,8 +107,8 @@ class DocumentController extends Controller
     {
         try{
             return response()->json([
-                'document' => $document,
-                'message'  => 'Success'
+                'data'      => $document,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -150,8 +150,8 @@ class DocumentController extends Controller
                 $document->save();
 
                 return response()->json([
-                    'document' => $document,
-                    'message'  => 'Document updated successfully!'
+                    'data'      => $document,
+                    'message'   => 'Document updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -202,8 +202,8 @@ class DocumentController extends Controller
     //         $documentByTask = DB::table('documents')->where('task_id', $task_id)->get();
 
     //         return response()->json([
-    //             'documentByTask'    => $documentByTask,
-    //             'message'           => 'Success'
+    //             'data'       => $documentByTask,
+    //             'message'    => 'Success'
     //         ], 200);
     //     }
     //     catch(Exception $e){

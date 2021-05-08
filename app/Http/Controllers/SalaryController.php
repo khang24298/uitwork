@@ -28,8 +28,8 @@ class SalaryController extends Controller
             $salaries = Salary::latest()->get();
 
             return response()->json([
-                'salaries'    => $salaries,
-                'message'     => 'Success'
+                'data'      => $salaries,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -71,7 +71,7 @@ class SalaryController extends Controller
                     'allowance_coefficient'  => request('allowance_coefficient'),
                 ]);
                 return response()->json([
-                    'salary'    => $salary,
+                    'data'      => $salary,
                     'message'   => 'Success'
                 ], 200);
             }
@@ -134,8 +134,8 @@ class SalaryController extends Controller
                 $salary->save();
 
                 return response()->json([
-                    'salary'  => $salary,
-                    'message' => 'Salary updated successfully!'
+                    'data'      => $salary,
+                    'message'   => 'Salary updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -200,8 +200,8 @@ class SalaryController extends Controller
                     * $userSalaryInfo[0]->basic_salary;
 
             return response()->json([
-                'userSalary'    => $userSalary,
-                'message'       => 'Success'
+                'data'      => $userSalary,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){

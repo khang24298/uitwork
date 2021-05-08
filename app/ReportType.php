@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class ReportType extends Model
 {
     //
-    protected $guarded = [];
-
+    protected $fillable = ['type_id', 'type_name', 'description'];
 
 }

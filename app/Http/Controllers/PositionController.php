@@ -27,8 +27,8 @@ class PositionController extends Controller
             $position = Position::latest()->get();
 
             return response()->json([
-                'positions'   => $position,
-                'message'     => 'Success'
+                'data'      => $position,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -71,8 +71,8 @@ class PositionController extends Controller
                     'salary_id'             => request('salary_id'),
                 ]);
                 return response()->json([
-                    'position'    => $position,
-                    'message'     => 'Success'
+                    'data'      => $position,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -134,8 +134,8 @@ class PositionController extends Controller
                 $position->save();
 
                 return response()->json([
-                    'position' => $position,
-                    'message'  => 'Position updated successfully!'
+                    'data'      => $position,
+                    'message'   => 'Position updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -188,8 +188,8 @@ class PositionController extends Controller
                 ->where('positions.id', $position_id)->get();
 
             return response()->json([
-                'salaryInfo'     => $salaryInfo,
-                'message'        => 'Success'
+                'data'      => $salaryInfo,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){

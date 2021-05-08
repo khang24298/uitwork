@@ -25,11 +25,11 @@ class StatusController extends Controller
     public function index()
     {
         try{
-            $status = Status::latest()->get();
+            $status = Status::get();
 
             return response()->json([
-                'status'  => $status,
-                'message' => 'Success'
+                'data'      => $status,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -69,8 +69,8 @@ class StatusController extends Controller
                     'type_id'  => request('type_id'),
                 ]);
                 return response()->json([
-                    'status'  => $status,
-                    'message' => 'Success'
+                    'data'      => $status,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -96,8 +96,8 @@ class StatusController extends Controller
     {
         try{
             return response()->json([
-                'status'  => $status,
-                'message' => 'Success'
+                'data'      => $status,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -139,8 +139,8 @@ class StatusController extends Controller
                 $status->type_id = request('type_id');
                 $status->save();
                 return response()->json([
-                    'status' => $status,
-                    'message' => 'Status updated successfully!'
+                    'data'      => $status,
+                    'message'   => 'Status updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -193,8 +193,8 @@ class StatusController extends Controller
                 ->where('status.id', $status_id)->get();
 
             return response()->json([
-                'taskByStatus'      => $taskByStatus,
-                'message'           => 'Success'
+                'data'      => $taskByStatus,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){

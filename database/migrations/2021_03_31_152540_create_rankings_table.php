@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCriteriaTable extends Migration
+class CreateRankingsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,12 @@ class CreateCriteriaTable extends Migration
      */
     public function up()
     {
-        Schema::create('criteria', function (Blueprint $table) {
+        Schema::create('rankings', function (Blueprint $table) {
             $table->id();
             $table->integer('user_id');
-            $table->integer('task_id')->nullable();
-            $table->double('score');
-            $table->string('criteria_name');
-            $table->integer('criteria_type_id');
-            $table->text('description');
+            $table->integer('rank_by_task_criteria_score');
+            $table->integer('rank_by_user_criteria_score');
+            $table->integer('total_rank');
             $table->timestamps();
         });
     }
@@ -32,6 +30,6 @@ class CreateCriteriaTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('criteria');
+        Schema::dropIfExists('rankings');
     }
 }

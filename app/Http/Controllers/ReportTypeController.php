@@ -22,11 +22,11 @@ class ReportTypeController extends Controller
     public function index()
     {
         try{
-            $reportTypes = ReportType::latest()->get();
+            $reportTypes = ReportType::get();
 
             return response()->json([
-                'reports' => $reportTypes,
-                'message' => 'Success'
+                'data'      => $reportTypes,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -58,18 +58,18 @@ class ReportTypeController extends Controller
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'type_name' => 'required|max:255',
-                'content'   => 'required',
+                'type_name'     => 'required|max:255',
+                'description'   => 'required',
             ]);
             try{
                 $reportType = ReportType::create([
                     'type_id'     => request('type_id'),
                     'type_name'   => request('type_name'),
-                    'content'     => request('content')
+                    'description' => request('description')
                 ]);
                 return response()->json([
-                    'reportType'    => $reportType,
-                    'message' => 'Success'
+                    'data'      => $reportType,
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -96,8 +96,8 @@ class ReportTypeController extends Controller
         //
         try{
             return response()->json([
-                'reportType' => $reportType,
-                'message' => 'Success'
+                'data'      => $reportType,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -130,19 +130,19 @@ class ReportTypeController extends Controller
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'type_name' => 'required|max:255',
-                'content'   => 'required',
+                'type_name'     => 'required|max:255',
+                'description'   => 'required',
             ]);
 
             try{
                 $reportType->type_name = request('type_name');
-                $reportType->content = request('content');
+                $reportType->description = request('description');
                 $reportType->type_id = request('type_id');
                 $reportType->save();
 
                 return response()->json([
-                    'reportType' => $reportType,
-                    'message'    => 'Report type updated successfully!'
+                    'data'      => $reportType,
+                    'message'   => 'Report type updated successfully!'
                 ], 200);
             }
             catch(Exception $e){

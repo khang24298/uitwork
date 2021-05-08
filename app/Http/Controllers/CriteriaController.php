@@ -26,11 +26,11 @@ class CriteriaController extends Controller
     public function index()
     {
         try{
-            $criteria = Criteria::latest()->get();
+            $criteria = Criteria::get();
 
             return response()->json([
-                'criteria' => $criteria,
-                'message' => 'Success'
+                'data'      => $criteria,
+                'message'   => 'Success'
             ],200);
         }
         catch(Exception $e){
@@ -64,20 +64,21 @@ class CriteriaController extends Controller
             $this->validate($request, [
                 'criteria_name'     => 'required|max:255',
                 'criteria_type_id'  => 'required',
-                'description'       => 'required',
-                'score'             => 'required',
+                'max_score'         => 'required',
+                'task_id'           => 'nullable',
+                'user_id'           => 'nullable',
             ]);
             try{
                 $criteria = Criteria::create([
                     'criteria_name'     => request('criteria_name'),
                     'criteria_type_id'  => request('criteria_type_id'),
-                    'description'       => request('description'),
-                    'score'             => request('score'),
+                    'description'       => (request('description')) ? request('description') : "",
+                    'max_score'         => request('max_score'),
                     'task_id'           => request('task_id'),
                     'user_id'           => Auth::user()->id
                 ]);
                 return response()->json([
-                    'criteria'    => $criteria,
+                    'data'    => $criteria,
                     'message' => 'Success'
                 ], 200);
             }
@@ -100,12 +101,13 @@ class CriteriaController extends Controller
      * @param  \App\Criteria  $criteria
      * @return \Illuminate\Http\Response
      */
-    public function show(Criteria $criteria)
+    public function show($id)
     {
         try{
+            $criteria = Criteria::findOrFail($id);
             return response()->json([
-                'criteria' => $criteria,
-                'message' => 'Success'
+                'data'      => $criteria,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -141,7 +143,9 @@ class CriteriaController extends Controller
                 'criteria_name'     => 'required|max:255',
                 'criteria_type_id'  => 'required',
                 'description'       => 'required',
-                'score'             => 'required',
+                'max_score'         => 'required',
+                'task_id'           => 'nullable',
+                'user_id'           => 'nullable',
             ]);
 
             try{
@@ -150,12 +154,12 @@ class CriteriaController extends Controller
                 $criteria->task_id = request('task_id');
                 $criteria->criteria_type_id = request('criteria_type_id');
                 $criteria->description = request('description');
-                $criteria->score = request('score');
+                $criteria->max_score = request('max_score');
                 $criteria->save();
 
                 return response()->json([
-                    'criteria' => $criteria,
-                    'message'  => 'Criteria updated successfully!'
+                    'data'      => $criteria,
+                    'message'   => 'Criteria updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -200,68 +204,16 @@ class CriteriaController extends Controller
         }
     }
 
-    public function calculateUserScoreByTaskCriteria(int $task_id)
-    {
-        try {
-            $score = DB::table('criteria')->where('task_id', $task_id)->sum('score');
-
-            return response()->json([
-                'score'     => $score,
-                'message'   => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function calculateUserScoreByUserCriteria(int $user_id)
-    {
-        try {
-            $score = DB::table('criteria')->where('user_id', $user_id)
-                ->where('criteria_type_id', 2)->sum('score');
-
-            return response()->json([
-                'score'     => $score,
-                'message'   => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function calculateUserScore(int $user_id)
-    {
-        try {
-            $score = DB::table('criteria')->where('user_id', $user_id)->sum('score');
-
-            return response()->json([
-                'score'     => $score,
-                'message'   => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function getTaskCriteriaByUserID(int $user_id)
+    public function getTaskCriteriaByTaskID(int $task_id)
     {
         try {
             $taskCriteria = DB::table('criteria')
-                ->where('user_id', $user_id)
-                ->where('criteria_type_id', 1)->get();
+                ->where('task_id', $task_id)
+                ->where('criteria_type_id', 1)->get()->toArray();
 
             return response()->json([
-                'taskCriteria'      => $taskCriteria,
-                'message'           => 'Success'
+                'data'      => $taskCriteria,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
@@ -279,8 +231,44 @@ class CriteriaController extends Controller
                 ->where('criteria_type_id', 2)->get();
 
             return response()->json([
-                'userCriteria'      => $userCriteria,
-                'message'           => 'Success'
+                'data'      => $userCriteria,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getTaskCriteriaList()
+    {
+        try {
+            $taskCriteria = DB::table('criteria')
+                ->where('criteria_type_id', 1)->get();
+
+            return response()->json([
+                'data'      => $taskCriteria,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUserCriteriaList()
+    {
+        try {
+            $userCriteria = DB::table('criteria')
+                ->where('criteria_type_id', 2)->get();
+
+            return response()->json([
+                'data'      => $userCriteria,
+                'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
