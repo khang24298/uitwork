@@ -246,7 +246,8 @@ class CriteriaController extends Controller
     {
         try {
             $taskCriteria = DB::table('criteria')
-                ->where('criteria_type_id', 1)->get();
+                ->where('criteria_type_id', 1)->get()
+                ->toArray();
 
             return response()->json([
                 'data'      => $taskCriteria,
@@ -264,7 +265,8 @@ class CriteriaController extends Controller
     {
         try {
             $userCriteria = DB::table('criteria')
-                ->where('criteria_type_id', 2)->get();
+                ->where('criteria_type_id', 2)->get()
+                ->toArray();
 
             return response()->json([
                 'data'      => $userCriteria,
