@@ -202,7 +202,7 @@ class ProjectsController extends Controller
             foreach($statuses as $status){
                 $taskList = Task::where([
                     [
-                        'status_id',$status->id
+                        'status_id',$status->type_id
                     ],
                     [
                         'project_id',$project_id

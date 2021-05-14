@@ -25,7 +25,7 @@ class StatusController extends Controller
     public function index()
     {
         try{
-            $status = Status::get();
+            $status = Status::orderBy('type_id','ASC')->get();;
 
             return response()->json([
                 'data'      => $status,
