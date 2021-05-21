@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Project;
 use App\Status;
+use App\User;
+use App\Notification;
 use Exception;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Http\Request;
@@ -71,12 +73,25 @@ class ProjectsController extends Controller
                 'project_name'  => 'required|max:255',
                 'description'   => 'required',
             ]);
+
             try{
                 $project = Project::create([
                     'project_name'  => request('project_name'),
                     'description'   => request('description'),
                     'user_id'       => Auth::user()->id
                 ]);
+
+                // Create Notification.
+                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+                $message = $userName[0]->name.' created a new project: '.request('project_name').'.';
+
+                Notification::create([
+                    'user_id'   => Auth::user()->id,
+                    'type_id'   => 1,
+                    'message'   => $message,
+                    'content'   => json_encode($project),
+                ]);
+
                 return response()->json([
                     'data'      => $project,
                     'message'   => 'Success'
@@ -143,10 +158,23 @@ class ProjectsController extends Controller
                 'project_name'  => 'required|max:255',
                 'description'   => 'required',
             ]);
+
             try{
                 $project->project_name = request('project_name');
                 $project->description = request('description');
                 $project->save();
+
+                // Create Notification.
+                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+                $message = $userName[0]->name.' updated the '.request('project_name').' project.';
+
+                Notification::create([
+                    'user_id'   => Auth::user()->id,
+                    'type_id'   => 1,
+                    'message'   => $message,
+                    'content'   => json_encode($project),
+                ]);
+
                 return response()->json([
                     'data'      => $project,
                     'message'   => 'Project updated successfully!'
@@ -177,6 +205,18 @@ class ProjectsController extends Controller
         if($role > 2){
             try{
                 $project->delete();
+
+                // Create Notification.
+                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+                $message = $userName[0]->name.' deleted the '.$project->project_name.' project.';
+
+                Notification::create([
+                    'user_id'   => Auth::user()->id,
+                    'type_id'   => 1,
+                    'message'   => $message,
+                    'content'   => json_encode($project),
+                ]);
+
                 return response()->json([
                     'message' => 'Project deleted successfully!'
                 ], 200);
@@ -196,7 +236,7 @@ class ProjectsController extends Controller
 
     public function getTasksByProjectID(int $project_id)
     {
-        try {   
+        try {
             $statuses = Status::orderBy('type_id','ASC')->get();
             $tasksByProject = [];
             foreach($statuses as $status){

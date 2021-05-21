@@ -121,12 +121,19 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/calcValuesForOneUser/{user_id}', 'RankingController@calcValuesForOneUser');
     Route::get('/insertToDatabase', 'RankingController@insertToDatabase');
 
-    // Just for some testing.
+    // Just for some testing
     Route::get('/draftFunction', 'TestingController@draftFunction');
 
-    // Temp.
+    // Temp
     Route::resource('/temp', 'TempController');
 
-    // RefusedTask.
+    // RefusedTask
     Route::post('/refusedTask', 'RefusedTaskController@refuseTask');
+
+    // Notification
+    Route::resource('/notifications', 'NotificationController');
+    Route::get('/getNotificationByUserID/{user_id}', 'NotificationController@getNotificationByUserID');
+
+    // NotificationTypes
+    Route::resource('/notificationTypes', 'NotificationTypeController');
 });

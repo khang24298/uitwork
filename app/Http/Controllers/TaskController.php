@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Notification;
 use Illuminate\Http\Request;
 use App\Task;
+use App\User;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -79,6 +81,17 @@ class TaskController extends Controller
                 'priority'      => request('priority')
             ]);
 
+            // Create Notification.
+            $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+            $message = $userName[0]->name.' created a new task: '.request('task_name');
+
+            Notification::create([
+                'user_id'   => Auth::user()->id,
+                'type_id'   => 2,
+                'message'   => $message,
+                'content'   => json_encode($task),
+            ]);
+
             return response()->json([
                 'data'      => $task,
                 'message'   => 'Success'
@@ -89,8 +102,6 @@ class TaskController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
-
-
     }
 
     /**
@@ -159,6 +170,17 @@ class TaskController extends Controller
 
             $task->save();
 
+            // Create Notification.
+            $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+            $message = $userName[0]->name.' updated the '.request('task_name').' task.';
+
+            Notification::create([
+                'user_id'   => Auth::user()->id,
+                'type_id'   => 2,
+                'message'   => $message,
+                'content'   => json_encode($task),
+            ]);
+
             return response()->json([
                 'data'      => $task,
                 'message'   => 'Task updated successfully!'
@@ -169,7 +191,6 @@ class TaskController extends Controller
                     'message' => $e->getMessage()
                 ],500);
         }
-
     }
 
     /**
@@ -182,6 +203,18 @@ class TaskController extends Controller
     {
         try{
             $task->delete();
+
+            // Create Notification.
+            $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+            $message = $userName[0]->name.' deleted the '.$task->project_name.' task.';
+
+            Notification::create([
+                'user_id'   => Auth::user()->id,
+                'type_id'   => 2,
+                'message'   => $message,
+                'content'   => json_encode($task),
+            ]);
+
             return response()->json([
                 'message' => 'Success'
             ], 200);

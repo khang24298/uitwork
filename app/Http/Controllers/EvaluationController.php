@@ -7,6 +7,7 @@ use App\Evaluation;
 use Exception;
 use Illuminate\Http\Request;
 use App\Task;
+use App\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -99,7 +100,20 @@ class EvaluationController extends Controller
                     'score'         => request('score'),
                     'note'          => request('note'),
                 ]);
+
                 Task::where('id',request('task_id'))->update(['status_id' => 4]);
+
+                // Create Notification.
+                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+                $message = $userName[0]->name.' created a new evaluation.';
+
+                Notification::create([
+                    'user_id'   => Auth::user()->id,
+                    'type_id'   => 4,
+                    'message'   => $message,
+                    'content'   => json_encode($evaluation),
+                ]);
+
                 return response()->json([
                     'data'      => $evaluation,
                     'message'   => 'Success'
@@ -201,6 +215,17 @@ class EvaluationController extends Controller
                 $evaluation->score = request('score');
                 $evaluation->save();
 
+                // Create Notification.
+                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+                $message = $userName[0]->name.' updated the evaluation.';
+
+                Notification::create([
+                    'user_id'   => Auth::user()->id,
+                    'type_id'   => 4,
+                    'message'   => $message,
+                    'content'   => json_encode($evaluation),
+                ]);
+
                 return response()->json([
                     'data'      => $evaluation,
                     'message'   => 'Evaluation updated successfully!'
@@ -231,6 +256,17 @@ class EvaluationController extends Controller
         if($role > 2){
             try{
                 $evaluation->delete();
+
+                // Create Notification.
+                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+                $message = $userName[0]->name.' deleted the evaluation.';
+
+                Notification::create([
+                    'user_id'   => Auth::user()->id,
+                    'type_id'   => 4,
+                    'message'   => $message,
+                    'content'   => json_encode($evaluation),
+                ]);
                 return response()->json([
                     'message' => 'Evaluation deleted successfully!'
                 ], 200);

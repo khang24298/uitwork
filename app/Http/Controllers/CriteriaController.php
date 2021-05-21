@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Criteria;
 use App\Task;
+use App\Notification;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -65,17 +66,27 @@ class CriteriaController extends Controller
                 'criteria_name'     => 'required|max:255',
                 'criteria_type_id'  => 'required',
                 'max_score'         => 'required',
-                'task_id'           => 'nullable',
-                'user_id'           => 'nullable',
             ]);
+
             try{
                 $criteria = Criteria::create([
                     'criteria_name'     => request('criteria_name'),
                     'criteria_type_id'  => request('criteria_type_id'),
-                    'description'       => (request('description')) ? request('description') : "",
+                    'description'       => (request('description') !== null) ? request('description') : "",
                     'max_score'         => request('max_score'),
-                    'task_id'           => request('task_id'),
-                    'user_id'           => Auth::user()->id
+                    'task_id'           => (request('criteria_type_id') == 1) ? request('task_id') : null,
+                    'user_id'           => (request('criteria_type_id') == 2) ? request('user_id') : null
+                ]);
+
+                // Create Notification.
+                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+                $message = $userName[0]->name.' created a new criteria: '.request('criteria_name');
+
+                Notification::create([
+                    'user_id'   => Auth::user()->id,
+                    'type_id'   => 3,
+                    'message'   => $message,
+                    'content'   => json_encode($criteria),
                 ]);
                 return response()->json([
                     'data'    => $criteria,
@@ -142,20 +153,30 @@ class CriteriaController extends Controller
             $this->validate($request, [
                 'criteria_name'     => 'required|max:255',
                 'criteria_type_id'  => 'required',
-                'description'       => 'required',
                 'max_score'         => 'required',
-                'task_id'           => 'nullable',
-                'user_id'           => 'nullable',
             ]);
 
             try{
                 $criteria->criteria_name = request('criteria_name');
-                $criteria->user_id = Auth::user()->id;
-                $criteria->task_id = request('task_id');
                 $criteria->criteria_type_id = request('criteria_type_id');
+
+                $criteria->user_id = (request('criteria_type_id') == 2) ? request('user_id') : null;
+                $criteria->task_id = (request('criteria_type_id') == 1) ? request('task_id') : null;
+
                 $criteria->description = request('description');
                 $criteria->max_score = request('max_score');
                 $criteria->save();
+
+                // Create Notification.
+                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+                $message = $userName[0]->name.' updated the '.request('criteria_name').' criteria.';
+
+                Notification::create([
+                    'user_id'   => Auth::user()->id,
+                    'type_id'   => 3,
+                    'message'   => $message,
+                    'content'   => json_encode($criteria),
+                ]);
 
                 return response()->json([
                     'data'      => $criteria,
@@ -187,6 +208,18 @@ class CriteriaController extends Controller
         if($role > 2){
             try{
                 $criteria->delete();
+
+                // Create Notification.
+                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+                $message = $userName[0]->name.' deleted the '.$criteria->criteria_name.' criteria.';
+
+                Notification::create([
+                    'user_id'   => Auth::user()->id,
+                    'type_id'   => 3,
+                    'message'   => $message,
+                    'content'   => json_encode($criteria),
+                ]);
+
                 return response()->json([
                     'message' => 'Criteria deleted successfully!'
                 ], 200);
