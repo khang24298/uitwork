@@ -194,8 +194,8 @@ class DepartmentController extends Controller
         try {
             $usersInDepartment = DB::table('departments')
                 ->join('users', 'departments.id', '=', 'users.department_id')
-                ->select('name', 'email', 'department_name')
-                ->where('departments.id', $department_id)->get();
+                // ->select('name', 'email', 'department_name')
+                ->where('departments.id', $department_id)->get()->toArray();
 
             return response()->json([
                 'data'      => $usersInDepartment,

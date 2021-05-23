@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class CriteriaController extends Controller
 {
@@ -59,39 +60,52 @@ class CriteriaController extends Controller
      */
     public function store(Request $request)
     {
-        //
         $role = Auth::user()->role;
-        if($role > 2){
-            $this->validate($request, [
-                'criteria_name'     => 'required|max:255',
-                'criteria_type_id'  => 'required',
-                'max_score'         => 'required',
-            ]);
 
-            try{
-                $criteria = Criteria::create([
-                    'criteria_name'     => request('criteria_name'),
-                    'criteria_type_id'  => request('criteria_type_id'),
-                    'description'       => (request('description') !== null) ? request('description') : "",
-                    'max_score'         => request('max_score'),
-                    'task_id'           => (request('criteria_type_id') == 1) ? request('task_id') : null,
-                    'user_id'           => (request('criteria_type_id') == 2) ? request('user_id') : null
-                ]);
+        // DataType of criteria : Array.
+        $dataArray = $request->criteria;
 
-                // Create Notification.
-                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                $message = $userName[0]->name.' created a new criteria: '.request('criteria_name');
+        if ($role > 2) {
+            try {
+                foreach ($dataArray as $data) {
+                    // Validate.
+                    Validator::make($data, [
+                        'criteria_name'     => 'required|max:255',
+                        'criteria_type_id'  => 'required|numeric',
+                        'max_score'         => 'required|numeric',
+                    ]);
 
-                Notification::create([
-                    'user_id'   => Auth::user()->id,
-                    'type_id'   => 3,
-                    'message'   => $message,
-                    'content'   => json_encode($criteria),
-                    'has_seen'  => false,
-                ]);
+                    // Create.
+                    try {
+                        $criteria = Criteria::create([
+                            'criteria_name'     => $data['criteria_name'],
+                            'criteria_type_id'  => $data['criteria_type_id'],
+                            'description'       => $data['description'] ?? "",
+                            'max_score'         => $data['max_score'],
+                            'task_id'           => $data['criteria_type_id'] == 1 ? $data['task_id'] : null,
+                            'user_id'           => $data['criteria_type_id'] == 2 ? $data['user_id'] : null,
+                        ]);
+
+                        // Create Notification.
+                        $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
+                        $message = $userName[0]->name.' created a new criteria: '.$data['criteria_name'];
+
+                        Notification::create([
+                            'user_id'   => Auth::user()->id,
+                            'type_id'   => 3,
+                            'message'   => $message,
+                            'content'   => json_encode($criteria),
+                            'has_seen'  => false,
+                        ]);
+                    }
+                    catch(Exception $e){
+                        return response()->json([
+                            'message' => $e->getMessage()
+                        ], 500);
+                    }
+                }
                 return response()->json([
-                    'data'    => $criteria,
-                    'message' => 'Success'
+                    'message'   => 'Success'
                 ], 200);
             }
             catch(Exception $e){
@@ -99,8 +113,7 @@ class CriteriaController extends Controller
                     'message' => $e->getMessage()
                 ], 500);
             }
-        }
-        else{
+        } else {
             return response()->json([
                 'message' => "You don't have access to this resource! Please contact with administrator for more information!"
             ], 403);
@@ -150,11 +163,11 @@ class CriteriaController extends Controller
     public function update(Request $request, Criteria $criteria)
     {
         $role = Auth::user()->role;
-        if($role > 2){
+        if ($role > 2) {
             $this->validate($request, [
                 'criteria_name'     => 'required|max:255',
-                'criteria_type_id'  => 'required',
-                'max_score'         => 'required',
+                'criteria_type_id'  => 'required|numeric',
+                'max_score'         => 'required|numeric',
             ]);
 
             try{
@@ -247,8 +260,32 @@ class CriteriaController extends Controller
                 ->where('task_id', $task_id)
                 ->where('criteria_type_id', 1)->get()->toArray();
 
+            // If the task is EVALUATED => Get evaluation data.
+            if (DB::table('evaluation')->where('task_id', $task_id) !== null) {
+                $taskEvaluated = DB::table('criteria')
+                    ->join('evaluation', 'evaluation.criteria_id', '=', 'criteria.id')
+                    ->select('criteria.*', 'score', 'note')
+                    ->where('evaluation.task_id', $task_id)->get()->toArray();
+
+                // Get tasks evaluated.
+                $temp = array();
+                foreach($taskEvaluated as $taskEtd)
+                {
+                    array_push($temp, $taskEtd->id);
+                }
+
+                // Get tasks unevaluated.
+                $taskUnevaluated = DB::table('criteria')
+                    ->where('task_id', $task_id)
+                    ->whereNotIn('id', $temp)->get()->toArray();
+
+                $result = array_merge($taskEvaluated, $taskUnevaluated);
+            } else {
+                $result = clone $taskCriteria;
+            }
+
             return response()->json([
-                'data'      => $taskCriteria,
+                'data'      => $result,
                 'message'   => 'Success'
             ], 200);
         }
@@ -264,10 +301,34 @@ class CriteriaController extends Controller
         try {
             $userCriteria = DB::table('criteria')
                 ->where('user_id', $user_id)
-                ->where('criteria_type_id', 2)->get();
+                ->where('criteria_type_id', 2)->get()->toArray();
+
+            // If the user is EVALUATED => Get evaluation data.
+            if (DB::table('evaluation')->where('user_id', $user_id) !== null) {
+                $evaluated = DB::table('criteria')
+                    ->join('evaluation', 'evaluation.criteria_id', '=', 'criteria.id')
+                    ->select('criteria.*', 'score', 'note')
+                    ->where('evaluation.user_id', $user_id)->get()->toArray();
+
+                // Get evaluated.
+                $temp = array();
+                foreach($evaluated as $etd)
+                {
+                    array_push($temp, $etd->id);
+                }
+
+                // Get unevaluated.
+                $unevaluated = DB::table('criteria')
+                    ->where('user_id', $user_id)
+                    ->whereNotIn('id', $temp)->get()->toArray();
+
+                $result = array_merge($evaluated, $unevaluated);
+            } else {
+                $result = clone $userCriteria;
+            }
 
             return response()->json([
-                'data'      => $userCriteria,
+                'data'      => $result,
                 'message'   => 'Success'
             ], 200);
         }
