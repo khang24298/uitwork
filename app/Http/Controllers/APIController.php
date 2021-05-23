@@ -30,8 +30,9 @@ class APIController extends Controller
         // var_dump($input);
         // dd($token);
         return response()->json([
-            'status' => true,
-            'token' => $token,
+            'status'    => true,
+            'message'   => 'Login Success',
+            'token'     => $token,
         ]);
     }
 

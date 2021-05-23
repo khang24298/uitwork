@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Department;
+use App\NotificationType;
+use Exception;
 use Illuminate\Http\Request;
 
-use Exception;
+use GuzzleHttp\Handler\Proxy;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class DepartmentController extends Controller
+class NotificationTypeController extends Controller
 {
     public function __construct()
     {
@@ -24,10 +25,10 @@ class DepartmentController extends Controller
     public function index()
     {
         try{
-            $departments = Department::latest()->get();
+            $notificationTypes = NotificationType::get();
 
             return response()->json([
-                'data'      => $departments,
+                'data'      => $notificationTypes,
                 'message'   => 'Success'
             ],200);
         }
@@ -59,18 +60,16 @@ class DepartmentController extends Controller
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'department_name'   => 'required|max:255',
-                'address'           => 'required|max:255',
-                'phone'             => 'required',
+                'type_name'     => 'required|max:255',
+                'type_id'       => 'required',
             ]);
             try{
-                $department = Department::create([
-                    'department_name'   => request('department_name'),
-                    'address'           => request('address'),
-                    'phone'             => request('phone'),
+                $notificationTypes = NotificationType::create([
+                    'type_name'     => request('type_name'),
+                    'type_id'       => request('type_id'),
                 ]);
                 return response()->json([
-                    'data'      => $department,
+                    'data'      => $notificationTypes,
                     'message'   => 'Success'
                 ], 200);
             }
@@ -90,14 +89,14 @@ class DepartmentController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Department  $department
+     * @param  \App\NotificationType  $notificationType
      * @return \Illuminate\Http\Response
      */
-    public function show(Department $department)
+    public function show(NotificationType $notificationType)
     {
         try{
             return response()->json([
-                'data'      => $department,
+                'data'      => $notificationType,
                 'message'   => 'Success'
             ], 200);
         }
@@ -111,10 +110,10 @@ class DepartmentController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Department  $department
+     * @param  \App\NotificationType  $notificationType
      * @return \Illuminate\Http\Response
      */
-    public function edit(Department $department)
+    public function edit(NotificationType $notificationType)
     {
         //
     }
@@ -123,28 +122,26 @@ class DepartmentController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Department  $department
+     * @param  \App\NotificationType  $notificationType
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Department $department)
+    public function update(Request $request, NotificationType $notificationType)
     {
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'department_name'   => 'required|max:255',
-                'address'           => 'required|max:255',
-                'phone'             => 'required',
+                'type_name' => 'required|max:255',
+                'type_id'   => 'required',
             ]);
 
             try{
-                $department->department_name = request('department_name');
-                $department->address = request('address');
-                $department->phone = request('phone');
-                $department->save();
+                $notificationType->type_name = request('type_name');
+                $notificationType->type_id = request('type_id');
+                $notificationType->save();
 
                 return response()->json([
-                    'data'      => $department,
-                    'message'   => 'Department updated successfully!'
+                    'data'      => $notificationType,
+                    'message'   => 'NotificationType type updated successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -163,17 +160,17 @@ class DepartmentController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Department  $department
+     * @param  \App\NotificationType  $notificationType
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Department $department)
+    public function destroy(NotificationType $notificationType)
     {
         $role = Auth::user()->role;
         if($role > 2){
             try{
-                $department->delete();
+                $notificationType->delete();
                 return response()->json([
-                    'message' => 'Department deleted successfully!'
+                    'message' => 'NotificationType deleted successfully!'
                 ], 200);
             }
             catch(Exception $e){
@@ -186,26 +183,6 @@ class DepartmentController extends Controller
             return response()->json([
                 'message' => "You don't have access to this resource! Please contact with administrator for more information!"
             ], 403);
-        }
-    }
-
-    public function getUserByDepartmentID(int $department_id)
-    {
-        try {
-            $usersInDepartment = DB::table('departments')
-                ->join('users', 'departments.id', '=', 'users.department_id')
-                // ->select('name', 'email', 'department_name')
-                ->where('departments.id', $department_id)->get()->toArray();
-
-            return response()->json([
-                'data'      => $usersInDepartment,
-                'message'   => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
         }
     }
 }

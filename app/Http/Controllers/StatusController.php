@@ -58,15 +58,16 @@ class StatusController extends Controller
     public function store(Request $request)
     {
         $role = Auth::user()->role;
-        if($role > 2){
+        if ($role > 2) {
             $this->validate($request, [
-                'name'  => 'required',
-                'type_id'  => 'required',
+                'name'      => 'required|max:20',
+                'type_id'   => 'required|numeric|min:0|max|5',
             ]);
+
             try{
                 $status = Status::create([
-                    'name'  => request('name'),
-                    'type_id'  => request('type_id'),
+                    'name'      => request('name'),
+                    'type_id'   => request('type_id'),
                 ]);
                 return response()->json([
                     'data'      => $status,
@@ -130,14 +131,15 @@ class StatusController extends Controller
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'name'      => 'required',
-                'type_id'   => 'required',
+                'name'      => 'required|max:20',
+                'type_id'   => 'required|numeric|min:0|max|5',
             ]);
 
             try{
                 $status->name = request('name');
                 $status->type_id = request('type_id');
                 $status->save();
+
                 return response()->json([
                     'data'      => $status,
                     'message'   => 'Status updated successfully!'
