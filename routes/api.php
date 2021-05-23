@@ -133,6 +133,7 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     // Notification
     Route::resource('/notifications', 'NotificationController');
     Route::get('/getNotificationByUserID/{user_id}', 'NotificationController@getNotificationByUserID');
+    Route::put('/updateHasSeenColumn/{notification_id}', 'NotificationController@updateHasSeenColumn');
 
     // NotificationTypes
     Route::resource('/notificationTypes', 'NotificationTypeController');

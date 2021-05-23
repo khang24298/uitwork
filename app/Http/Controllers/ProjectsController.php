@@ -90,6 +90,7 @@ class ProjectsController extends Controller
                     'type_id'   => 1,
                     'message'   => $message,
                     'content'   => json_encode($project),
+                    'has_seen'  => false,
                 ]);
 
                 return response()->json([
@@ -173,6 +174,7 @@ class ProjectsController extends Controller
                     'type_id'   => 1,
                     'message'   => $message,
                     'content'   => json_encode($project),
+                    'has_seen'  => false,
                 ]);
 
                 return response()->json([
@@ -215,6 +217,7 @@ class ProjectsController extends Controller
                     'type_id'   => 1,
                     'message'   => $message,
                     'content'   => json_encode($project),
+                    'has_seen'  => false,
                 ]);
 
                 return response()->json([

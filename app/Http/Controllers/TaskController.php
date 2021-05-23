@@ -90,6 +90,7 @@ class TaskController extends Controller
                 'type_id'   => 2,
                 'message'   => $message,
                 'content'   => json_encode($task),
+                'has_seen'  => false,
             ]);
 
             return response()->json([
@@ -179,6 +180,7 @@ class TaskController extends Controller
                 'type_id'   => 2,
                 'message'   => $message,
                 'content'   => json_encode($task),
+                'has_seen'  => false,
             ]);
 
             return response()->json([
@@ -213,6 +215,7 @@ class TaskController extends Controller
                 'type_id'   => 2,
                 'message'   => $message,
                 'content'   => json_encode($task),
+                'has_seen'  => false,
             ]);
 
             return response()->json([

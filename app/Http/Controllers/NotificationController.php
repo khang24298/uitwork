@@ -72,7 +72,9 @@ class NotificationController extends Controller
                     'user_id'   => Auth::user()->id,
                     'message'   => request('message'),
                     'content'   => request('content'),
+                    'has_seen'  => false,
                 ]);
+
                 return response()->json([
                     'data'    => $notification,
                     'message' => 'Success'
@@ -145,6 +147,7 @@ class NotificationController extends Controller
                 $notification->type_id = request('type_id');
                 $notification->message = request('message');
                 $notification->content = request('content');
+                $notification->has_seen = request('has_seen');
                 $notification->save();
 
                 return response()->json([
@@ -201,6 +204,27 @@ class NotificationController extends Controller
 
             return response()->json([
                 'data'      => $userNotification,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateHasSeenColumn($notification_id)
+    {
+        try {
+            // $notification = Notification::where('id', $notification_id)->update(['has_seen' => true]);
+
+            $notification = Notification::findOrFail($notification_id);
+            $notification->has_seen = true;
+            $notification->save();
+
+            return response()->json([
+                'data'      => $notification,
                 'message'   => 'Success'
             ], 200);
         }

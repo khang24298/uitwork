@@ -9,7 +9,7 @@ class Notification extends Model
     public $table = "uit_notifications";
 
     protected $fillable = [
-        'user_id', 'type_id', 'message', 'content'];
+        'user_id', 'type_id', 'message', 'content', 'has_seen'];
 
     public function user()
     {

@@ -87,6 +87,7 @@ class CriteriaController extends Controller
                     'type_id'   => 3,
                     'message'   => $message,
                     'content'   => json_encode($criteria),
+                    'has_seen'  => false,
                 ]);
                 return response()->json([
                     'data'    => $criteria,
@@ -176,6 +177,7 @@ class CriteriaController extends Controller
                     'type_id'   => 3,
                     'message'   => $message,
                     'content'   => json_encode($criteria),
+                    'has_seen'  => false,
                 ]);
 
                 return response()->json([
@@ -218,6 +220,7 @@ class CriteriaController extends Controller
                     'type_id'   => 3,
                     'message'   => $message,
                     'content'   => json_encode($criteria),
+                    'has_seen'  => false,
                 ]);
 
                 return response()->json([

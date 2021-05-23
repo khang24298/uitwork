@@ -112,6 +112,7 @@ class EvaluationController extends Controller
                     'type_id'   => 4,
                     'message'   => $message,
                     'content'   => json_encode($evaluation),
+                    'has_seen'  => false,
                 ]);
 
                 return response()->json([
@@ -224,6 +225,7 @@ class EvaluationController extends Controller
                     'type_id'   => 4,
                     'message'   => $message,
                     'content'   => json_encode($evaluation),
+                    'has_seen'  => false,
                 ]);
 
                 return response()->json([
@@ -266,6 +268,7 @@ class EvaluationController extends Controller
                     'type_id'   => 4,
                     'message'   => $message,
                     'content'   => json_encode($evaluation),
+                    'has_seen'  => false,
                 ]);
                 return response()->json([
                     'message' => 'Evaluation deleted successfully!'
