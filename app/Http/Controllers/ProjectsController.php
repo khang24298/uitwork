@@ -82,8 +82,7 @@ class ProjectsController extends Controller
                 ]);
 
                 // Create Notification.
-                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                $message = $userName[0]->name.' created a new project: '.request('project_name').'.';
+                $message = Auth::user()->name.' created a new project: '.request('project_name').'.';
 
                 Notification::create([
                     'user_id'   => Auth::user()->id,
@@ -166,8 +165,7 @@ class ProjectsController extends Controller
                 $project->save();
 
                 // Create Notification.
-                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                $message = $userName[0]->name.' updated the '.request('project_name').' project.';
+                $message = Auth::user()->name.' updated the '.request('project_name').' project.';
 
                 Notification::create([
                     'user_id'   => Auth::user()->id,
@@ -209,8 +207,7 @@ class ProjectsController extends Controller
                 $project->delete();
 
                 // Create Notification.
-                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                $message = $userName[0]->name.' deleted the '.$project->project_name.' project.';
+                $message = Auth::user()->name.' deleted the '.$project->project_name.' project.';
 
                 Notification::create([
                     'user_id'   => Auth::user()->id,
