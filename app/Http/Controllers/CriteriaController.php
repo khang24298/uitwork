@@ -64,7 +64,7 @@ class CriteriaController extends Controller
         $role = Auth::user()->role;
 
         // DataType of criteria : Array.
-        $dataArray = $request->criteria;
+        $dataArray = $request->all();
 
         // Result variable.
         $result = array();

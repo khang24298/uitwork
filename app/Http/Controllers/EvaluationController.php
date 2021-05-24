@@ -62,7 +62,7 @@ class EvaluationController extends Controller
         $role = Auth::user()->role;
 
         // DataType of evaluations : Array.
-        $dataArray = $request->evaluations;
+        $dataArray = $request->all();
 
         // Result variable.
         $result = array();
@@ -112,7 +112,8 @@ class EvaluationController extends Controller
                             'score'         => $data['score'],
                             'note'          => $data['note'] ?? "",
                         ]);
-
+                        
+                        // 
                         // Get this evaluation and add to the result.
                         $maxEvaluationID = DB::table('evaluation')->max('id');
                         $temp = DB::table('evaluation')->where('id', $maxEvaluationID)->get()->toArray();

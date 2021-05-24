@@ -26,7 +26,7 @@ class StatusController extends Controller
     {
         try{
             if(Auth::user()->role > 2){
-                $status = Status::get();
+                $status = Status::orderBy('type_id','ASC')->get();
             }
             else{
                 $status = Status::where('type_id','<','4')->orderBy('type_id','ASC')->get();
