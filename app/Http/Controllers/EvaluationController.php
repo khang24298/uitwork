@@ -119,8 +119,7 @@ class EvaluationController extends Controller
                         $result = array_merge($result, $temp);
 
                         // Create Notification.
-                        $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                        $message = $userName[0]->name.' created a new evaluation.';
+                        $message = Auth::user()->name.' created a new evaluation.';
 
                         Notification::create([
                             'user_id'   => Auth::user()->id,
@@ -236,8 +235,7 @@ class EvaluationController extends Controller
                 $evaluation->save();
 
                 // Create Notification.
-                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                $message = $userName[0]->name.' updated the evaluation.';
+                $message = Auth::user()->name.' updated the evaluation.';
 
                 Notification::create([
                     'user_id'   => Auth::user()->id,
@@ -278,8 +276,7 @@ class EvaluationController extends Controller
                 $evaluation->delete();
 
                 // Create Notification.
-                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                $message = $userName[0]->name.' deleted the evaluation.';
+                $message = Auth::user()->name.' deleted the evaluation.';
 
                 Notification::create([
                     'user_id'   => Auth::user()->id,

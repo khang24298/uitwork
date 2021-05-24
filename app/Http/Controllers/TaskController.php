@@ -62,11 +62,12 @@ class TaskController extends Controller
             'description'       => 'required',
             'start_date'        => 'required|date',
             'end_date'          => 'required|date|after:start_date',
-            'project_id'        => 'required',
-            'assignee_id'       => 'required',
-            'qa_id'             => 'required',
+            'project_id'        => 'required|numeric',
+            'assignee_id'       => 'required|numeric',
+            'qa_id'             => 'required|numeric',
             'priority'          => 'required'
         ]);
+
         try{
             $task = Task::create([
                 'task_name'     => request('task_name'),
@@ -82,8 +83,7 @@ class TaskController extends Controller
             ]);
 
             // Create Notification.
-            $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-            $message = $userName[0]->name.' created a new task: '.request('task_name');
+            $message = Auth::user()->name.' created a new task: '.request('task_name');
 
             Notification::create([
                 'user_id'   => Auth::user()->id,
@@ -171,9 +171,9 @@ class TaskController extends Controller
             'description'       => 'required',
             'start_date'        => 'required|date',
             'end_date'          => 'required|date|after:start_date',
-            'project_id'        => 'required',
-            'assignee_id'       => 'required',
-            'qa_id'             => 'required',
+            'project_id'        => 'required|numeric',
+            'assignee_id'       => 'required|numeric',
+            'qa_id'             => 'required|numeric',
             'priority'          => 'required'
         ]);
 
@@ -192,8 +192,7 @@ class TaskController extends Controller
             $task->save();
 
             // Create Notification.
-            $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-            $message = $userName[0]->name.' updated the '.request('task_name').' task.';
+            $message = Auth::user()->name.' updated the '.request('task_name').' task.';
 
             Notification::create([
                 'user_id'   => Auth::user()->id,
@@ -227,8 +226,7 @@ class TaskController extends Controller
             $task->delete();
 
             // Create Notification.
-            $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-            $message = $userName[0]->name.' deleted the '.$task->project_name.' task.';
+            $message = Auth::user()->name.' deleted the '.$task->project_name.' task.';
 
             Notification::create([
                 'user_id'   => Auth::user()->id,

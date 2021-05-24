@@ -127,6 +127,7 @@ Route::group(['middleware' => 'auth.jwt'], function () {
 
     // Temp
     Route::resource('/temp', 'TempController');
+    Route::get('/test', 'TempController@test');
 
     // RefusedTask
     Route::post('/refusedTask', 'RefusedTaskController@refuseTask');

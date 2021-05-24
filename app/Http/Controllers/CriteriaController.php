@@ -84,7 +84,7 @@ class CriteriaController extends Controller
                         $criteria = Criteria::create([
                             'criteria_name'     => $data['criteria_name'],
                             'criteria_type_id'  => $data['criteria_type_id'],
-                            'description'       => (isset($data['description'])) ? $data['description'] : "",
+                            'description'       => $data['description'] ?? "",
                             'max_score'         => $data['max_score'],
                             'task_id'           => $data['task_id'] ?? null,
                             'user_id'           => $data['user_id'] ?? null,
@@ -96,8 +96,7 @@ class CriteriaController extends Controller
                         $result = array_merge($result, $temp);
 
                         // Create Notification.
-                        $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                        $message = $userName[0]->name.' created a new criteria: '.$data['criteria_name'];
+                        $message = Auth::user()->name.' created a new criteria: '.$data['criteria_name'];
 
                         Notification::create([
                             'user_id'   => Auth::user()->id,
@@ -192,8 +191,7 @@ class CriteriaController extends Controller
                 $criteria->save();
 
                 // Create Notification.
-                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                $message = $userName[0]->name.' updated the '.request('criteria_name').' criteria.';
+                $message = Auth::user()->name.' updated the '.request('criteria_name').' criteria.';
 
                 Notification::create([
                     'user_id'   => Auth::user()->id,
@@ -235,8 +233,7 @@ class CriteriaController extends Controller
                 $criteria->delete();
 
                 // Create Notification.
-                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                $message = $userName[0]->name.' deleted the '.$criteria->criteria_name.' criteria.';
+                $message = Auth::user()->name.' deleted the '.$criteria->criteria_name.' criteria.';
 
                 Notification::create([
                     'user_id'   => Auth::user()->id,

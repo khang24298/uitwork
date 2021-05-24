@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Temp;
 use Illuminate\Http\Request;
 use Exception;
+use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -365,5 +366,13 @@ class TempController extends Controller
         //         'message' => "You don't have access to this resource! Please contact with administrator for more information!"
         //     ], 403);
         // }
+    }
+
+    public function test()
+    {
+        return response()->json([
+            'data'      => Auth::user()->name,
+            'message'   => "Success"
+        ], 200);
     }
 }
