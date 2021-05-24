@@ -64,7 +64,7 @@ class CriteriaController extends Controller
 
         // DataType of criteria : Array.
         $dataArray = $request->criteria;
-
+        // dd($dataArray);
         if ($role > 2) {
             try {
                 foreach ($dataArray as $data) {
@@ -74,16 +74,16 @@ class CriteriaController extends Controller
                         'criteria_type_id'  => 'required|numeric',
                         'max_score'         => 'required|numeric',
                     ]);
-
                     // Create.
+                    // dd($data);
                     try {
                         $criteria = Criteria::create([
                             'criteria_name'     => $data['criteria_name'],
                             'criteria_type_id'  => $data['criteria_type_id'],
-                            'description'       => $data['description'] ?? "",
+                            'description'       => (isset($data['description'])) ? $data['description'] : "",
                             'max_score'         => $data['max_score'],
-                            'task_id'           => $data['criteria_type_id'] == 1 ? $data['task_id'] : null,
-                            'user_id'           => $data['criteria_type_id'] == 2 ? $data['user_id'] : null,
+                            'task_id'           => (isset($data['task_id'])) ? $data['task_id'] : null,
+                            'user_id'           => (isset($data['user_id'])) ? $data['user_id'] : null,
                         ]);
 
                         // Create Notification.
