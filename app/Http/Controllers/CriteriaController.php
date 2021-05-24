@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Http\Request;
 
 use GuzzleHttp\Handler\Proxy;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -65,6 +66,9 @@ class CriteriaController extends Controller
         // DataType of criteria : Array.
         $dataArray = $request->criteria;
 
+        // Result variable.
+        $result = array();
+
         if ($role > 2) {
             try {
                 foreach ($dataArray as $data) {
@@ -82,9 +86,14 @@ class CriteriaController extends Controller
                             'criteria_type_id'  => $data['criteria_type_id'],
                             'description'       => $data['description'] ?? "",
                             'max_score'         => $data['max_score'],
-                            'task_id'           => $data['criteria_type_id'] == 1 ? $data['task_id'] : null,
-                            'user_id'           => $data['criteria_type_id'] == 2 ? $data['user_id'] : null,
+                            'task_id'           => $data['task_id'] ?? null,
+                            'user_id'           => $data['user_id'] ?? null,
                         ]);
+
+                        // Get this criteria and add to the result.
+                        $maxCriteriaID = DB::table('criteria')->max('id');
+                        $temp = DB::table('criteria')->where('id', $maxCriteriaID)->get()->toArray();
+                        $result = array_merge($result, $temp);
 
                         // Create Notification.
                         $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
@@ -105,6 +114,7 @@ class CriteriaController extends Controller
                     }
                 }
                 return response()->json([
+                    'data'      => $result,
                     'message'   => 'Success'
                 ], 200);
             }
@@ -174,10 +184,10 @@ class CriteriaController extends Controller
                 $criteria->criteria_name = request('criteria_name');
                 $criteria->criteria_type_id = request('criteria_type_id');
 
-                $criteria->user_id = (request('criteria_type_id') == 2) ? request('user_id') : null;
-                $criteria->task_id = (request('criteria_type_id') == 1) ? request('task_id') : null;
+                $criteria->user_id = request('user_id') ?? null;
+                $criteria->task_id = request('task_id') ?? null;
 
-                $criteria->description = request('description');
+                $criteria->description = request('description') ?? "";
                 $criteria->max_score = request('max_score');
                 $criteria->save();
 
