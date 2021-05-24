@@ -137,6 +137,26 @@ class TaskController extends Controller
         //
     }
 
+    public function updateTaskStatus(Request $request){
+        $this->validate($request, [
+            'task_id'         => 'required|numeric',
+            'status_id'       => 'required|in:0,1,2,3,4,6',
+        ]);
+        $role = Auth::user()->role;
+        if($role <= 2 && in_array($request['status_id'],[0,6])){
+            return response()->json([
+                'data'      => null,
+                'message'   => 'Permission Denied!'
+            ], 200);
+        }
+        $task = Task::findOrFail($request['task_id']);
+        $task->status_id = $request['status_id'];
+        $task->save();
+        return response()->json([
+            'data'      => $task,
+            'message'   => 'Update Success!'
+        ], 200);
+    }
     /**
      * Update the specified resource in storage.
      *

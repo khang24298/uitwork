@@ -240,12 +240,17 @@ class ProjectsController extends Controller
     public function getTasksByProjectID(int $project_id)
     {
         try {
-            $statuses = Status::orderBy('type_id','ASC')->get();
+            if(Auth::user()->role > 2){
+                $statuses = Status::orderBy('type_id','ASC')->get();
+            }
+            else{
+                $statuses = Status::where('type_id','<','5')->orderBy('type_id','ASC')->get();
+            }
             $tasksByProject = [];
             foreach($statuses as $status){
                 $taskList = Task::where([
                     [
-                        'status_id',$status->id
+                        'status_id',$status->type_id
                     ],
                     [
                         'project_id',$project_id

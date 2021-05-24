@@ -94,17 +94,20 @@ class RefusedTaskController extends Controller
 
     public function refuseTask(Request $request)
     {
-        try{
-            $refusedTask = RefusedTask::create([
-                'task_id'       => request('task_id'),
-                'user_id'       => Auth::user()->id,
-                'project_id'    => request('project_id'),
-                'content'       => request('content')
-            ]);
+        $this->validate($request,[
+            'task_id'     => 'required|numeric',
+            'status_id'   => 'required|in:0',
+            'content'     => 'required'
+        ]);
 
+        try{
+            $task = Task::findOrFail($request['task_id']);
+            $task->status_id = 5;
+            $task->save();
+            // Create notification bellow
             return response()->json([
                 'data'      => true,
-                'message'   => 'Success'
+                'message'   => 'Refuse Success'
             ], 200);
         }
         catch(Exception $e){

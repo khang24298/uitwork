@@ -60,6 +60,7 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::resource('/tasks','TaskController');
     Route::get('/getTaskInfo/{task_id}', 'TaskController@getTaskInfo');
     Route::get('/getTasksByAssignerOrAssignee/{user_id}', 'TaskController@getTasksByAssignerOrAssignee');
+    Route::post('/updateTaskStatus','TaskController@updateTaskStatus');
     // Route::get('/getTaskCriteriaByTaskID/{task_id}', 'TaskController@getTaskCriteriaByTaskID');
     // Route::get('/getReportByTaskID/{task_id}', 'TaskController@getReportByTaskID');
     // Route::get('/getCommentByTaskID/{task_id}', 'TaskController@getCommentByTaskID');

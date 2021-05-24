@@ -78,13 +78,13 @@ class CriteriaController extends Controller
                         'criteria_type_id'  => 'required|numeric',
                         'max_score'         => 'required|numeric',
                     ]);
-
                     // Create.
+                    // dd($data);
                     try {
                         $criteria = Criteria::create([
                             'criteria_name'     => $data['criteria_name'],
                             'criteria_type_id'  => $data['criteria_type_id'],
-                            'description'       => $data['description'] ?? "",
+                            'description'       => (isset($data['description'])) ? $data['description'] : "",
                             'max_score'         => $data['max_score'],
                             'task_id'           => $data['task_id'] ?? null,
                             'user_id'           => $data['user_id'] ?? null,
@@ -353,7 +353,8 @@ class CriteriaController extends Controller
     {
         try {
             $taskCriteria = DB::table('criteria')
-                ->where('criteria_type_id', 1)->get();
+                ->where('criteria_type_id', 1)->get()
+                ->toArray();
 
             return response()->json([
                 'data'      => $taskCriteria,
@@ -371,7 +372,8 @@ class CriteriaController extends Controller
     {
         try {
             $userCriteria = DB::table('criteria')
-                ->where('criteria_type_id', 2)->get();
+                ->where('criteria_type_id', 2)->get()
+                ->toArray();
 
             return response()->json([
                 'data'      => $userCriteria,
