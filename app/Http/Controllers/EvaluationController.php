@@ -107,15 +107,15 @@ class EvaluationController extends Controller
                                 array_push($tempCriteriaArray, $criteriaIDListArray[$i]['criteria_id']);
                             }
 
-                            if (!in_array($criteriaID, $tempCriteriaArray)) {
-                                // Update task status to EVALUATED.
-                                Task::where('id', $tempTaskID)->update(['status_id' => 4]);
-                            } else {
+                            if (in_array($criteriaID, $tempCriteriaArray)) {
                                 return response()->json([
                                     'message' => "The criteria_id value already exists with this same task_id. Please try another value."
                                 ], 500);
                             }
                         }
+
+                        // Update task status to EVALUATED.
+                        Task::where('id', $tempTaskID)->update(['status_id' => 4]);
                     }
 
                     // Create.
@@ -223,22 +223,37 @@ class EvaluationController extends Controller
             ]);
 
             // Get and assign null to task_id if it not exist.
-            $task_id = request('task_id') ?? null;
+            $tempTaskID = request('task_id') ?? null;
 
-            // Check if task_id already exists in evaluation.
-            if ($task_id !== null){
+            // Check if task_id already exists in evaluation if the passed task_id value is not null.
+            if ($tempTaskID !== null) {
+                // Check if task_id already exists in evaluation.
                 $taskIDList = DB::table('evaluation')->select('task_id')->where('task_id', '<>', null)->get();
                 $taskIDListArray = json_decode(json_encode($taskIDList), true);
-                $temp = array();
+                $tempTaskIDArray = array();
 
                 for ($i = 0; $i < count($taskIDListArray) - 1; $i++) {
-                    array_push($temp, $taskIDListArray[$i]['task_id']);
+                    array_push($tempTaskIDArray, $taskIDListArray[$i]['task_id']);
                 }
 
-                if (in_array($task_id, $temp)){
-                    return response()->json([
-                        'message' => "The criteria_id value already exists with this same task_id. Please try another value."
-                    ], 200);
+                if (in_array($tempTaskID, $tempTaskIDArray)) {
+                    // Check if the criteria_id already exists with this task_id.
+                    $criteriaIDList = DB::table('evaluation')
+                        ->select('criteria_id')
+                        ->where('task_id', $tempTaskID)->get();
+
+                    $criteriaIDListArray = json_decode(json_encode($criteriaIDList), true);
+                    $tempCriteriaArray = array();
+
+                    for ($i = 0; $i < count($criteriaIDListArray) - 1; $i++) {
+                        array_push($tempCriteriaArray, $criteriaIDListArray[$i]['criteria_id']);
+                    }
+
+                    if (in_array($criteriaID, $tempCriteriaArray)) {
+                        return response()->json([
+                            'message' => "The criteria_id value already exists with this same task_id. Please try another value."
+                        ], 500);
+                    }
                 }
             }
 
