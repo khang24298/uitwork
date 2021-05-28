@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Task;
 use Illuminate\Support\Facades\Validator;
 use App\Notification;
+use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -81,10 +82,10 @@ class EvaluationController extends Controller
                     ]);
 
                     // Get and assign null to task_id if it not exist.
-                    $tempTaskID = $data['task_id'] ?? null;
+                    $taskID = $data['task_id'] ?? null;
 
                     // Check if task_id already exists in evaluation if the passed task_id value is not null.
-                    if ($tempTaskID !== null) {
+                    if ($taskID !== null) {
                         // Check if task_id already exists in evaluation.
                         $taskIDList = DB::table('evaluation')->select('task_id')->where('task_id', '<>', null)->get();
                         $taskIDListArray = json_decode(json_encode($taskIDList), true);
@@ -94,11 +95,11 @@ class EvaluationController extends Controller
                             array_push($tempTaskIDArray, $taskIDListArray[$i]['task_id']);
                         }
 
-                        if (in_array($tempTaskID, $tempTaskIDArray)) {
+                        if (in_array($taskID, $tempTaskIDArray)) {
                             // Check if the criteria_id already exists with this task_id.
                             $criteriaIDList = DB::table('evaluation')
                                 ->select('criteria_id')
-                                ->where('task_id', $tempTaskID)->get();
+                                ->where('task_id', $taskID)->get();
 
                             $criteriaIDListArray = json_decode(json_encode($criteriaIDList), true);
                             $tempCriteriaArray = array();
@@ -113,20 +114,31 @@ class EvaluationController extends Controller
                                 ], 500);
                             }
                         }
-
-                        // Update task status to EVALUATED.
-                        Task::where('id', $tempTaskID)->update(['status_id' => 4]);
                     }
+
+                    // Get and assign null to user_id if it not exist.
+                    $userID = $data['user_id'] ?? null;
 
                     // Create.
                     try {
                         $evaluation = Evaluation::create([
-                            'task_id'       => $data['task_id'] ?? null,
-                            'user_id'       => $data['user_id'] ?? null,
-                            'criteria_id'   => $data['criteria_id'],
+                            'task_id'       => $taskID,
+                            'user_id'       => $userID,
+                            'criteria_id'   => $criteriaID,
                             'score'         => $data['score'],
                             'note'          => $data['note'] ?? "",
                         ]);
+
+                        if ($taskID !== null) {
+                            // Update task status to EVALUATED and has been evaluated field to TRUE.
+                            Task::where('id', $taskID)->update(['status_id' => 4]);
+                            Task::where('id', $taskID)->update(['has_been_evaluated' => true]);
+                        }
+
+                        if ($userID !== null) {
+                            // Update has been evaluated field to TRUE.
+                            User::where('id', $userID)->update(['has_been_evaluated' => true]);
+                        }
 
                         // Get this evaluation and add to the result.
                         $maxEvaluationID = DB::table('evaluation')->max('id');
@@ -222,10 +234,10 @@ class EvaluationController extends Controller
             ]);
 
             // Get and assign null to task_id if it not exist.
-            $tempTaskID = request('task_id') ?? null;
+            $taskID = request('task_id') ?? null;
 
             // Check if task_id already exists in evaluation if the passed task_id value is not null.
-            if ($tempTaskID !== null) {
+            if ($taskID !== null) {
                 // Check if task_id already exists in evaluation.
                 $taskIDList = DB::table('evaluation')->select('task_id')->where('task_id', '<>', null)->get();
                 $taskIDListArray = json_decode(json_encode($taskIDList), true);
@@ -235,11 +247,11 @@ class EvaluationController extends Controller
                     array_push($tempTaskIDArray, $taskIDListArray[$i]['task_id']);
                 }
 
-                if (in_array($tempTaskID, $tempTaskIDArray)) {
+                if (in_array($taskID, $tempTaskIDArray)) {
                     // Check if the criteria_id already exists with this task_id.
                     $criteriaIDList = DB::table('evaluation')
                         ->select('criteria_id')
-                        ->where('task_id', $tempTaskID)->get();
+                        ->where('task_id', $taskID)->get();
 
                     $criteriaIDListArray = json_decode(json_encode($criteriaIDList), true);
                     $tempCriteriaArray = array();
@@ -256,13 +268,27 @@ class EvaluationController extends Controller
                 }
             }
 
+            // Get and assign null to user_id if it not exist.
+            $userID = request('user_id') ?? null;
+
             try {
-                $evaluation->user_id = request('user_id') ?? null;
-                $evaluation->task_id = request('task_id') ?? null;
-                $evaluation->criteria_id = request('criteria_id');
+                $evaluation->user_id = $userID;
+                $evaluation->task_id = $taskID;
+                $evaluation->criteria_id = $criteriaID;
                 $evaluation->score = request('score');
                 $evaluation->note = request('note') ?? "";
                 $evaluation->save();
+
+                if ($taskID !== null) {
+                    // Update task status to EVALUATED and has been evaluated field to TRUE.
+                    Task::where('id', $taskID)->update(['status_id' => 4]);
+                    Task::where('id', $taskID)->update(['has_been_evaluated' => true]);
+                }
+
+                if ($userID !== null) {
+                    // Update has been evaluated field to TRUE.
+                    User::where('id', $userID)->update(['has_been_evaluated' => true]);
+                }
 
                 // Create Notification.
                 $message = Auth::user()->name.' updated the evaluation.';
