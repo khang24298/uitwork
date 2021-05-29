@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Notification;
+use App\Jobs\NotificationJob;
 use Illuminate\Http\Request;
 use App\Task;
 use App\User;
@@ -71,7 +72,7 @@ class TaskController extends Controller
                 'priority'          => 'required'
             ]);
 
-            try{
+            try {
                 $task = Task::create([
                     'task_name'             => request('task_name'),
                     'description'           => request('description'),
@@ -89,13 +90,16 @@ class TaskController extends Controller
                 // Create Notification.
                 $message = Auth::user()->name.' created a new task: '.request('task_name');
 
-                Notification::create([
+                $notification = ([
                     'user_id'   => Auth::user()->id,
                     'type_id'   => 2,
                     'message'   => $message,
                     'content'   => json_encode($task),
                     'has_seen'  => false,
                 ]);
+
+                // Dispatch to NotificationJob.
+                NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
 
                 return response()->json([
                     'data'      => $task,
@@ -190,7 +194,7 @@ class TaskController extends Controller
                 'priority'          => 'required'
             ]);
 
-            try{
+            try {
                 $task->task_name = request('task_name');
                 $task->description = request('description');
                 $task->assignee_id = request('assignee_id');
@@ -208,13 +212,16 @@ class TaskController extends Controller
                 // Create Notification.
                 $message = Auth::user()->name.' updated the '.request('task_name').' task.';
 
-                Notification::create([
+                $notification = ([
                     'user_id'   => Auth::user()->id,
                     'type_id'   => 2,
                     'message'   => $message,
                     'content'   => json_encode($task),
                     'has_seen'  => false,
                 ]);
+
+                // Dispatch to NotificationJob.
+                NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
 
                 return response()->json([
                     'data'      => $task,
@@ -248,15 +255,18 @@ class TaskController extends Controller
                 $task->delete();
 
                 // Create Notification.
-                $message = Auth::user()->name.' deleted the '.$task->project_name.' task.';
+                $message = Auth::user()->name.' deleted the '.$task->task_name.' task.';
 
-                Notification::create([
+                $notification = ([
                     'user_id'   => Auth::user()->id,
                     'type_id'   => 2,
                     'message'   => $message,
                     'content'   => json_encode($task),
                     'has_seen'  => false,
                 ]);
+
+                // Dispatch to NotificationJob.
+                NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
 
                 return response()->json([
                     'message' => 'Success'

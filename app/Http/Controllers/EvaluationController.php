@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Task;
 use Illuminate\Support\Facades\Validator;
 use App\Notification;
+use App\Jobs\NotificationJob;
 use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -148,13 +149,16 @@ class EvaluationController extends Controller
                         // Create Notification.
                         $message = Auth::user()->name.' created a new evaluation.';
 
-                        Notification::create([
+                        $notification = ([
                             'user_id'   => Auth::user()->id,
                             'type_id'   => 4,
                             'message'   => $message,
                             'content'   => json_encode($evaluation),
                             'has_seen'  => false,
                         ]);
+
+                        // Dispatch to NotificationJob.
+                        NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
                     }
                     catch(Exception $e){
                         return response()->json([
@@ -293,13 +297,16 @@ class EvaluationController extends Controller
                 // Create Notification.
                 $message = Auth::user()->name.' updated the evaluation.';
 
-                Notification::create([
+                $notification = ([
                     'user_id'   => Auth::user()->id,
                     'type_id'   => 4,
                     'message'   => $message,
                     'content'   => json_encode($evaluation),
                     'has_seen'  => false,
                 ]);
+
+                // Dispatch to NotificationJob.
+                NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
 
                 return response()->json([
                     'data'      => $evaluation,
@@ -328,19 +335,23 @@ class EvaluationController extends Controller
     {
         $role = Auth::user()->role;
         if($role > 2){
-            try{
+            try {
                 $evaluation->delete();
 
                 // Create Notification.
                 $message = Auth::user()->name.' deleted the evaluation.';
 
-                Notification::create([
+                $notification = ([
                     'user_id'   => Auth::user()->id,
                     'type_id'   => 4,
                     'message'   => $message,
                     'content'   => json_encode($evaluation),
                     'has_seen'  => false,
                 ]);
+
+                // Dispatch to NotificationJob.
+                NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
+
                 return response()->json([
                     'message' => 'Evaluation deleted successfully!'
                 ], 200);

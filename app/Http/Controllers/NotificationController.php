@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Notification;
 use Exception;
 use Illuminate\Http\Request;
+use App\Jobs\NotificationJob;
 
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Support\Facades\Auth;
@@ -59,14 +60,14 @@ class NotificationController extends Controller
     {
         $role = Auth::user()->role;
 
-        if($role > 2){
+        if ($role > 2) {
             $this->validate($request, [
                 'type_id'   => 'required',
                 'message'   => 'required',
                 'content'   => 'required',
             ]);
 
-            try{
+            try {
                 $notification = Notification::create([
                     'type_id'   => request('type_id'),
                     'user_id'   => Auth::user()->id,
@@ -135,14 +136,15 @@ class NotificationController extends Controller
     public function update(Request $request, Notification $notification)
     {
         $role = Auth::user()->role;
-        if($role > 2){
+
+        if ($role > 2) {
             $this->validate($request, [
                 'type_id'   => 'required',
                 'message'   => 'required',
                 'content'   => 'required',
             ]);
 
-            try{
+            try {
                 $notification->user_id = Auth::user()->id;
                 $notification->type_id = request('type_id');
                 $notification->message = request('message');
@@ -177,8 +179,9 @@ class NotificationController extends Controller
     public function destroy(Notification $notification)
     {
         $role = Auth::user()->role;
-        if($role > 2){
-            try{
+
+        if ($role > 2) {
+            try {
                 $notification->delete();
                 return response()->json([
                     'message' => 'Notification deleted successfully!'
@@ -217,8 +220,6 @@ class NotificationController extends Controller
     public function updateHasSeenColumn($notification_id)
     {
         try {
-            // $notification = Notification::where('id', $notification_id)->update(['has_seen' => true]);
-
             $notification = Notification::findOrFail($notification_id);
             $notification->has_seen = true;
             $notification->save();
