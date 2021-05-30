@@ -6,6 +6,7 @@ use App\Project;
 use App\Status;
 use App\User;
 use App\Notification;
+use App\Jobs\NotificationJob;
 use Exception;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Http\Request;
@@ -14,16 +15,16 @@ use Illuminate\Support\Facades\DB;
 use App\Task;
 class ProjectsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function __construct()
     {
         $this->middleware('auth.jwt');
     }
 
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
         try{
@@ -68,7 +69,8 @@ class ProjectsController extends Controller
     public function store(Request $request)
     {
         $role = Auth::user()->role;
-        if($role > 2){
+
+        if ($role > 2) {
             $this->validate($request, [
                 'project_name'  => 'required|max:255',
                 'description'   => 'required',
@@ -84,13 +86,16 @@ class ProjectsController extends Controller
                 // Create Notification.
                 $message = Auth::user()->name.' created a new project: '.request('project_name').'.';
 
-                Notification::create([
+                $notification = ([
                     'user_id'   => Auth::user()->id,
                     'type_id'   => 1,
                     'message'   => $message,
                     'content'   => json_encode($project),
                     'has_seen'  => false,
                 ]);
+
+                // Dispatch to NotificationJob.
+                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'data'      => $project,
@@ -153,7 +158,8 @@ class ProjectsController extends Controller
     public function update(Request $request, Project $project)
     {
         $role = Auth::user()->role;
-        if($role > 2){
+
+        if ($role > 2) {
             $this->validate($request, [
                 'project_name'  => 'required|max:255',
                 'description'   => 'required',
@@ -167,13 +173,16 @@ class ProjectsController extends Controller
                 // Create Notification.
                 $message = Auth::user()->name.' updated the '.request('project_name').' project.';
 
-                Notification::create([
+                $notification = ([
                     'user_id'   => Auth::user()->id,
                     'type_id'   => 1,
                     'message'   => $message,
                     'content'   => json_encode($project),
                     'has_seen'  => false,
                 ]);
+
+                // Dispatch to NotificationJob.
+                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'data'      => $project,
@@ -202,20 +211,24 @@ class ProjectsController extends Controller
     public function destroy(Project $project)
     {
         $role = Auth::user()->role;
-        if($role > 2){
-            try{
+
+        if ($role > 2) {
+            try {
                 $project->delete();
 
                 // Create Notification.
                 $message = Auth::user()->name.' deleted the '.$project->project_name.' project.';
 
-                Notification::create([
+                $notification = ([
                     'user_id'   => Auth::user()->id,
                     'type_id'   => 1,
                     'message'   => $message,
                     'content'   => json_encode($project),
                     'has_seen'  => false,
                 ]);
+
+                // Dispatch to NotificationJob.
+                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'message' => 'Project deleted successfully!'

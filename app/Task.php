@@ -8,7 +8,7 @@ class Task extends Model
 {
     protected $fillable = [
         'user_id','assignee_id', 'task_name', 'description', 'project_id',
-        'start_date', 'end_date', 'status_id', 'qa_id', 'priority'
+        'start_date', 'end_date', 'status_id', 'qa_id', 'priority', 'has_been_evaluated'
     ];
 
     public function user()

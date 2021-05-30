@@ -29,17 +29,18 @@ $factory->define(User::class, function (Faker $faker) {
             '1974-06-21', '1978-12-13', '1981-12-26', '1985-10-21', '1990-08-03'];
 
     return [
-        'name' => $faker->name,
-        'email' => $faker->unique()->safeEmail,
-        'email_verified_at' => now(),
-        'password' => Hash::make('passUITWORK'), // password
-        'role' => $roleArray[$random_keys],
-        'remember_token' => Str::random(10),
-        'phone' => $phone[array_rand($phone,1)], // Add fields info
-        'gender' => $gender[array_rand($gender,1)],
-        'dob' => $dob[array_rand($dob,1)],
-        'position_id' => rand(1,4),
-        'education_level_id' => rand(1,4),
-        'department_id' => rand(1,5),
+        'name'                  => $faker->name,
+        'email'                 => $faker->unique()->safeEmail,
+        'email_verified_at'     => now(),
+        'password'              => Hash::make('passUITWORK'), // password
+        'role'                  => $roleArray[$random_keys],
+        'remember_token'        => Str::random(10),
+        'phone'                 => $phone[array_rand($phone,1)], // Add fields info
+        'gender'                => $gender[array_rand($gender,1)],
+        'dob'                   => $dob[array_rand($dob,1)],
+        'position_id'           => rand(1,4),
+        'education_level_id'    => rand(1,4),
+        'department_id'         => rand(1,5),
+        'has_been_evaluated'    => false
     ];
 });

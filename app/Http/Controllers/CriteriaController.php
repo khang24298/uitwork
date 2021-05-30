@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Criteria;
 use App\Task;
 use App\Notification;
+use App\Jobs\NotificationJob;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -78,8 +79,8 @@ class CriteriaController extends Controller
                         'criteria_type_id'  => 'required|numeric',
                         'max_score'         => 'required|numeric',
                     ]);
+
                     // Create.
-                    // dd($data);
                     try {
                         $criteria = Criteria::create([
                             'criteria_name'     => $data['criteria_name'],
@@ -98,13 +99,16 @@ class CriteriaController extends Controller
                         // Create Notification.
                         $message = Auth::user()->name.' created a new criteria: '.$data['criteria_name'];
 
-                        Notification::create([
+                        $notification = ([
                             'user_id'   => Auth::user()->id,
                             'type_id'   => 3,
                             'message'   => $message,
                             'content'   => json_encode($criteria),
                             'has_seen'  => false,
                         ]);
+
+                        // Dispatch to NotificationJob.
+                        NotificationJob::dispatch($notification);
                     }
                     catch(Exception $e){
                         return response()->json([
@@ -193,13 +197,16 @@ class CriteriaController extends Controller
                 // Create Notification.
                 $message = Auth::user()->name.' updated the '.request('criteria_name').' criteria.';
 
-                Notification::create([
+                $notification = ([
                     'user_id'   => Auth::user()->id,
                     'type_id'   => 3,
                     'message'   => $message,
                     'content'   => json_encode($criteria),
                     'has_seen'  => false,
                 ]);
+
+                // Dispatch to NotificationJob.
+                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'data'      => $criteria,
@@ -229,19 +236,22 @@ class CriteriaController extends Controller
     {
         $role = Auth::user()->role;
         if($role > 2){
-            try{
+            try {
                 $criteria->delete();
 
                 // Create Notification.
                 $message = Auth::user()->name.' deleted the '.$criteria->criteria_name.' criteria.';
 
-                Notification::create([
+                $notification = ([
                     'user_id'   => Auth::user()->id,
                     'type_id'   => 3,
                     'message'   => $message,
                     'content'   => json_encode($criteria),
                     'has_seen'  => false,
                 ]);
+
+                // Dispatch to NotificationJob.
+                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'message' => 'Criteria deleted successfully!'
