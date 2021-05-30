@@ -95,7 +95,7 @@ class ProjectsController extends Controller
                 ]);
 
                 // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
+                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'data'      => $project,
@@ -182,7 +182,7 @@ class ProjectsController extends Controller
                 ]);
 
                 // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
+                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'data'      => $project,
@@ -228,7 +228,7 @@ class ProjectsController extends Controller
                 ]);
 
                 // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
+                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'message' => 'Project deleted successfully!'

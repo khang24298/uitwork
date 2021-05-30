@@ -158,7 +158,7 @@ class EvaluationController extends Controller
                         ]);
 
                         // Dispatch to NotificationJob.
-                        NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
+                        NotificationJob::dispatch($notification);
                     }
                     catch(Exception $e){
                         return response()->json([
@@ -306,7 +306,7 @@ class EvaluationController extends Controller
                 ]);
 
                 // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
+                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'data'      => $evaluation,
@@ -350,7 +350,7 @@ class EvaluationController extends Controller
                 ]);
 
                 // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
+                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'message' => 'Evaluation deleted successfully!'

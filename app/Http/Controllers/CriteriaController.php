@@ -108,7 +108,7 @@ class CriteriaController extends Controller
                         ]);
 
                         // Dispatch to NotificationJob.
-                        NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
+                        NotificationJob::dispatch($notification);
                     }
                     catch(Exception $e){
                         return response()->json([
@@ -206,7 +206,7 @@ class CriteriaController extends Controller
                 ]);
 
                 // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
+                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'data'      => $criteria,
@@ -251,7 +251,7 @@ class CriteriaController extends Controller
                 ]);
 
                 // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification)->delay(now()->addSeconds(30));
+                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'message' => 'Criteria deleted successfully!'
