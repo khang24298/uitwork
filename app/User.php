@@ -5,10 +5,12 @@ namespace App;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Shanmuga\LaravelEntrust\Traits\LaravelEntrustUserTrait;
 
 class User extends Authenticatable implements JWTSubject
 {
     use Notifiable;
+    use LaravelEntrustUserTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -40,5 +42,26 @@ class User extends Authenticatable implements JWTSubject
     public function tasks()
     {
         return $this->hasMany(Task::class, 'user_id');
+    }
+
+    //
+    public function roles()
+    {
+
+    }
+
+    public function hasRole($name)
+    {
+
+    }
+
+    public function hasPermission($permission)
+    {
+
+    }
+
+    public function ability($roles, $permissions, $options)
+    {
+
     }
 }

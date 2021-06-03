@@ -112,15 +112,16 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     // Ranking
     Route::resource('/ranking', 'RankingController');
     Route::get('/getTaskCriteriaScoreRankList', 'RankingController@getTaskCriteriaScoreRankList');
-    Route::get('/getUserCriteriaScoreRankList', 'RankingController@getUserCriteriaScoreRankList');
+    Route::get('/getPersonnelCriteriaScoreRankList', 'RankingController@getPersonnelCriteriaScoreRankList');
     Route::get('/getUserTotalRankList', 'RankingController@getUserTotalRankList');
 
     Route::get('/getUserRankByTaskCriteriaScore/{user_id}', 'RankingController@getUserRankByTaskCriteriaScore');
-    Route::get('/getUserRankByUserCriteriaScore/{user_id}', 'RankingController@getUserRankByUserCriteriaScore');
+    Route::get('/getUserRankByPersonnelCriteriaScore/{user_id}', 'RankingController@getUserRankByPersonnelCriteriaScore');
     Route::get('/getUserTotalRank/{user_id}', 'RankingController@getUserTotalRank');
 
     Route::get('/calcValuesForOneUser/{user_id}', 'RankingController@calcValuesForOneUser');
     Route::get('/insertToDatabase', 'RankingController@insertToDatabase');
+    Route::get('/testInsert/{user_id}', 'RankingController@testInsert');
 
     // Just for some testing
     Route::get('/draftFunction', 'TestingController@draftFunction');
