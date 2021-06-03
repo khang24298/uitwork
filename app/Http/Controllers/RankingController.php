@@ -601,4 +601,41 @@ class RankingController extends Controller
             ], 500);
         }
     }
+
+    public function getUserRankingList()
+    {
+        try {
+            $allUserRanking = DB::table('rankings')->get();
+            return response()->json([
+                'data'      => $allUserRanking,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUserRankingListInUserDepartment()
+    {
+        try {
+            $userDepartmentID = Auth::user()->department_id;
+            $rankingInUserDepartment = DB::table('rankings')
+                ->join('users', 'users.id', '=', 'rankings.user_id')
+                ->select('rankings.*')
+                ->where('department_id', $userDepartmentID)->get();
+
+            return response()->json([
+                'data'      => $rankingInUserDepartment,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

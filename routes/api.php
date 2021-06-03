@@ -116,6 +116,8 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/getUserTotalRankList', 'RankingController@getUserTotalRankList');
 
     Route::get('/getUserRanking/{user_id}', 'RankingController@getUserRanking');
+    Route::get('/getUserRankingList', 'RankingController@getUserRankingList');
+    Route::get('/getUserRankingListInUserDepartment', 'RankingController@getUserRankingListInUserDepartment');
     Route::get('/getUserRankByTaskCriteriaScore/{user_id}', 'RankingController@getUserRankByTaskCriteriaScore');
     Route::get('/getUserRankByPersonnelCriteriaScore/{user_id}', 'RankingController@getUserRankByPersonnelCriteriaScore');
     Route::get('/getUserTotalRank/{user_id}', 'RankingController@getUserTotalRank');
