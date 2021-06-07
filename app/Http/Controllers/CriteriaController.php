@@ -96,19 +96,20 @@ class CriteriaController extends Controller
                         $temp = DB::table('criteria')->where('id', $maxCriteriaID)->get()->toArray();
                         $result = array_merge($result, $temp);
 
-                        // Create Notification.
-                        $message = Auth::user()->name.' created a new criteria: '.$data['criteria_name'];
+                        // // Create Notification.
+                        // $message = Auth::user()->name.' created a new criteria: '.$data['criteria_name'];
 
-                        $notification = ([
-                            'user_id'   => Auth::user()->id,
-                            'type_id'   => 3,
-                            'message'   => $message,
-                            'content'   => json_encode($criteria),
-                            'has_seen'  => false,
-                        ]);
+                        // $notification = ([
+                        //     'user_id'       => Auth::user()->id,
+                        //     'type_id'       => 3,
+                        //     'message'       => $message,
+                        //     'content'       => json_encode($criteria),
+                        //     'receiver_id'   => 0,
+                        //     'has_seen'      => false,
+                        // ]);
 
-                        // Dispatch to NotificationJob.
-                        NotificationJob::dispatch($notification);
+                        // // Dispatch to NotificationJob.
+                        // NotificationJob::dispatch($notification);
                     }
                     catch(Exception $e){
                         return response()->json([
@@ -194,19 +195,20 @@ class CriteriaController extends Controller
                 $criteria->max_score = request('max_score');
                 $criteria->save();
 
-                // Create Notification.
-                $message = Auth::user()->name.' updated the '.request('criteria_name').' criteria.';
+                // // Create Notification.
+                // $message = Auth::user()->name.' updated the '.request('criteria_name').' criteria.';
 
-                $notification = ([
-                    'user_id'   => Auth::user()->id,
-                    'type_id'   => 3,
-                    'message'   => $message,
-                    'content'   => json_encode($criteria),
-                    'has_seen'  => false,
-                ]);
+                // $notification = ([
+                //     'user_id'       => Auth::user()->id,
+                //     'type_id'       => 3,
+                //     'message'       => $message,
+                //     'content'       => json_encode($criteria),
+                //     'receiver_id'   => 0,
+                //     'has_seen'      => false,
+                // ]);
 
-                // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification);
+                // // Dispatch to NotificationJob.
+                // NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'data'      => $criteria,
@@ -235,23 +237,25 @@ class CriteriaController extends Controller
     public function destroy(Criteria $criteria)
     {
         $role = Auth::user()->role;
-        if($role > 2){
+        if ($role > 2) {
             try {
+                // // Create Notification.
+                // $message = Auth::user()->name.' deleted the '.$criteria->criteria_name.' criteria.';
+
+                // $notification = ([
+                //     'user_id'       => Auth::user()->id,
+                //     'type_id'       => 3,
+                //     'message'       => $message,
+                //     'content'       => json_encode($criteria),
+                //     'receiver_id'   => 0,
+                //     'has_seen'      => false,
+                // ]);
+
+                // // Dispatch to NotificationJob.
+                // NotificationJob::dispatch($notification);
+
+                // Delete.
                 $criteria->delete();
-
-                // Create Notification.
-                $message = Auth::user()->name.' deleted the '.$criteria->criteria_name.' criteria.';
-
-                $notification = ([
-                    'user_id'   => Auth::user()->id,
-                    'type_id'   => 3,
-                    'message'   => $message,
-                    'content'   => json_encode($criteria),
-                    'has_seen'  => false,
-                ]);
-
-                // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'message' => 'Criteria deleted successfully!'

@@ -28,7 +28,7 @@ class EvaluationController extends Controller
      */
     public function index()
     {
-        try{
+        try {
             $evaluation = Evaluation::get();
 
             return response()->json([
@@ -134,11 +134,17 @@ class EvaluationController extends Controller
                             // Update task status to EVALUATED and has been evaluated field to TRUE.
                             Task::where('id', $taskID)->update(['status_id' => 4]);
                             Task::where('id', $taskID)->update(['has_been_evaluated' => true]);
+
+                            // Assign receiver_id in the notification table equal to assignee_id.
+                            $receiverID = Task::findOrFail($evaluation->task_id)->assignee_id;
                         }
 
                         if ($userID !== null) {
                             // Update has been evaluated field to TRUE.
                             User::where('id', $userID)->update(['has_been_evaluated' => true]);
+
+                            // Assign receiver_id in the notification table equal to user_id.
+                            $receiverID = $userID;
                         }
 
                         // Get this evaluation and add to the result.
@@ -150,11 +156,12 @@ class EvaluationController extends Controller
                         $message = Auth::user()->name.' created a new evaluation.';
 
                         $notification = ([
-                            'user_id'   => Auth::user()->id,
-                            'type_id'   => 4,
-                            'message'   => $message,
-                            'content'   => json_encode($evaluation),
-                            'has_seen'  => false,
+                            'user_id'       => Auth::user()->id,
+                            'type_id'       => 4,
+                            'message'       => $message,
+                            'content'       => json_encode($evaluation),
+                            'receiver_id'   => $receiverID,
+                            'has_seen'      => false,
                         ]);
 
                         // Dispatch to NotificationJob.
@@ -287,22 +294,29 @@ class EvaluationController extends Controller
                     // Update task status to EVALUATED and has been evaluated field to TRUE.
                     Task::where('id', $taskID)->update(['status_id' => 4]);
                     Task::where('id', $taskID)->update(['has_been_evaluated' => true]);
+
+                    // Assign receiver_id in the notification table equal to assignee_id.
+                    $receiverID = Task::findOrFail($evaluation->task_id)->assignee_id;
                 }
 
                 if ($userID !== null) {
                     // Update has been evaluated field to TRUE.
                     User::where('id', $userID)->update(['has_been_evaluated' => true]);
+
+                    // Assign receiver_id in the notification table equal to user_id.
+                    $receiverID = $userID;
                 }
 
                 // Create Notification.
                 $message = Auth::user()->name.' updated the evaluation.';
 
                 $notification = ([
-                    'user_id'   => Auth::user()->id,
-                    'type_id'   => 4,
-                    'message'   => $message,
-                    'content'   => json_encode($evaluation),
-                    'has_seen'  => false,
+                    'user_id'       => Auth::user()->id,
+                    'type_id'       => 4,
+                    'message'       => $message,
+                    'content'       => json_encode($evaluation),
+                    'receiver_id'   => $receiverID,
+                    'has_seen'      => false,
                 ]);
 
                 // Dispatch to NotificationJob.
@@ -334,23 +348,35 @@ class EvaluationController extends Controller
     public function destroy(Evaluation $evaluation)
     {
         $role = Auth::user()->role;
-        if($role > 2){
+        if ($role > 2) {
             try {
-                $evaluation->delete();
+                if ($evaluation->task_id !== null) {
+                    // Assign receiver_id in the notification table equal to assignee_id.
+                    $receiverID = Task::findOrFail($evaluation->task_id)->assignee_id;
+                }
+
+                if ($evaluation->user_id !== null) {
+                    // Assign receiver_id in the notification table equal to user_id.
+                    $receiverID = $evaluation->user_id;
+                }
 
                 // Create Notification.
                 $message = Auth::user()->name.' deleted the evaluation.';
 
                 $notification = ([
-                    'user_id'   => Auth::user()->id,
-                    'type_id'   => 4,
-                    'message'   => $message,
-                    'content'   => json_encode($evaluation),
-                    'has_seen'  => false,
+                    'user_id'       => Auth::user()->id,
+                    'type_id'       => 4,
+                    'message'       => $message,
+                    'content'       => json_encode($evaluation),
+                    'receiver_id'   => $receiverID,
+                    'has_seen'      => false,
                 ]);
 
                 // Dispatch to NotificationJob.
                 NotificationJob::dispatch($notification);
+
+                // Delete.
+                $evaluation->delete();
 
                 return response()->json([
                     'message' => 'Evaluation deleted successfully!'

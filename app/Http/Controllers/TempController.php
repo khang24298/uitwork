@@ -6,6 +6,7 @@ use App\Temp;
 use Illuminate\Http\Request;
 use Exception;
 use App\User;
+use App\Task;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -370,8 +371,13 @@ class TempController extends Controller
 
     public function test()
     {
+        // $receiverID = DB::table('tasks')->select('assignee_id')->where('id', 21)->get();
+        // $id = json_decode(json_encode($receiverID), true);
+        // $finalID = $id[0]['assignee_id'];
+
+        $finalID = Task::findOrFail(21)->assignee_id;
         return response()->json([
-            'data'      => Auth::user()->name,
+            'data'      => ($finalID),
             'message'   => "Success"
         ], 200);
     }

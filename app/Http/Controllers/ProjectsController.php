@@ -83,19 +83,20 @@ class ProjectsController extends Controller
                     'user_id'       => Auth::user()->id
                 ]);
 
-                // Create Notification.
-                $message = Auth::user()->name.' created a new project: '.request('project_name').'.';
+                // // Create Notification.
+                // $message = Auth::user()->name.' created a new project: '.request('project_name').'.';
 
-                $notification = ([
-                    'user_id'   => Auth::user()->id,
-                    'type_id'   => 1,
-                    'message'   => $message,
-                    'content'   => json_encode($project),
-                    'has_seen'  => false,
-                ]);
+                // $notification = ([
+                //     'user_id'       => Auth::user()->id,
+                //     'type_id'       => 1,
+                //     'message'       => $message,
+                //     'content'       => json_encode($project),
+                //     'receiver_id'   => 0,
+                //     'has_seen'      => false,
+                // ]);
 
-                // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification);
+                // // Dispatch to NotificationJob.
+                // NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'data'      => $project,
@@ -145,7 +146,7 @@ class ProjectsController extends Controller
      */
     public function edit(Project $project)
     {
-        return view('projects.edit', ['project' => $project]);
+        // return view('projects.edit', ['project' => $project]);
     }
 
     /**
@@ -165,24 +166,25 @@ class ProjectsController extends Controller
                 'description'   => 'required',
             ]);
 
-            try{
+            try {
                 $project->project_name = request('project_name');
                 $project->description = request('description');
                 $project->save();
 
-                // Create Notification.
-                $message = Auth::user()->name.' updated the '.request('project_name').' project.';
+                // // Create Notification.
+                // $message = Auth::user()->name.' updated the '.request('project_name').' project.';
 
-                $notification = ([
-                    'user_id'   => Auth::user()->id,
-                    'type_id'   => 1,
-                    'message'   => $message,
-                    'content'   => json_encode($project),
-                    'has_seen'  => false,
-                ]);
+                // $notification = ([
+                //     'user_id'       => Auth::user()->id,
+                //     'type_id'       => 1,
+                //     'message'       => $message,
+                //     'content'       => json_encode($project),
+                //     'receiver_id'   => 0,
+                //     'has_seen'      => false,
+                // ]);
 
-                // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification);
+                // // Dispatch to NotificationJob.
+                // NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'data'      => $project,
@@ -216,19 +218,20 @@ class ProjectsController extends Controller
             try {
                 $project->delete();
 
-                // Create Notification.
-                $message = Auth::user()->name.' deleted the '.$project->project_name.' project.';
+                // // Create Notification.
+                // $message = Auth::user()->name.' deleted the '.$project->project_name.' project.';
 
-                $notification = ([
-                    'user_id'   => Auth::user()->id,
-                    'type_id'   => 1,
-                    'message'   => $message,
-                    'content'   => json_encode($project),
-                    'has_seen'  => false,
-                ]);
+                // $notification = ([
+                //     'user_id'       => Auth::user()->id,
+                //     'type_id'       => 1,
+                //     'message'       => $message,
+                //     'content'       => json_encode($project),
+                //     'receiver_id'   => 0,
+                //     'has_seen'      => false,
+                // ]);
 
-                // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification);
+                // // Dispatch to NotificationJob.
+                // NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'message' => 'Project deleted successfully!'

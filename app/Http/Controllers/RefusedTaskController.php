@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\RefusedTask;
 use Illuminate\Http\Request;
 use App\Task;
+use App\Notification;
+use App\Jobs\NotificationJob;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -100,11 +102,26 @@ class RefusedTaskController extends Controller
             'content'     => 'required'
         ]);
 
-        try{
+        try {
             $task = Task::findOrFail($request['task_id']);
             $task->status_id = 5;
             $task->save();
-            // Create notification bellow
+
+            // Create Notification.
+            $message = Auth::user()->name.' refused the '.$task->task_name.' task.';
+
+            $notification = ([
+                'user_id'       => Auth::user()->id,
+                'type_id'       => 2,
+                'message'       => $message,
+                'content'       => json_encode($task),
+                'receiver_id'   => $task->user_id,
+                'has_seen'      => false,
+            ]);
+
+            // Dispatch to NotificationJob.
+            NotificationJob::dispatch($notification);
+
             return response()->json([
                 'data'      => true,
                 'message'   => 'Refuse Success'

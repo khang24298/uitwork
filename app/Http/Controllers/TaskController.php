@@ -26,7 +26,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-        try{
+        try {
             $tasks = Task::all();
             return response()->json([
                 'data'      => $tasks,
@@ -88,14 +88,15 @@ class TaskController extends Controller
                 ]);
 
                 // Create Notification.
-                $message = Auth::user()->name.' created a new task: '.request('task_name');
+                $message = Auth::user()->name.' has created a new task: '.request('task_name').' and assigned it to you.';
 
                 $notification = ([
-                    'user_id'   => Auth::user()->id,
-                    'type_id'   => 2,
-                    'message'   => $message,
-                    'content'   => json_encode($task),
-                    'has_seen'  => false,
+                    'user_id'       => Auth::user()->id,
+                    'type_id'       => 2,
+                    'message'       => $message,
+                    'content'       => json_encode($task),
+                    'receiver_id'   => request('assignee_id'),
+                    'has_seen'      => false,
                 ]);
 
                 // Dispatch to NotificationJob.
@@ -151,21 +152,43 @@ class TaskController extends Controller
         //
     }
 
-    public function updateTaskStatus(Request $request){
+    public function updateTaskStatus(Request $request)
+    {
+        // Validate.
         $this->validate($request, [
-            'task_id'         => 'required|numeric',
-            'status_id'       => 'required|in:0,1,2,3,4,6',
+            'task_id'   => 'required|numeric',
+            'status_id' => 'required|in:0,1,2,3,4,6',
         ]);
+
         $role = Auth::user()->role;
-        if($role <= 2 && in_array($request['status_id'],[0,6])){
+
+        if ($role <= 2 && in_array($request['status_id'],[0,6])) {
             return response()->json([
                 'data'      => null,
                 'message'   => 'Permission Denied!'
             ], 200);
         }
+
+        // Find and Update.
         $task = Task::findOrFail($request['task_id']);
         $task->status_id = $request['status_id'];
         $task->save();
+
+        // Create Notification.
+        $message = Auth::user()->name.' updated the '.$task->task_name.' task.';
+
+        $notification = ([
+            'user_id'       => Auth::user()->id,
+            'type_id'       => 2,
+            'message'       => $message,
+            'content'       => json_encode($task),
+            'receiver_id'   => $task->user_id,
+            'has_seen'      => false,
+        ]);
+
+        // Dispatch to NotificationJob.
+        NotificationJob::dispatch($notification);
+
         return response()->json([
             'data'      => $task,
             'message'   => 'Update Success!'
@@ -209,19 +232,20 @@ class TaskController extends Controller
 
                 $task->save();
 
-                // Create Notification.
-                $message = Auth::user()->name.' updated the '.request('task_name').' task.';
+                // // Create Notification.
+                // $message = Auth::user()->name.' updated the '.request('task_name').' task.';
 
-                $notification = ([
-                    'user_id'   => Auth::user()->id,
-                    'type_id'   => 2,
-                    'message'   => $message,
-                    'content'   => json_encode($task),
-                    'has_seen'  => false,
-                ]);
+                // $notification = ([
+                //     'user_id'       => Auth::user()->id,
+                //     'type_id'       => 2,
+                //     'message'       => $message,
+                //     'content'       => json_encode($task),
+                //     'receiver_id'   => 0,
+                //     'has_seen'      => false,
+                // ]);
 
-                // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification);
+                // // Dispatch to NotificationJob.
+                // NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'data'      => $task,
@@ -252,21 +276,23 @@ class TaskController extends Controller
         $role = Auth::user()->role;
         if($role > 2) {
             try {
+                // // Create Notification.
+                // $message = Auth::user()->name.' deleted the '.$task->task_name.' task.';
+
+                // $notification = ([
+                //     'user_id'        => Auth::user()->id,
+                //     'type_id'        => 2,
+                //     'message'        => $message,
+                //     'content'        => json_encode($task),
+                //     'receiver_id'    => 0,
+                //     'has_seen'       => false,
+                // ]);
+
+                // // Dispatch to NotificationJob.
+                // NotificationJob::dispatch($notification);
+
+                // Delete.
                 $task->delete();
-
-                // Create Notification.
-                $message = Auth::user()->name.' deleted the '.$task->task_name.' task.';
-
-                $notification = ([
-                    'user_id'   => Auth::user()->id,
-                    'type_id'   => 2,
-                    'message'   => $message,
-                    'content'   => json_encode($task),
-                    'has_seen'  => false,
-                ]);
-
-                // Dispatch to NotificationJob.
-                NotificationJob::dispatch($notification);
 
                 return response()->json([
                     'message' => 'Success'

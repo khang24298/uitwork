@@ -128,8 +128,6 @@ Route::group(['middleware' => 'auth.jwt'], function () {
 
     // Just for some testing
     Route::get('/draftFunction', 'TestingController@draftFunction');
-
-    // Temp
     Route::resource('/temp', 'TempController');
     Route::get('/test', 'TempController@test');
 
