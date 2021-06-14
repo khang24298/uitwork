@@ -64,6 +64,13 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'auth.jwt' => \Tymon\JWTAuth\Http\Middleware\Authenticate::class, // JWT middleware
+
+        // JWT middleware
+        'auth.jwt' => \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
+
+        // Entrust Middleware
+        'role' => \Shanmuga\LaravelEntrust\Middleware\LaravelEntrustRole::class,
+        'permission' => \Shanmuga\LaravelEntrust\Middleware\LaravelEntrustPermission::class,
+        'ability' => \Shanmuga\LaravelEntrust\Middleware\LaravelEntrustAbility::class,
     ];
 }

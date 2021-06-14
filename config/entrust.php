@@ -3,7 +3,7 @@
 /**
  * This file is part of Laravel Entrust,
  * Handle Role-based Permissions for Laravel.
- * 
+ *
  */
 
 return [
@@ -32,7 +32,7 @@ return [
     | to have a different name, you can do it here.
     |
     */
-    'user_model' => 'App\Models\User',
+    'user_model' => 'App\User',
 
     /*
     |--------------------------------------------------------------------------

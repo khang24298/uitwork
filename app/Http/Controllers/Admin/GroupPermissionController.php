@@ -7,7 +7,9 @@ use App\Http\Requests\GroupPermissionRequest;
 use App\Http\Controllers\Controller;
 use App\Models\GroupPermission;
 use Exception;
+use Facade\FlareClient\Enums\GroupingTypes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class GroupPermissionController extends Controller
 {
@@ -26,15 +28,8 @@ class GroupPermissionController extends Controller
      */
     public function index()
     {
-        //
         $permissionGroups = GroupPermission::all();
-
-        // $viewData = [
-        //     'data'  => $permissionGroups
-        // ];
-
-        // return view('admin.permission_group.list', $viewData);
-        return view('admin.permission_group.list', ['permissionGroups' => $permissionGroups]);
+        return view('admin.permission_group.list', compact('permissionGroups'));
     }
 
     /**
@@ -44,7 +39,6 @@ class GroupPermissionController extends Controller
      */
     public function create()
     {
-        //
         return view('admin.permission_group.add');
     }
 
@@ -56,16 +50,33 @@ class GroupPermissionController extends Controller
      */
     public function store(GroupPermissionRequest $request)
     {
-        //
-        DB::beginTransaction();
-
         try {
-            $this->createOrUpdate($request);
-            DB::commit();
-            return redirect()->back()->with('success', 'Thêm mới thành công');
-        } catch (Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Thêm mới thất bại');
+            // $this->validate($request,
+            //     [
+            //         'name'          => 'required|min:5|max:100|unique:App\Models\GroupPermission,name',
+            //         'description'   => 'required|min:5',
+            //     ],
+            //     [
+            //         'name.required'         => 'Bạn chưa nhập tên nhóm quyền',
+            //         'name.min'              => 'Tên nhóm quyền phải có độ dài từ 5 đến 100 ký tự',
+            //         'name.max'              => 'Tên nhóm quyền phải có độ dài từ 5 đến 100 ký tự',
+            //         'name.unique'           => 'Nhóm quyền này đã tồn tại',
+            //         'description.required'  => 'Bạn chưa nhập mô tả cho nhóm quyền',
+            //         'description.min'       => 'Mô tả cho nhóm quyền phải có tối thiểu 5 ký tự',
+            //     ]
+            // );
+
+            // dd($request);
+
+            GroupPermission::create([
+                'name'          => $request->name,
+                'description'   => $request->description,
+            ]);
+
+            return redirect('admin/permission-group')->with('success', 'Thêm mới thành công');
+        }
+        catch(Exception $e){
+            return redirect('admin/permission-group')->with('error', 'Thêm mới thất bại');
         }
     }
 
@@ -77,7 +88,18 @@ class GroupPermissionController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $permissionGroup = GroupPermission::findOrFail($id);
+            return response()->json([
+                'data'      => $permissionGroup,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ],500);
+        }
     }
 
     /**
@@ -88,12 +110,7 @@ class GroupPermissionController extends Controller
      */
     public function edit($id)
     {
-        //
         $permissionGroup = GroupPermission::findOrFail($id);
-
-        if (!$permissionGroup) {
-            return redirect()->back()->with('error', 'Dữ liệu không tồn tại');
-        }
 
         return view('admin.permission_group.edit', compact('permissionGroup'));
     }
@@ -107,16 +124,41 @@ class GroupPermissionController extends Controller
      */
     public function update(GroupPermissionRequest $request, $id)
     {
-        //
-        DB::beginTransaction();
-
         try {
-            $this->createOrUpdate($request, $id);
-            DB::commit();
-            return redirect()->back()->with('success', 'Chỉnh sửa thành công');
-        } catch (Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Chỉnh sửa thất bại');
+            $permissionGroup = GroupPermission::findOrFail($id);
+
+            // $this->validate($request, [
+            //         'name'          => [
+            //             'required|min:5|max:100',
+            //             Rule::unique('group_permissions', 'name')->ignore($groupPermission->id),
+            //         ],
+            //         'description'   => 'required|min:5',
+            //     ],
+            //     [
+            //         'name.required'         => 'Bạn chưa nhập tên nhóm quyền',
+            //         'name.min'              => 'Tên nhóm quyền phải có độ dài từ 5 đến 100 ký tự',
+            //         'name.max'              => 'Tên nhóm quyền phải có độ dài từ 5 đến 100 ký tự',
+            //         'name.unique'           => 'Nhóm quyền này đã tồn tại',
+            //         'description.required'  => 'Bạn chưa nhập mô tả cho nhóm quyền',
+            //         'description.min'       => 'Mô tả cho nhóm quyền phải có tối thiểu 5 ký tự',
+            //     ]
+            // );
+
+            // dd($request);
+
+            $permissionGroup->name = $request->name;
+            $permissionGroup->description = $request->description;
+
+            // dd($request);
+
+            $permissionGroup->save();
+
+            // dd($permissionGroup);
+
+            return redirect('admin/permission-group')->with('success', 'Cập nhật thành công');
+        }
+        catch(Exception $e){
+            return redirect('admin/permission-group')->with('error', 'Cập nhật thất bại');
         }
     }
 
@@ -128,33 +170,19 @@ class GroupPermissionController extends Controller
      */
     public function destroy($id)
     {
-        //
-        $permissionGroup = GroupPermission::findOrFail($id);
-
-        if (!$permissionGroup) {
-            return redirect()->back()->with('error', 'Dữ liệu không tồn tại');
-        }
-
         try {
+            $permissionGroup = GroupPermission::findOrFail($id);
+
+            if (!$permissionGroup) {
+                return redirect('admin/permission-group')->with('error', 'Dữ liệu không tồn tại');
+            }
+
             $permissionGroup->delete();
-            return redirect()->back()->with('success', 'Xóa thành công');
-        } catch (Exception $e) {
-            return redirect()->back()->with('error', 'Đã xảy ta lỗi. Không thể xóa dữ liệu');
+
+            return redirect('admin/permission-group')->with('success', 'Đã xóa thành công');
         }
-    }
-
-    //
-    public function createOrUpdate($request, $id = '')
-    {
-        $groupPermission = new GroupPermission();
-
-        if ($id) {
-            $groupPermission = GroupPermission::findOrFail($id);
+        catch (Exception $e) {
+            return redirect('admin/permission-group')->with('error', 'Xóa thất bại');
         }
-
-        $groupPermission->name = $request->name;
-        $groupPermission->description = $request->description;
-
-        $groupPermission->save();
     }
 }

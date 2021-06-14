@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Department;
 use Illuminate\Http\Request;
 use App\User;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use App\Models\Role;
 
 class UserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth.jwt');
+        // $this->middleware('auth.jwt');
+        $this->middleware(['auth' => 'admin']);
     }
 
     /**
@@ -26,10 +31,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
-        return response()->json([
-            'data'      => $users,
-            'message'   => 'Success'
-        ], 200);
+        return view('admin.user.list', compact('users'));
     }
 
     /**
@@ -39,7 +41,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        $roles = Role::all();
+        $departments = Department::all();
+        return view('admin.user.add', compact('roles', 'departments'));
     }
 
     /**
@@ -50,7 +54,37 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        dd($request->all());
+        try {
+            $user = new User();
+
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->phone = $request->phone;
+            $user->gender = $request->gender;
+            $user->dob = $request->dob;
+            $user->department_id = $request->department_id;
+
+            $user->password = Hash::make($request->password);
+            $user->role = $request->role_id;
+            $user->remember_token = $request->_token;
+
+            // Default Fields.
+            $user->email_verified_at = now();
+            $user->position_id = 1;
+            $user->education_level_id = 1;
+            $user->has_been_evaluated = false;
+
+            $user->save();
+
+            // Attach Role.
+            $user->attachRole($request->role_id);
+
+            return redirect('admin/user')->with('success', 'Thêm mới thành công');
+        }
+        catch(Exception $e){
+            return redirect('admin/user')->with('error', 'Thêm mới thất bại');
+        }
     }
 
     /**
@@ -68,6 +102,10 @@ class UserController extends Controller
         ],200);
     }
 
+    /**
+     * Get current user.
+     * @return \Illuminate\Http\Response
+     */
     public function currentUser(){
         $user = Auth::user();
         return response()->json([
@@ -75,6 +113,7 @@ class UserController extends Controller
             'message' => "Success"
         ],200);
     }
+
     /**
      * Show the form for editing the specified resource.
      *
@@ -83,7 +122,14 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        //
+        $user = User::findOrFail($id);
+        $roles = Role::orderBy('id', 'DESC')->get();
+        $user_roles = $user->roles()->pluck('id', 'id')->toArray();
+
+        foreach ($user->roles as $key => $role) {
+            $user_roles[] = $role->id;
+        }
+        return view('admin.user.edit', compact('user','roles','user_roles'));
     }
 
     /**
@@ -95,7 +141,40 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            // Find and Update.
+            $user = User::findOrFail($id);
+
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->phone = $request->phone;
+            $user->gender = $request->gender;
+            $user->dob = $request->dob;
+            $user->department_id = $request->department_id;
+
+            $user->password = Hash::make($request->password);
+            $user->role = $request->role_id;
+            $user->remember_token = $request->_token;
+
+            // Default Fields.
+            $user->email_verified_at = now();
+            $user->position_id = 1;
+            $user->education_level_id = 1;
+            $user->has_been_evaluated = false;
+
+            $user->save();
+
+            // Delete old relationship.
+            DB::table('role_user')->where('user_id', $id)->delete();
+
+            // Attach Role.
+            $user->attachRole($request->role_id);
+
+            return redirect('admin/user')->with('success', 'Cập nhật thành công');
+        }
+        catch(Exception $e){
+            return redirect('admin/user')->with('error', 'Cập nhật thất bại');
+        }
     }
 
     /**
@@ -106,25 +185,39 @@ class UserController extends Controller
      */
     public function destroy(User $user, $id)
     {
-        $role = Auth::user()->role;
-        if($role === 4){
-            try{
-                $user->delete();
+        // $role = Auth::user()->role;
+        // if($role === 4){
+        //     try{
+        //         $user->delete();
 
-                return response()->json([
-                    'message' => 'User deleted successfully!'
-                ], 200);
+        //         return response()->json([
+        //             'message' => 'User deleted successfully!'
+        //         ], 200);
+        //     }
+        //     catch(Exception $e){
+        //         return response()->json([
+        //             'message' => $e->getMessage()
+        //         ], 500);
+        //     }
+        // }
+        // else{
+        //     return response()->json([
+        //         'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+        //     ], 403);
+        // }
+        try {
+            $user = User::findOrFail($id);
+
+            if (!$user) {
+                return redirect('admin/user')->with('error', 'Dữ liệu không tồn tại');
             }
-            catch(Exception $e){
-                return response()->json([
-                    'message' => $e->getMessage()
-                ], 500);
-            }
+
+            $user->delete();
+
+            return redirect('admin/user')->with('success', 'Đã xóa thành công');
         }
-        else{
-            return response()->json([
-                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
-            ], 403);
+        catch(Exception $e){
+            return redirect('admin/user')->with('error', 'Xóa thất bại');
         }
     }
 

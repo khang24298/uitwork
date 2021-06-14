@@ -9,14 +9,17 @@ use Shanmuga\LaravelEntrust\Models\EntrustPermission;
 
 class Permission extends EntrustPermission
 {
-    // use Factory;
-
     protected $table = 'permissions';
 
     protected $fillable = ['name', 'display_name', 'description', 'group_permission_id'];
 
-    public function groups()
+    public function group()
     {
         return $this->belongsTo(GroupPermission::class, 'group_permission_id', 'id');
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class);
     }
 }
