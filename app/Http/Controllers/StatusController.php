@@ -25,8 +25,12 @@ class StatusController extends Controller
     public function index()
     {
         try{
-            $status = Status::orderBy('type_id','ASC')->get();;
-
+            if(Auth::user()->role > 2){
+                $status = Status::orderBy('type_id','ASC')->get();
+            }
+            else{
+                $status = Status::where('type_id','<','4')->orderBy('type_id','ASC')->get();
+            }
             return response()->json([
                 'data'      => $status,
                 'message'   => 'Success'
@@ -58,15 +62,16 @@ class StatusController extends Controller
     public function store(Request $request)
     {
         $role = Auth::user()->role;
-        if($role > 2){
+        if ($role > 2) {
             $this->validate($request, [
-                'name'  => 'required',
-                'type_id'  => 'required',
+                'name'      => 'required|max:20',
+                'type_id'   => 'required|numeric|min:0|max|5',
             ]);
+
             try{
                 $status = Status::create([
-                    'name'  => request('name'),
-                    'type_id'  => request('type_id'),
+                    'name'      => request('name'),
+                    'type_id'   => request('type_id'),
                 ]);
                 return response()->json([
                     'data'      => $status,
@@ -130,14 +135,15 @@ class StatusController extends Controller
         $role = Auth::user()->role;
         if($role > 2){
             $this->validate($request, [
-                'name'      => 'required',
-                'type_id'   => 'required',
+                'name'      => 'required|max:20',
+                'type_id'   => 'required|numeric|min:0|max|5',
             ]);
 
             try{
                 $status->name = request('name');
                 $status->type_id = request('type_id');
                 $status->save();
+
                 return response()->json([
                     'data'      => $status,
                     'message'   => 'Status updated successfully!'

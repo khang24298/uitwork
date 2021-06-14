@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Project;
 use App\Status;
+use App\User;
+use App\Notification;
+use App\Jobs\NotificationJob;
 use Exception;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Http\Request;
@@ -12,16 +15,16 @@ use Illuminate\Support\Facades\DB;
 use App\Task;
 class ProjectsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function __construct()
     {
         $this->middleware('auth.jwt');
     }
 
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
         try{
@@ -66,17 +69,35 @@ class ProjectsController extends Controller
     public function store(Request $request)
     {
         $role = Auth::user()->role;
-        if($role > 2){
+
+        if ($role > 2) {
             $this->validate($request, [
                 'project_name'  => 'required|max:255',
                 'description'   => 'required',
             ]);
+
             try{
                 $project = Project::create([
                     'project_name'  => request('project_name'),
                     'description'   => request('description'),
                     'user_id'       => Auth::user()->id
                 ]);
+
+                // // Create Notification.
+                // $message = Auth::user()->name.' created a new project: '.request('project_name').'.';
+
+                // $notification = ([
+                //     'user_id'       => Auth::user()->id,
+                //     'type_id'       => 1,
+                //     'message'       => $message,
+                //     'content'       => json_encode($project),
+                //     'receiver_id'   => 0,
+                //     'has_seen'      => false,
+                // ]);
+
+                // // Dispatch to NotificationJob.
+                // NotificationJob::dispatch($notification);
+
                 return response()->json([
                     'data'      => $project,
                     'message'   => 'Success'
@@ -125,7 +146,7 @@ class ProjectsController extends Controller
      */
     public function edit(Project $project)
     {
-        return view('projects.edit', ['project' => $project]);
+        // return view('projects.edit', ['project' => $project]);
     }
 
     /**
@@ -138,15 +159,33 @@ class ProjectsController extends Controller
     public function update(Request $request, Project $project)
     {
         $role = Auth::user()->role;
-        if($role > 2){
+
+        if ($role > 2) {
             $this->validate($request, [
                 'project_name'  => 'required|max:255',
                 'description'   => 'required',
             ]);
-            try{
+
+            try {
                 $project->project_name = request('project_name');
                 $project->description = request('description');
                 $project->save();
+
+                // // Create Notification.
+                // $message = Auth::user()->name.' updated the '.request('project_name').' project.';
+
+                // $notification = ([
+                //     'user_id'       => Auth::user()->id,
+                //     'type_id'       => 1,
+                //     'message'       => $message,
+                //     'content'       => json_encode($project),
+                //     'receiver_id'   => 0,
+                //     'has_seen'      => false,
+                // ]);
+
+                // // Dispatch to NotificationJob.
+                // NotificationJob::dispatch($notification);
+
                 return response()->json([
                     'data'      => $project,
                     'message'   => 'Project updated successfully!'
@@ -174,9 +213,26 @@ class ProjectsController extends Controller
     public function destroy(Project $project)
     {
         $role = Auth::user()->role;
-        if($role > 2){
-            try{
+
+        if ($role > 2) {
+            try {
                 $project->delete();
+
+                // // Create Notification.
+                // $message = Auth::user()->name.' deleted the '.$project->project_name.' project.';
+
+                // $notification = ([
+                //     'user_id'       => Auth::user()->id,
+                //     'type_id'       => 1,
+                //     'message'       => $message,
+                //     'content'       => json_encode($project),
+                //     'receiver_id'   => 0,
+                //     'has_seen'      => false,
+                // ]);
+
+                // // Dispatch to NotificationJob.
+                // NotificationJob::dispatch($notification);
+
                 return response()->json([
                     'message' => 'Project deleted successfully!'
                 ], 200);
@@ -196,8 +252,13 @@ class ProjectsController extends Controller
 
     public function getTasksByProjectID(int $project_id)
     {
-        try {   
-            $statuses = Status::orderBy('type_id','ASC')->get();
+        try {
+            if(Auth::user()->role > 2){
+                $statuses = Status::orderBy('type_id','ASC')->get();
+            }
+            else{
+                $statuses = Status::where('type_id','<','5')->orderBy('type_id','ASC')->get();
+            }
             $tasksByProject = [];
             foreach($statuses as $status){
                 $taskList = Task::where([

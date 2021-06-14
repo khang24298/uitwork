@@ -28,25 +28,25 @@
                 <!-- /.nav-second-level -->
             </li>
             <li>
-                <a href="#"><i class="fa fa-cube fa-fw"></i> Product<span class="fa arrow"></span></a>
+                <a href="#"><i class="fa fa-cube fa-fw"></i>Quyền<span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
                     <li>
-                        <a href="#">List Product</a>
+                        <a href="#">Danh sách quyền</a>
                     </li>
                     <li>
-                        <a href="#">Add Product</a>
+                        <a href="#">Thêm quyền</a>
                     </li>
                 </ul>
                 <!-- /.nav-second-level -->
             </li>
             <li>
-                <a href="#"><i class="fa fa-users fa-fw"></i> User<span class="fa arrow"></span></a>
+                <a href="#"><i class="fa fa-users fa-fw"></i> Thành viên<span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
                     <li>
-                        <a href="#">List User</a>
+                        <a href="#">Danh sách thành viên</a>
                     </li>
                     <li>
-                        <a href="#">Add User</a>
+                        <a href="#">Thêm thành viên</a>
                     </li>
                 </ul>
                 <!-- /.nav-second-level -->

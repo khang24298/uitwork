@@ -26,7 +26,7 @@ class RankingController extends Controller
     public function index()
     {
         try{
-            $ranking = Ranking::get();
+            $ranking = Ranking::all();
 
             return response()->json([
                 'data'      => $ranking,
@@ -59,14 +59,26 @@ class RankingController extends Controller
     public function store(Request $request)
     {
         $role = Auth::user()->role;
-        if($role > 2){
+        if($role > 2) {
+            $this->validate($request, [
+                'user_id'                           => 'required|integer',
+                'score_by_task_criteria'            => 'required|double',
+                'score_by_personnel_criteria'       => 'required|double',
+                'total_score'                       => 'required|double',
+                'rank_by_task_criteria_score'       => 'required|integer',
+                'rank_by_personnel_criteria_score'  => 'required|integer',
+                'total_rank'                        => 'required|integer'
+            ]);
 
-            try{
+            try {
                 $ranking = Ranking::create([
-                    'user_id'                       => Auth::user()->id,
-                    'rank_by_task_criteria_score'   => request('rank_by_task_criteria_score'),
-                    'rank_by_user_criteria_score'   => request('rank_by_user_criteria_score'),
-                    'total_rank'                    => request('total_rank'),
+                    'user_id'                           => request('user_id'),
+                    'score_by_task_criteria'            => request('score_by_task_criteria'),
+                    'score_by_personnel_criteria'       => request('score_by_personnel_criteria'),
+                    'total_score'                       => request('total_score'),
+                    'rank_by_task_criteria_score'       => request('rank_by_task_criteria_score'),
+                    'rank_by_personnel_criteria_score'  => request('rank_by_personnel_criteria_score'),
+                    'total_rank'                        => request('total_rank'),
                 ]);
                 return response()->json([
                     'data'      => $ranking,
@@ -79,7 +91,7 @@ class RankingController extends Controller
                 ], 500);
             }
         }
-        else{
+        else {
             return response()->json([
                 'message' => "You don't have access to this resource! Please contact with administrator for more information!"
             ], 403);
@@ -128,11 +140,25 @@ class RankingController extends Controller
     public function update(Request $request, Ranking $ranking)
     {
         $role = Auth::user()->role;
-        if($role > 2){
-            try{
-                $ranking->user_id = Auth::user()->id;
-                $ranking->rank_by_user_criteria_score = request('rank_by_user_criteria_score');
+        if($role > 2) {
+            $this->validate($request, [
+                'user_id'                           => 'required|integer',
+                'score_by_task_criteria'            => 'required|double',
+                'score_by_personnel_criteria'       => 'required|double',
+                'total_score'                       => 'required|double',
+                'rank_by_task_criteria_score'       => 'required|integer',
+                'rank_by_personnel_criteria_score'  => 'required|integer',
+                'total_rank'                        => 'required|integer'
+            ]);
+
+            try {
+                $ranking->user_id = request('user_id');
+                $ranking->score_by_task_criteria = request('score_by_task_criteria');
+                $ranking->score_by_personnel_criteria = request('score_by_personnel_criteria');
+                $ranking->total_score = request('total_score');
+
                 $ranking->rank_by_task_criteria_score = request('rank_by_task_criteria_score');
+                $ranking->rank_by_personnel_criteria_score = request('rank_by_personnel_criteria_score');
                 $ranking->total_rank = request('total_rank');
                 $ranking->save();
 
@@ -208,15 +234,15 @@ class RankingController extends Controller
         }
     }
 
-    public function getUserRankByUserCriteriaScore(int $user_id)
+    public function getUserRankByPersonnelCriteriaScore(int $user_id)
     {
         try {
-            $userRankByUserCriteriaScore = DB::table('rankings')
-                ->select('rank_by_user_criteria_score')
+            $userRankByPersonnelCriteriaScore = DB::table('rankings')
+                ->select('rank_by_personnel_criteria_score')
                 ->where('user_id', $user_id)->get();
 
             return response()->json([
-                'data'      => $userRankByUserCriteriaScore,
+                'data'      => $userRankByPersonnelCriteriaScore,
                 'message'   => 'Success'
             ], 200);
         }
@@ -308,32 +334,32 @@ class RankingController extends Controller
         }
     }
 
-    public function getUserCriteriaScoreRankList()
+    public function getPersonnelCriteriaScoreRankList()
     {
         try {
 
-            // Get user criteria score group by user id.
-            $userCriteriaScore = DB::table('evaluation')
+            // Get personnel criteria score group by user id.
+            $personnelCriteriaScore = DB::table('evaluation')
                 ->join('users', 'users.id', '=', 'evaluation.user_id')
                 ->select('evaluation.user_id', 'users.name', DB::raw('SUM(score) AS totalScore'))
                 ->groupBy('user_id')
                 ->orderByDesc('totalScore')->get();
 
             // Convert to Array.
-            foreach($userCriteriaScore as $object) {
-                $userRankByUserCriteriaScore[] = (array) $object;
+            foreach($personnelCriteriaScore as $object) {
+                $userRankByPersonnelCriteriaScore[] = (array) $object;
             }
 
             // Delete unused columns.
             // $this->delete_column($userRankByUserCriteriaScore, 0);
 
             // Add rank field.
-            for ($i = 0; $i < count($userRankByUserCriteriaScore); $i++) {
-                $userRankByUserCriteriaScore[$i]['rank'] = $i + 1;
+            for ($i = 0; $i < count($userRankByPersonnelCriteriaScore); $i++) {
+                $userRankByPersonnelCriteriaScore[$i]['rank'] = $i + 1;
             }
 
             return response()->json([
-                'data'      => $userRankByUserCriteriaScore,
+                'data'      => $userRankByPersonnelCriteriaScore,
                 'message'   => 'Success'
             ], 200);
         }
@@ -374,26 +400,26 @@ class RankingController extends Controller
                     ->select('user_task.name', 'evaluation.score')
                     ->where('user_task.userID', $user_id)->sum('score');
 
-                $score = $score_1 + $score_2;
+                $totalScore = $score_1 + $score_2;
 
                 // Get user name by user id.
                 $userName = DB::table('users')->select('name')->where('users.id', $user_id)->get();
 
                 $newRanking = array(
-                    'user_id'   => $user_id['id'],
-                    'user_name' => $userName[0]->name,
-                    'score'     => $score
+                    'user_id'       => $user_id['id'],
+                    'user_name'     => $userName[0]->name,
+                    'totalScore'    => $totalScore
                 );
 
                 array_push($totalRank, $newRanking);
 
                 // array_push($totalRank['user_id'], $user_id['id']);
-                // array_push($totalRank['score'], $score);
+                // array_push($totalRank['totalScore'], $totalScore);
             }
 
-            // Sort by score.
+            // Sort by totalScore.
             usort($totalRank, function($a, $b) {
-                return $b['score'] <=> $a['score'];
+                return $b['totalScore'] <=> $a['totalScore'];
             });
 
             // Add rank field.
@@ -436,14 +462,50 @@ class RankingController extends Controller
 	            $date = date('Y-m-d h:i:s');
 
                 DB::table('rankings')->insert([
-                    'user_id'                       => $user_id['id'],
-                    'rank_by_task_criteria_score'   => $userRankValues[0],
-                    'rank_by_user_criteria_score'   => $userRankValues[1],
-                    'total_rank'                    => $userRankValues[2],
-                    'created_at'                    => $date,
-                    'updated_at'                    => $date
+                    'user_id'                           => $user_id['id'],
+                    'score_by_task_criteria'            => $userRankValues[0],
+                    'score_by_personnel_criteria'       => $userRankValues[1],
+                    'total_score'                       => $userRankValues[2],
+                    'rank_by_task_criteria_score'       => $userRankValues[3],
+                    'rank_by_personnel_criteria_score'  => $userRankValues[4],
+                    'total_rank'                        => $userRankValues[5],
+                    'created_at'                        => $date,
+                    'updated_at'                        => $date
                 ]);
             }
+
+            return response()->json([
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function testInsert(int $user_id)
+    {
+        try {
+            $temp = $this->calcValuesForOneUser($user_id);
+            $userRankValues = json_decode(json_encode($temp), true)['original']['data'];
+
+            // Get current date and time.
+            date_default_timezone_set('Asia/Ho_Chi_Minh');
+            $date = date('Y-m-d h:i:s');
+
+            DB::table('rankings')->insert([
+                'user_id'                           => $user_id,
+                'score_by_task_criteria'            => $userRankValues[0],
+                'score_by_personnel_criteria'       => $userRankValues[1],
+                'total_score'                       => $userRankValues[2],
+                'rank_by_task_criteria_score'       => $userRankValues[3],
+                'rank_by_personnel_criteria_score'  => $userRankValues[4],
+                'total_rank'                        => $userRankValues[5],
+                'created_at'                        => $date,
+                'updated_at'                        => $date
+            ]);
 
             return response()->json([
                 'message'   => 'Success'
@@ -460,7 +522,7 @@ class RankingController extends Controller
     {
         try {
 
-            // Get first rank.
+            // Get first score and rank.
             $rankByTaskCriteriaScore = $this->getTaskCriteriaScoreRankList();
 
             $userRankByTaskCriteriaScore = json_decode(json_encode($rankByTaskCriteriaScore), true);
@@ -470,27 +532,29 @@ class RankingController extends Controller
             for ($i = 0; $i < count($userFirstRankArray); $i++) {
                 $userID = $userFirstRankArray[$i]['user_id'];
                 if ($userID == $user_id) {
-                    $firstRank = $userFirstRankArray[$i]['rank'];
+                    $taskCriteriaScore = $userFirstRankArray[$i]['totalScore'];
+                    $taskCriteriaRank = $userFirstRankArray[$i]['rank'];
                     break;
                 }
             }
 
-            // Get second rank.
-            $rankByUserCriteriaScore = $this->getUserCriteriaScoreRankList();
+            // Get second score and rank.
+            $rankByPersonnelCriteriaScore = $this->getPersonnelCriteriaScoreRankList();
 
-            $userRankByUserCriteriaScore = json_decode(json_encode($rankByUserCriteriaScore), true);
+            $userRankByPersonnelCriteriaScore = json_decode(json_encode($rankByPersonnelCriteriaScore), true);
 
-            $userSecondRankArray = $userRankByUserCriteriaScore['original']['data'];
+            $userSecondRankArray = $userRankByPersonnelCriteriaScore['original']['data'];
 
             for ($i = 0; $i < count($userSecondRankArray); $i++) {
                 $userID = $userSecondRankArray[$i]['user_id'];
                 if ($userID == $user_id) {
-                    $secondRank = $userSecondRankArray[$i]['rank'];
+                    $personnelCriteriaScore = $userSecondRankArray[$i]['totalScore'];
+                    $personnelCriteriaRank = $userSecondRankArray[$i]['rank'];
                     break;
                 }
             }
 
-            // Get total rank.
+            // Get total score and rank.
             $rankByTotalScore = $this->getUserTotalRankList();
 
             $userTotalRank = json_decode(json_encode($rankByTotalScore), true);
@@ -500,16 +564,71 @@ class RankingController extends Controller
             for ($i = 0; $i < count($userTotalRankArray); $i++) {
                 $userID = $userTotalRankArray[$i]['user_id'];
                 if ($userID == $user_id) {
+                    $totalScore = $userTotalRankArray[$i]['totalScore'];
                     $totalRank = $userTotalRankArray[$i]['rank'];
                     break;
                 }
             }
 
             $rankValues = array();
-            array_push($rankValues, $firstRank, $secondRank, $totalRank);
+            array_push($rankValues, $taskCriteriaScore, $personnelCriteriaScore, $totalScore,
+                $taskCriteriaRank, $personnelCriteriaRank, $totalRank);
 
             return response()->json([
                 'data'      => $rankValues,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUserRanking(int $user_id)
+    {
+        try {
+            $userRankingInfo = DB::table('rankings')->where('user_id', $user_id)->get();
+            return response()->json([
+                'data'      => $userRankingInfo,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUserRankingList()
+    {
+        try {
+            $allUserRanking = DB::table('rankings')->get();
+            return response()->json([
+                'data'      => $allUserRanking,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUserRankingListInUserDepartment()
+    {
+        try {
+            $userDepartmentID = Auth::user()->department_id;
+            $rankingInUserDepartment = DB::table('rankings')
+                ->join('users', 'users.id', '=', 'rankings.user_id')
+                ->select('rankings.*')
+                ->where('department_id', $userDepartmentID)->get();
+
+            return response()->json([
+                'data'      => $rankingInUserDepartment,
                 'message'   => 'Success'
             ], 200);
         }
