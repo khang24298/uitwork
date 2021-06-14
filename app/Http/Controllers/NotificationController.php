@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Notification;
 use Exception;
 use Illuminate\Http\Request;
-
+use App\Jobs\NotificationJob;
+use App\NotificationType;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +26,7 @@ class NotificationController extends Controller
     public function index()
     {
         try{
-            $notification = Notification::get();
+            $notification = Notification::all();
 
             return response()->json([
                 'data'      => $notification,
@@ -57,39 +58,34 @@ class NotificationController extends Controller
      */
     public function store(Request $request)
     {
-        $role = Auth::user()->role;
-
-        if($role > 2){
+        try {
+            // Validate.
             $this->validate($request, [
-                'type_id'   => 'required',
-                'message'   => 'required',
-                'content'   => 'required',
+                'type_id'       => 'required|integer',
+                'message'       => 'required',
+                'content'       => 'required',
+                'receiver_id'   => 'required|integer'
             ]);
 
-            try{
-                $notification = Notification::create([
-                    'type_id'   => request('type_id'),
-                    'user_id'   => Auth::user()->id,
-                    'message'   => request('message'),
-                    'content'   => request('content'),
-                    'has_seen'  => false,
-                ]);
+            // Create.
+            $notification = Notification::create([
+                'type_id'       => request('type_id'),
+                'user_id'       => Auth::user()->id,
+                'message'       => request('message'),
+                'content'       => request('content'),
+                'receiver_id'   => request('receiver_id'),
+                'has_seen'      => false,
+            ]);
 
-                return response()->json([
-                    'data'    => $notification,
-                    'message' => 'Success'
-                ], 200);
-            }
-            catch(Exception $e){
-                return response()->json([
-                    'message' => $e->getMessage()
-                ], 500);
-            }
-        }
-        else{
             return response()->json([
-                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
-            ], 403);
+                'data'    => $notification,
+                'message' => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -134,37 +130,33 @@ class NotificationController extends Controller
      */
     public function update(Request $request, Notification $notification)
     {
-        $role = Auth::user()->role;
-        if($role > 2){
+        try {
+            // Validate.
             $this->validate($request, [
-                'type_id'   => 'required',
-                'message'   => 'required',
-                'content'   => 'required',
+                'type_id'       => 'required|integer',
+                'message'       => 'required',
+                'content'       => 'required',
+                'receiver_id'   => 'required|integer'
             ]);
 
-            try{
-                $notification->user_id = Auth::user()->id;
-                $notification->type_id = request('type_id');
-                $notification->message = request('message');
-                $notification->content = request('content');
-                $notification->has_seen = request('has_seen');
-                $notification->save();
+            // Update.
+            $notification->user_id = Auth::user()->id;
+            $notification->type_id = request('type_id');
+            $notification->message = request('message');
+            $notification->content = request('content');
+            $notification->receiver_id = request('receiver_id');
+            $notification->has_seen = request('has_seen');
+            $notification->save();
 
-                return response()->json([
-                    'data'      => $notification,
-                    'message'   => 'Notification updated successfully!'
-                ], 200);
-            }
-            catch(Exception $e){
-                return response()->json([
-                    'message' => $e->getMessage()
-                ], 500);
-            }
-        }
-        else{
             return response()->json([
-                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
-            ], 403);
+                'data'      => $notification,
+                'message'   => 'Notification updated successfully!'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -177,8 +169,9 @@ class NotificationController extends Controller
     public function destroy(Notification $notification)
     {
         $role = Auth::user()->role;
-        if($role > 2){
-            try{
+
+        if ($role > 2) {
+            try {
                 $notification->delete();
                 return response()->json([
                     'message' => 'Notification deleted successfully!'
@@ -200,7 +193,17 @@ class NotificationController extends Controller
     public function getNotificationByUserID(int $user_id)
     {
         try {
-            $userNotification = Notification::where('user_id', $user_id)->get();
+            // Get notifications.
+            $userNotification = Notification::where('receiver_id', $user_id)->get();
+
+            // Get type_name of each notification.
+            foreach ($userNotification as $usrNft) {
+                $notificationType = NotificationType::select('type_name')
+                    ->where('type_id', $usrNft->type_id)->firstOrFail();
+
+                // Add type_name field to result.
+                $usrNft['type_name'] = $notificationType->type_name;
+            }
 
             return response()->json([
                 'data'      => $userNotification,
@@ -217,8 +220,6 @@ class NotificationController extends Controller
     public function updateHasSeenColumn($notification_id)
     {
         try {
-            // $notification = Notification::where('id', $notification_id)->update(['has_seen' => true]);
-
             $notification = Notification::findOrFail($notification_id);
             $notification->has_seen = true;
             $notification->save();

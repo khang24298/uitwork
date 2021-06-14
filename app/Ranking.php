@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Ranking extends Model
 {
     protected $fillable = [
-        'user_id', 'rank_by_task_criteria_score', 'rank_by_user_criteria_score', 'total_rank'
+        'user_id', 'score_by_task_criteria', 'score_by_personnel_criteria', 'total_score',
+        'rank_by_task_criteria_score', 'rank_by_personnel_criteria_score', 'total_rank'
     ];
 
     public function user()

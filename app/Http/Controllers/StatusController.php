@@ -25,8 +25,12 @@ class StatusController extends Controller
     public function index()
     {
         try{
-            $status = Status::orderBy('type_id','ASC')->get();;
-
+            if(Auth::user()->role > 2){
+                $status = Status::orderBy('type_id','ASC')->get();
+            }
+            else{
+                $status = Status::where('type_id','<','4')->orderBy('type_id','ASC')->get();
+            }
             return response()->json([
                 'data'      => $status,
                 'message'   => 'Success'

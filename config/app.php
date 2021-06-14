@@ -176,6 +176,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         // JWT API Auth
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
+        Shanmuga\LaravelEntrust\LaravelEntrustServiceProvider::class,
 
     ],
 
@@ -231,6 +232,9 @@ return [
         // JWT Auth Alias
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
+
+        // Laravel Entrust Alias
+        'LaravelEntrust'   => Shanmuga\LaravelEntrust\Facades\LaravelEntrustFacade::class,
     ],
 
 ];

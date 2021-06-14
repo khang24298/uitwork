@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\Task;
 use Illuminate\Support\Facades\Validator;
 use App\Notification;
+use App\Jobs\NotificationJob;
+use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -26,7 +28,7 @@ class EvaluationController extends Controller
      */
     public function index()
     {
-        try{
+        try {
             $evaluation = Evaluation::get();
 
             return response()->json([
@@ -62,7 +64,10 @@ class EvaluationController extends Controller
         $role = Auth::user()->role;
 
         // DataType of evaluations : Array.
-        $dataArray = $request->evaluations;
+        $dataArray = $request->all();
+
+        // Result variable.
+        $result = array();
 
         if ($role > 2) {
             try {
@@ -77,54 +82,99 @@ class EvaluationController extends Controller
                         'criteria_id'   => 'required|numeric',
                     ]);
 
-                    // Check if task_id already exists in evaluation.
-                    $taskIDList = DB::table('evaluation')->select('task_id')->where('task_id', '<>', null)->get();
-                    $taskIDListArray = json_decode(json_encode($taskIDList), true);
-                    $temp = array();
+                    // Get and assign null to task_id if it not exist.
+                    $taskID = $data['task_id'] ?? null;
 
-                    for ($i = 0; $i < count($taskIDListArray) - 1; $i++) {
-                        array_push($temp, $taskIDListArray[$i]['task_id']);
-                    }
+                    // Check if task_id already exists in evaluation if the passed task_id value is not null.
+                    if ($taskID !== null) {
+                        // Check if task_id already exists in evaluation.
+                        $taskIDList = DB::table('evaluation')->select('task_id')->where('task_id', '<>', null)->get();
+                        $taskIDListArray = json_decode(json_encode($taskIDList), true);
+                        $tempTaskIDArray = array();
 
-                    if (!in_array($data['task_id'], $temp)){
-                        try {
-                            $evaluation = Evaluation::create([
-                                'task_id'       => $data['task_id'] ?? null,
-                                'user_id'       => $data['user_id'] ?? null,
-                                'criteria_id'   => $data['criteria_id'],
-                                'score'         => $data['score'],
-                                'note'          => $data['note'],
-                            ]);
+                        for ($i = 0; $i < count($taskIDListArray) - 1; $i++) {
+                            array_push($tempTaskIDArray, $taskIDListArray[$i]['task_id']);
+                        }
 
-                            // Update task status to EVALUATED.
-                            if ($data['task_id']) {
-                                Task::where('id', $data['task_id'])->update(['status_id' => 4]);
+                        if (in_array($taskID, $tempTaskIDArray)) {
+                            // Check if the criteria_id already exists with this task_id.
+                            $criteriaIDList = DB::table('evaluation')
+                                ->select('criteria_id')
+                                ->where('task_id', $taskID)->get();
+
+                            $criteriaIDListArray = json_decode(json_encode($criteriaIDList), true);
+                            $tempCriteriaArray = array();
+
+                            for ($i = 0; $i < count($criteriaIDListArray) - 1; $i++) {
+                                array_push($tempCriteriaArray, $criteriaIDListArray[$i]['criteria_id']);
                             }
 
-                            // Create Notification.
-                            $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                            $message = $userName[0]->name.' created a new evaluation.';
+                            if (in_array($criteriaID, $tempCriteriaArray)) {
+                                return response()->json([
+                                    'message' => "The criteria_id value already exists with this same task_id. Please try another value."
+                                ], 500);
+                            }
+                        }
+                    }
 
-                            Notification::create([
-                                'user_id'   => Auth::user()->id,
-                                'type_id'   => 4,
-                                'message'   => $message,
-                                'content'   => json_encode($evaluation),
-                                'has_seen'  => false,
-                            ]);
+                    // Get and assign null to user_id if it not exist.
+                    $userID = $data['user_id'] ?? null;
+
+                    // Create.
+                    try {
+                        $evaluation = Evaluation::create([
+                            'task_id'       => $taskID,
+                            'user_id'       => $userID,
+                            'criteria_id'   => $criteriaID,
+                            'score'         => $data['score'],
+                            'note'          => $data['note'] ?? "",
+                        ]);
+
+                        if ($taskID !== null) {
+                            // Update task status to EVALUATED and has been evaluated field to TRUE.
+                            Task::where('id', $taskID)->update(['status_id' => 4]);
+                            Task::where('id', $taskID)->update(['has_been_evaluated' => true]);
+
+                            // Assign receiver_id in the notification table equal to assignee_id.
+                            $receiverID = Task::findOrFail($evaluation->task_id)->assignee_id;
                         }
-                        catch(Exception $e){
-                            return response()->json([
-                                'message' => $e->getMessage()
-                            ], 500);
+
+                        if ($userID !== null) {
+                            // Update has been evaluated field to TRUE.
+                            User::where('id', $userID)->update(['has_been_evaluated' => true]);
+
+                            // Assign receiver_id in the notification table equal to user_id.
+                            $receiverID = $userID;
                         }
-                    } else {
+
+                        // Get this evaluation and add to the result.
+                        $maxEvaluationID = DB::table('evaluation')->max('id');
+                        $temp = DB::table('evaluation')->where('id', $maxEvaluationID)->get()->toArray();
+                        $result = array_merge($result, $temp);
+
+                        // Create Notification.
+                        $message = Auth::user()->name.' created a new evaluation.';
+
+                        $notification = ([
+                            'user_id'       => Auth::user()->id,
+                            'type_id'       => 4,
+                            'message'       => $message,
+                            'content'       => json_encode($evaluation),
+                            'receiver_id'   => $receiverID,
+                            'has_seen'      => false,
+                        ]);
+
+                        // Dispatch to NotificationJob.
+                        NotificationJob::dispatch($notification);
+                    }
+                    catch(Exception $e){
                         return response()->json([
-                            'message' => "The criteria_id value already exists with this same task_id. Please try another value."
+                            'message' => $e->getMessage()
                         ], 500);
                     }
                 }
                 return response()->json([
+                    'data'      => $result,
                     'message'   => 'Success'
                 ], 200);
             }
@@ -188,58 +238,101 @@ class EvaluationController extends Controller
             $criteriaID = request('criteria_id');
             $maxScore = DB::table('criteria')->select('max_score')->where('id', $criteriaID)->get();
 
-            // Check if task_id already exists in evaluation.
-            $task_id = request('task_id');
-            $taskIDList = DB::table('evaluation')->select('task_id')->where('task_id', '<>', null)->get();
-            $taskIDListArray = json_decode(json_encode($taskIDList), true);
-            $temp = array();
+            // Validate.
+            $this->validate($request, [
+                'score'         => "required|numeric|max:$maxScore",
+                'criteria_id'   => 'required|numeric',
+            ]);
 
-            for ($i = 0; $i < count($taskIDListArray) - 1; $i++) {
-                array_push($temp, $taskIDListArray[$i]['task_id']);
+            // Get and assign null to task_id if it not exist.
+            $taskID = request('task_id') ?? null;
+
+            // Check if task_id already exists in evaluation if the passed task_id value is not null.
+            if ($taskID !== null) {
+                // Check if task_id already exists in evaluation.
+                $taskIDList = DB::table('evaluation')->select('task_id')->where('task_id', '<>', null)->get();
+                $taskIDListArray = json_decode(json_encode($taskIDList), true);
+                $tempTaskIDArray = array();
+
+                for ($i = 0; $i < count($taskIDListArray) - 1; $i++) {
+                    array_push($tempTaskIDArray, $taskIDListArray[$i]['task_id']);
+                }
+
+                if (in_array($taskID, $tempTaskIDArray)) {
+                    // Check if the criteria_id already exists with this task_id.
+                    $criteriaIDList = DB::table('evaluation')
+                        ->select('criteria_id')
+                        ->where('task_id', $taskID)->get();
+
+                    $criteriaIDListArray = json_decode(json_encode($criteriaIDList), true);
+                    $tempCriteriaArray = array();
+
+                    for ($i = 0; $i < count($criteriaIDListArray) - 1; $i++) {
+                        array_push($tempCriteriaArray, $criteriaIDListArray[$i]['criteria_id']);
+                    }
+
+                    if (in_array($criteriaID, $tempCriteriaArray)) {
+                        return response()->json([
+                            'message' => "The criteria_id value already exists with this same task_id. Please try another value."
+                        ], 500);
+                    }
+                }
             }
 
-            if (!in_array($task_id, $temp)){
-                $this->validate($request, [
-                    'score'         => "required|numeric|max:$maxScore",
-                    'criteria_id'   => 'required|numeric',
+            // Get and assign null to user_id if it not exist.
+            $userID = request('user_id') ?? null;
+
+            try {
+                $evaluation->user_id = $userID;
+                $evaluation->task_id = $taskID;
+                $evaluation->criteria_id = $criteriaID;
+                $evaluation->score = request('score');
+                $evaluation->note = request('note') ?? "";
+                $evaluation->save();
+
+                if ($taskID !== null) {
+                    // Update task status to EVALUATED and has been evaluated field to TRUE.
+                    Task::where('id', $taskID)->update(['status_id' => 4]);
+                    Task::where('id', $taskID)->update(['has_been_evaluated' => true]);
+
+                    // Assign receiver_id in the notification table equal to assignee_id.
+                    $receiverID = Task::findOrFail($evaluation->task_id)->assignee_id;
+                }
+
+                if ($userID !== null) {
+                    // Update has been evaluated field to TRUE.
+                    User::where('id', $userID)->update(['has_been_evaluated' => true]);
+
+                    // Assign receiver_id in the notification table equal to user_id.
+                    $receiverID = $userID;
+                }
+
+                // Create Notification.
+                $message = Auth::user()->name.' updated the evaluation.';
+
+                $notification = ([
+                    'user_id'       => Auth::user()->id,
+                    'type_id'       => 4,
+                    'message'       => $message,
+                    'content'       => json_encode($evaluation),
+                    'receiver_id'   => $receiverID,
+                    'has_seen'      => false,
                 ]);
 
-                try {
-                    $evaluation->user_id = request('user_id');
-                    $evaluation->task_id = request('task_id');
-                    $evaluation->criteria_id = request('criteria_id');
-                    $evaluation->note = request('note');
-                    $evaluation->score = request('score');
-                    $evaluation->save();
+                // Dispatch to NotificationJob.
+                NotificationJob::dispatch($notification);
 
-                    // Create Notification.
-                    $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                    $message = $userName[0]->name.' updated the evaluation.';
-
-                    Notification::create([
-                        'user_id'   => Auth::user()->id,
-                        'type_id'   => 4,
-                        'message'   => $message,
-                        'content'   => json_encode($evaluation),
-                        'has_seen'  => false,
-                    ]);
-
-                    return response()->json([
-                        'data'      => $evaluation,
-                        'message'   => 'Evaluation updated successfully!'
-                    ], 200);
-                }
-                catch(Exception $e){
-                    return response()->json([
-                        'message' => $e->getMessage()
-                    ], 500);
-                }
-            } else {
                 return response()->json([
-                    'message' => "The criteria_id value already exists with this same task_id. Please try another value."
+                    'data'      => $evaluation,
+                    'message'   => 'Evaluation updated successfully!'
                 ], 200);
             }
-        } else{
+            catch(Exception $e){
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        } else {
             return response()->json([
                 'message' => "You don't have access to this resource! Please contact with administrator for more information!"
             ], 403);
@@ -255,21 +348,36 @@ class EvaluationController extends Controller
     public function destroy(Evaluation $evaluation)
     {
         $role = Auth::user()->role;
-        if($role > 2){
-            try{
-                $evaluation->delete();
+        if ($role > 2) {
+            try {
+                if ($evaluation->task_id !== null) {
+                    // Assign receiver_id in the notification table equal to assignee_id.
+                    $receiverID = Task::findOrFail($evaluation->task_id)->assignee_id;
+                }
+
+                if ($evaluation->user_id !== null) {
+                    // Assign receiver_id in the notification table equal to user_id.
+                    $receiverID = $evaluation->user_id;
+                }
 
                 // Create Notification.
-                $userName = DB::table('users')->select('name')->where('id', Auth::user()->id)->get();
-                $message = $userName[0]->name.' deleted the evaluation.';
+                $message = Auth::user()->name.' deleted the evaluation.';
 
-                Notification::create([
-                    'user_id'   => Auth::user()->id,
-                    'type_id'   => 4,
-                    'message'   => $message,
-                    'content'   => json_encode($evaluation),
-                    'has_seen'  => false,
+                $notification = ([
+                    'user_id'       => Auth::user()->id,
+                    'type_id'       => 4,
+                    'message'       => $message,
+                    'content'       => json_encode($evaluation),
+                    'receiver_id'   => $receiverID,
+                    'has_seen'      => false,
                 ]);
+
+                // Dispatch to NotificationJob.
+                NotificationJob::dispatch($notification);
+
+                // Delete.
+                $evaluation->delete();
+
                 return response()->json([
                     'message' => 'Evaluation deleted successfully!'
                 ], 200);
