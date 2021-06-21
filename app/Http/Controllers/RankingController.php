@@ -624,7 +624,7 @@ class RankingController extends Controller
             $userDepartmentID = Auth::user()->department_id;
             $rankingInUserDepartment = DB::table('rankings')
                 ->join('users', 'users.id', '=', 'rankings.user_id')
-                ->select('rankings.*')
+                ->select('rankings.*','users.name')
                 ->where('department_id', $userDepartmentID)->get();
 
             return response()->json([
