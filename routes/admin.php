@@ -4,7 +4,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Admin\LoginController;
-use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ViewErrorBag;
@@ -58,14 +57,14 @@ Route::namespace('Admin')->group(function () {
 
         // User
         Route::prefix('user')->group(function() {
-            Route::get('/', [UserController::class, 'index'])->name('user.index');
-            Route::get('/add', [UserController::class, 'create'])->name('user.add');
-            Route::post('/add', [UserController::class, 'store'])->name('user.store');
+            Route::get('/', 'UserController@index')->name('user.index');
+            Route::get('/add', 'UserController@create')->name('user.add');
+            Route::post('/add', 'UserController@store')->name('user.store');
 
-            Route::get('/edit/{id}', [UserController::class, 'edit'])->name('user.edit');
-            Route::put('/edit/{id}', [UserController::class, 'update'])->name('user.update');
+            Route::get('/edit/{id}', 'UserController@edit')->name('user.edit');
+            Route::put('/edit/{id}', 'UserController@update')->name('user.update');
 
-            Route::get('/delete/{id}', [UserController::class, 'destroy'])->name('user.delete');
+            Route::get('/delete/{id}', 'UserController@destroy')->name('user.delete');
         });
     });
 });

@@ -19,8 +19,7 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        // $this->middleware('auth.jwt');
-        $this->middleware(['auth' => 'admin']);
+        $this->middleware('auth.jwt');
     }
 
     /**
@@ -30,8 +29,11 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::with('userRole', 'department')->get();
-        return view('admin.user.list', compact('users'));
+        $users = User::all();
+        return response()->json([
+            'data'      => $users,
+            'message'   => 'Success'
+        ], 200);
     }
 
     /**
@@ -41,9 +43,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        $roles = Role::all();
-        $departments = Department::all();
-        return view('admin.user.add', compact('roles', 'departments'));
+        //
     }
 
     /**
@@ -54,37 +54,7 @@ class UserController extends Controller
      */
     public function store(UserStoreRequest $request)
     {
-        dd($request->all());
-        try {
-            $user = new User();
-
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->phone = $request->phone;
-            $user->gender = $request->gender;
-            $user->dob = $request->dob;
-            $user->department_id = $request->department_id;
-
-            $user->password = Hash::make($request->password);
-            $user->role = $request->role_id;
-            $user->remember_token = $request->_token;
-
-            // Default Fields.
-            $user->email_verified_at = now();
-            $user->position_id = 1;
-            $user->education_level_id = 1;
-            $user->has_been_evaluated = false;
-
-            $user->save();
-
-            // Attach Role.
-            $user->attachRole($request->role_id);
-
-            return redirect('admin/user')->with('success', 'Thêm mới thành công');
-        }
-        catch(Exception $e){
-            return redirect('admin/user')->with('error', 'Thêm mới thất bại');
-        }
+        //
     }
 
     /**
@@ -106,11 +76,12 @@ class UserController extends Controller
      * Get current user.
      * @return \Illuminate\Http\Response
      */
-    public function currentUser(){
+    public function currentUser()
+    {
         $user = Auth::user();
         return response()->json([
-            'data' => $user,
-            'message' => "Success"
+            'data'      => $user,
+            'message'   => "Success"
         ],200);
     }
 
@@ -122,19 +93,7 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        $user = User::findOrFail($id);
-        $roles = Role::all();
-        $user_roles = DB::table('role_user')->get();
-        $departments = Department::all();
-
-        // $roles = Role::all();
-        // $user_roles = $user->userRole()->pluck('id', 'id')->toArray();
         //
-        // foreach ($user->roles as $key => $role) {
-        //     $user_roles[] = $role->id;
-        // }
-
-        return view('admin.user.edit', compact('user','roles','user_roles','departments'));
     }
 
     /**
@@ -146,31 +105,7 @@ class UserController extends Controller
      */
     public function update(UserUpdateRequest $request, $id)
     {
-        try {
-            // Find and Update.
-            $user = User::findOrFail($id);
-
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->phone = $request->phone;
-            $user->department_id = $request->department_id;
-
-            $user->role = $request->role_id;
-            $user->remember_token = $request->_token;
-
-            $user->save();
-
-            // Delete old relationship.
-            DB::table('role_user')->where('user_id', $id)->delete();
-
-            // Attach Role.
-            $user->attachRole($request->role_id);
-
-            return redirect('admin/user')->with('success', 'Cập nhật thành công');
-        }
-        catch(Exception $e){
-            return redirect('admin/user')->with('error', 'Cập nhật thất bại');
-        }
+        //
     }
 
     /**
@@ -181,20 +116,7 @@ class UserController extends Controller
      */
     public function destroy(User $user, $id)
     {
-        try {
-            $user = User::findOrFail($id);
-
-            if (!$user) {
-                return redirect('admin/user')->with('error', 'Dữ liệu không tồn tại');
-            }
-
-            $user->delete();
-
-            return redirect('admin/user')->with('success', 'Đã xóa thành công');
-        }
-        catch(Exception $e){
-            return redirect('admin/user')->with('error', 'Xóa thất bại');
-        }
+        //
     }
 
     public function getUserInfo(int $user_id)
