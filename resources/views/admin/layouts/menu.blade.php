@@ -12,45 +12,41 @@
                 </div>
                 <!-- /input-group -->
             </li>
+            <!-- Dashboard -->
             <li>
-                <a href="#"><i class="fa fa-dashboard fa-fw"></i>Bảng điều khiển</a>
+                <a href="{{ route('admin.dashboard') }}"><i class="fa fa-dashboard fa-fw"></i>Bảng điều khiển</a>
             </li>
+            <!-- End Dashboard -->
+
+            <!-- PermissionGroup -->
             <li>
-                <a href="#"><i class="fa fa-bar-chart-o fa-fw"></i>Nhóm Quyền<span class="fa arrow"></span></a>
-                <ul class="nav nav-second-level">
-                    <li>
-                        <a href="#">Danh sách nhóm quyền</a>
-                    </li>
-                    <li>
-                        <a href="#">Thêm nhóm quyền</a>
-                    </li>
-                </ul>
-                <!-- /.nav-second-level -->
+                <a href="{{ route('group.permission.index') }}"><i class="fa fa-bar-chart-o fa-fw"></i>Nhóm Quyền<span class="fa arrow"></span></a>
             </li>
+            <!-- End PermissionGroup -->
+
+            <!-- Permission -->
             <li>
-                <a href="#"><i class="fa fa-cube fa-fw"></i>Quyền<span class="fa arrow"></span></a>
-                <ul class="nav nav-second-level">
-                    <li>
-                        <a href="#">Danh sách quyền</a>
-                    </li>
-                    <li>
-                        <a href="#">Thêm quyền</a>
-                    </li>
-                </ul>
-                <!-- /.nav-second-level -->
+                <a href="{{ route('permission.index') }}"><i class="fa fa-cube fa-fw"></i>Quyền<span class="fa arrow"></span></a>
             </li>
+            <!-- End Permission -->
+
+            <!-- Role -->
             <li>
-                <a href="#"><i class="fa fa-users fa-fw"></i> Thành viên<span class="fa arrow"></span></a>
-                <ul class="nav nav-second-level">
-                    <li>
-                        <a href="#">Danh sách thành viên</a>
-                    </li>
-                    <li>
-                        <a href="#">Thêm thành viên</a>
-                    </li>
-                </ul>
-                <!-- /.nav-second-level -->
+                <a href="{{ route('role.index') }}"><i class="fa fa-cube fa-fw"></i>Vai trò<span class="fa arrow"></span></a>
             </li>
+            <!-- End Role -->
+
+            <!-- Member -->
+            <li>
+                <a href="#"><i class="fa fa-users fa-fw"></i>Thành viên<span class="fa arrow"></span></a>
+            </li>
+            <!-- End Member -->
+
+            <!-- Member -->
+            <li>
+                <a href="{{ route('user.index') }}"><i class="fa fa-users fa-fw"></i>Người dùng<span class="fa arrow"></span></a>
+            </li>
+            <!-- End Member -->
         </ul>
     </div>
     <!-- /.sidebar-collapse -->

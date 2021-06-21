@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Support\Facades\Config;
@@ -15,13 +16,13 @@ class Role extends EntrustRole
 
     protected $fillable = ['name', 'display_name', 'description'];
 
-    public function permissionRole()
+    public function permissions()
     {
         return $this->belongsToMany(Permission::class, 'permission_role', 'role_id', 'permission_id');
     }
 
     public function users()
     {
-        return $this->belongsToMany(Config::get('auth.providers.users.model'), Config::get('entrust.tables.role_user'));
+        return $this->belongsToMany(User::class);
     }
 }

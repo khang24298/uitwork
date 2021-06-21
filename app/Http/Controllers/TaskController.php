@@ -10,10 +10,15 @@ use App\User;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Notifications\Notifiable;
+use App\Notifications\MailNotification;
+use Illuminate\Support\Facades\Notification as FacadesNotification;
 
 class TaskController extends Controller
 {
+    use Notifiable;
 
+    //
     public function __construct()
     {
         $this->middleware('auth.jwt');
@@ -101,6 +106,16 @@ class TaskController extends Controller
 
                 // Dispatch to NotificationJob.
                 NotificationJob::dispatch($notification);
+
+                // Test Mail
+                // if (request('priority') === 'High') {
+
+                //     $receiver = User::select('email')->where('id', request('assignee_id'))->get();
+                //     $task->email = $receiver[0]->email;
+
+                //     // $task->notify(new MailNotification());
+                //     FacadesNotification::send($task, new MailNotification());
+                // }
 
                 return response()->json([
                     'data'      => $task,
@@ -456,5 +471,14 @@ class TaskController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function routeNotificationForMail($notification)
+    {
+        // Return email address only...
+        return 'caotanan1234@gmail.com';
+
+        // Return email address and name...
+        // return [$this->email_address => $this->name];
     }
 }

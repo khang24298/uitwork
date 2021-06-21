@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class GroupPermissionRequest extends FormRequest
 {
@@ -24,8 +25,16 @@ class GroupPermissionRequest extends FormRequest
     public function rules()
     {
         return [
-            //
-            'name' => 'required|unique:group_permissions,name,'.$this->id,
+            'name' => [
+                'required',
+                'min:5',
+                'max:100',
+                Rule::unique('group_permissions', 'name')->ignore($this->id),
+            ],
+            'description' => [
+                'required',
+                'min:5',
+            ],
         ];
     }
 
@@ -33,8 +42,12 @@ class GroupPermissionRequest extends FormRequest
     public function messages()
     {
         return [
-            'name.required' => 'Mời bạn nhập nhóm quyền',
-            'name.unique'   => 'Nhóm quyền này đã tồn tại',
+            'name.required'         => 'Bạn chưa nhập tên nhóm quyền',
+            'name.min'              => 'Tên nhóm quyền phải có độ dài từ 5 đến 100 ký tự',
+            'name.max'              => 'Tên nhóm quyền phải có độ dài từ 5 đến 100 ký tự',
+            'name.unique'           => 'Nhóm quyền này đã tồn tại',
+            'description.required'  => 'Bạn chưa nhập mô tả cho nhóm quyền',
+            'description.min'       => 'Mô tả cho nhóm quyền phải có tối thiểu 5 ký tự',
         ];
     }
 }

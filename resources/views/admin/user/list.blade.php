@@ -5,47 +5,62 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header">User
-                    <small>List</small>
+                <h1 class="page-header">Người dùng
+                    <small>Danh sách</small>
+                    <a href="{{ route('user.add') }}" class="btn btn-primary pull-right">Thêm</a>
                 </h1>
             </div>
             <!-- /.col-lg-12 -->
+
+            <div class="col-lg-7">
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if(session()->has('success'))
+                    <div class="alert alert-success">{{ session()->get('success') }}</div>
+                @endif
+            </div>
+
             <table class="table table-striped table-bordered table-hover" id="dataTables-example">
                 <thead>
-                    <tr align="center">
+                    <tr>
                         <th>ID</th>
-                        <th>Username</th>
-                        <th>Level</th>
-                        <th>Status</th>
-                        <th>Delete</th>
-                        <th>Edit</th>
+                        <th>Tên người dùng</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>Phòng ban</th>
+                        <th>Vai trò</th>
+                        <th>Xóa</th>
+                        <th>Sửa</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="odd gradeX" align="center">
-                        <td>1</td>
-                        <td>quoctuan</td>
-                        <td>Superadmin</td>
-                        <td>Hiện</td>
-                        <td class="center"><i class="fa fa-trash-o  fa-fw"></i><a href="#"> Delete</a></td>
-                        <td class="center"><i class="fa fa-pencil fa-fw"></i> <a href="#">Edit</a></td>
+                    @foreach($users as $user)
+                    <tr class="odd gradeX">
+                        <td>{{$user->id}}</td>
+                        <td>{{$user->name}}</td>
+                        <td>{{$user->email}}</td>
+                        <td>{{$user->phone}}</td>
+                        <td>{{$user->department->department_name}}</td>
+                        <td>{{$user->userRole->display_name}}</td>
+
+                        <td class="center">
+                            <i class="fa fa-trash-o fa-fw"></i>
+                            <a onclick="return confirm('Bạn đã chắc chắn muốn xóa?')" href="{{ route('user.delete', [$user->id]) }}">Xóa</a>
+                        </td>
+                        <td class="center">
+                            <i class="fa fa-pencil fa-fw"></i>
+                            <a href="{{ route('user.edit', [$user->id]) }}">Sửa</a>
+                        </td>
                     </tr>
-                    <tr class="even gradeC" align="center">
-                        <td>2</td>
-                        <td>kutun</td>
-                        <td>Admin</td>
-                        <td>Ẩn</td>
-                        <td class="center"><i class="fa fa-trash-o  fa-fw"></i><a href="#"> Delete</a></td>
-                        <td class="center"><i class="fa fa-pencil fa-fw"></i> <a href="#">Edit</a></td>
-                    </tr>
-                    <tr class="odd gradeX" align="center">
-                        <td>3</td>
-                        <td>kuteo</td>
-                        <td>Member</td>
-                        <td>Hiện</td>
-                        <td class="center"><i class="fa fa-trash-o  fa-fw"></i><a href="#"> Delete</a></td>
-                        <td class="center"><i class="fa fa-pencil fa-fw"></i> <a href="#">Edit</a></td>
-                    </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>

@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Department;
 use Illuminate\Http\Request;
 use App\User;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use App\Http\Requests\UserStoreRequest;
+use App\Http\Requests\UserUpdateRequest;
+use App\Models\Role;
 
 class UserController extends Controller
 {
@@ -21,8 +27,6 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-
-
     public function index()
     {
         $users = User::all();
@@ -48,7 +52,7 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(UserStoreRequest $request)
     {
         //
     }
@@ -68,13 +72,19 @@ class UserController extends Controller
         ],200);
     }
 
-    public function currentUser(){
+    /**
+     * Get current user.
+     * @return \Illuminate\Http\Response
+     */
+    public function currentUser()
+    {
         $user = Auth::user();
         return response()->json([
-            'data' => $user,
-            'message' => "Success"
+            'data'      => $user,
+            'message'   => "Success"
         ],200);
     }
+
     /**
      * Show the form for editing the specified resource.
      *
@@ -93,7 +103,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UserUpdateRequest $request, $id)
     {
         //
     }
@@ -106,26 +116,7 @@ class UserController extends Controller
      */
     public function destroy(User $user, $id)
     {
-        $role = Auth::user()->role;
-        if($role === 4){
-            try{
-                $user->delete();
-
-                return response()->json([
-                    'message' => 'User deleted successfully!'
-                ], 200);
-            }
-            catch(Exception $e){
-                return response()->json([
-                    'message' => $e->getMessage()
-                ], 500);
-            }
-        }
-        else{
-            return response()->json([
-                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
-            ], 403);
-        }
+        //
     }
 
     public function getUserInfo(int $user_id)

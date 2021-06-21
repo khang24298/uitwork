@@ -28,21 +28,6 @@ class LaravelEntrustSeeder extends Seeder
         $userRoles = config('entrust_seeder.user_roles');
         $mapPermission = collect(config('entrust_seeder.permissions_map'));
 
-
-        // GroupPermission
-        // $groupPermission = GroupPermission::create([
-        //     'name' => 'Quản lý vai trò thành viên',
-        //     'description' => 'Thêm sửa xóa vai trò thành viên'
-        // ],
-        // [
-        //     'name' => 'Quản lý thành viên',
-        //     'description' => 'Thêm sửa xóa thành viên'
-        // ],
-        // [
-        //     'name' => 'Hệ thống',
-        //     'description' => 'Quản trị các chức năng của hệ thống'
-        // ]);
-
         foreach ($config as $key => $modules) {
 
             // Create a new role

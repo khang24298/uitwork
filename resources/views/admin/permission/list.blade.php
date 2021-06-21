@@ -5,42 +5,59 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header">Product
-                    <small>List</small>
+                <h1 class="page-header">Quyền
+                    <small>Danh sách</small>
+                    <a href="{{ route('permission.add') }}" class="btn btn-primary pull-right">Thêm</a>
                 </h1>
             </div>
             <!-- /.col-lg-12 -->
+
+            <div class="col-lg-7">
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if (session()->has('success'))
+                    <div class="alert alert-success">{{ session()->get('success') }}</div>
+                @endif
+            </div>
+
             <table class="table table-striped table-bordered table-hover" id="dataTables-example">
                 <thead>
-                    <tr align="center">
+                    <tr>
                         <th>ID</th>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Delete</th>
-                        <th>Edit</th>
+                        <th>Tên</th>
+                        <th>Tên không dấu</th>
+                        <th>Nhóm quyền</th>
+                        <th>Mô tả</th>
+                        <th>Xóa</th>
+                        <th>Sửa</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="odd gradeX" align="center">
-                        <td>1</td>
-                        <td>Áo Thun Nana</td>
-                        <td>200.000 VNĐ</td>
-                        <td>3 Minutes Age</td>
-                        <td>Hiện</td>
-                        <td class="center"><i class="fa fa-trash-o  fa-fw"></i><a href="#"> Delete</a></td>
-                        <td class="center"><i class="fa fa-pencil fa-fw"></i> <a href="#">Edit</a></td>
+                    @foreach($permissions as $per)
+                    <tr class="odd gradeX">
+                        <td>{{$per->id}}</td>
+                        <td>{{$per->display_name}}</td>
+                        <td>{{$per->name}}</td>
+                        <td>{{$per->group->name}}</td>
+                        <td>{{$per->description}}</td>
+                        <td class="center">
+                            <i class="fa fa-trash-o fa-fw"></i>
+                            <a onclick="return confirm('Bạn đã chắc chắn muốn xóa?')" href="{{ route('permission.delete', [$per->id]) }}">Xóa</a>
+                        </td>
+                        <td class="center">
+                            <i class="fa fa-pencil fa-fw"></i>
+                            <a href="{{ route('permission.edit', [$per->id]) }}">Sửa</a>
+                        </td>
                     </tr>
-                    <tr class="even gradeC" align="center">
-                        <td>2</td>
-                        <td>Áo Thun Polo</td>
-                        <td>250.000 VNĐ</td>
-                        <td>1 Hours Age</td>
-                        <td>Ẩn</td>
-                        <td class="center"><i class="fa fa-trash-o  fa-fw"></i><a href="#"> Delete</a></td>
-                        <td class="center"><i class="fa fa-pencil fa-fw"></i> <a href="#">Edit</a></td>
-                    </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
