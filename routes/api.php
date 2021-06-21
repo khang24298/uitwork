@@ -36,6 +36,8 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/getProjectsUserJoinedOrCreated/{user_id}', 'ProjectsController@getProjectsUserJoinedOrCreated');
     Route::get('/getUsersJoinedProject/{project_id}', 'ProjectsController@getUsersJoinedProject');
 
+
+
     // Criteria
     Route::resource('/criteria', 'CriteriaController');
     Route::get('/getTaskCriteriaList', 'CriteriaController@getTaskCriteriaList');
