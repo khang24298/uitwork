@@ -21,14 +21,14 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     // dd(Auth::user());
     Route::get('/logout', 'APIController@logout');
 
+    // Users
     Route::get('/users', 'UserController@index');
     Route::get('/currentUser', 'UserController@currentUser');
 
     Route::get('/getUserInfo/{user_id}', 'UserController@getUserInfo');
     Route::get('/getUsersWithEmployeeRole', 'UserController@getUsersWithEmployeeRole');
     Route::get('/getUsersWithManagerRole', 'UserController@getUsersWithManagerRole');
-
-    // Route::get('/dashboard', 'DashboardController@create');
+    Route::get('/getTheStatistics', 'UserController@getTheStatistics');
 
     // Projects
     Route::resource('/projects', 'ProjectsController');

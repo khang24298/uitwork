@@ -14,6 +14,8 @@ use Illuminate\Support\Str;
 use App\Http\Requests\UserStoreRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Models\Role;
+use App\Project;
+use App\Task;
 
 class UserController extends Controller
 {
@@ -160,6 +162,65 @@ class UserController extends Controller
 
             return response()->json([
                 'data'      => $userWithManagerRole,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    //
+    public function getTheStatistics()
+    {
+        try {
+            // Result variable.
+            $result = array();
+
+            // If user is a manager.
+            if (Auth::user()->role > 2) {
+                // Get projects in user's department.
+                $projectsInUserDepartment = Project::whereIn('user_id', function($query) {
+                    $userDepartmentID = Auth::user()->department_id;
+                    $query->select('id')->from('users')->where('department_id', $userDepartmentID);
+                })->select('id')->get();
+
+                // Get total projects.
+                $totalProject = $projectsInUserDepartment->count();
+
+                // Get total tasks.
+                $totalTask = Task::whereIn('project_id', $projectsInUserDepartment)->count();
+
+                // Get total done tasks.
+                $totalDoneTask = Task::whereIn('project_id', $projectsInUserDepartment)->whereIn('status_id', array(3,4))->count();
+
+                // Get total rejected tasks.
+                $totalRejectedTask = Task::whereIn('project_id', $projectsInUserDepartment)->where('status_id', 5)->count();
+            }
+            else {
+                // Get total projects.
+                $totalProject = Task::distinct()->where('assignee_id', Auth::user()->id)->count('project_id');
+
+                // Get total tasks.
+                $totalTask = Task::where('assignee_id', Auth::user()->id)->count();
+
+                // Get total done tasks.
+                $totalDoneTask = Task::where('assignee_id', Auth::user()->id)->whereIn('status_id', array(3,4))->count();
+
+                // Get total rejected tasks.
+                $totalRejectedTask = Task::where('assignee_id', Auth::user()->id)->where('status_id', 5)->count();
+            }
+
+            // Add values to result.
+            $result['totalProject'] = $totalProject;
+            $result['totalTask'] = $totalTask;
+            $result['totalDoneTask'] = $totalDoneTask;
+            $result['totalRejectedTask'] = $totalRejectedTask;
+
+            return response()->json([
+                'data'      => $result,
                 'message'   => 'Success'
             ], 200);
         }
