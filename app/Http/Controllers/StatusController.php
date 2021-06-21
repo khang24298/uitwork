@@ -194,9 +194,9 @@ class StatusController extends Controller
     public function getTaskByStatusID(int $status_id)
     {
         try {
-            $taskByStatus = DB::table('status')->join('tasks', 'status.id', '=', 'tasks.status_id')
+            $taskByStatus = DB::table('status')->join('tasks', 'status.type_id', '=', 'tasks.status_id')
                 ->select('task_name', 'description', 'name', 'user_id')
-                ->where('status.id', $status_id)->get();
+                ->where('status.type_id', $status_id)->get();
 
             return response()->json([
                 'data'      => $taskByStatus,
