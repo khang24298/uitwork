@@ -60,7 +60,9 @@
 
                     <div class="form-group">
                         <label>Số điện thoại</label>
-                        <input type="tel" class="form-control" name="phone" id="phone" placeholder="Nhập số điện thoại" value="{{ old('phone') }}"/>
+                        <input type="tel" class="form-control" name="phone" id="phone"
+                                placeholder="Nhập số điện thoại" value="{{ old('phone') }}"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '');" maxlength="10"/>
                     </div>
 
                     <div class="form-group">

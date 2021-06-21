@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Http\Requests\UserStoreRequest;
+use App\Http\Requests\UserUpdateRequest;
 use App\Models\Role;
 
 class UserController extends Controller
@@ -26,11 +28,9 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-
-
     public function index()
     {
-        $users = User::all();
+        $users = User::with('userRole', 'department')->get();
         return view('admin.user.list', compact('users'));
     }
 
@@ -52,7 +52,7 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(UserStoreRequest $request)
     {
         dd($request->all());
         try {
@@ -123,13 +123,18 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::findOrFail($id);
-        $roles = Role::orderBy('id', 'DESC')->get();
-        $user_roles = $user->roles()->pluck('id', 'id')->toArray();
+        $roles = Role::all();
+        $user_roles = DB::table('role_user')->get();
+        $departments = Department::all();
 
-        foreach ($user->roles as $key => $role) {
-            $user_roles[] = $role->id;
-        }
-        return view('admin.user.edit', compact('user','roles','user_roles'));
+        // $roles = Role::all();
+        // $user_roles = $user->userRole()->pluck('id', 'id')->toArray();
+        //
+        // foreach ($user->roles as $key => $role) {
+        //     $user_roles[] = $role->id;
+        // }
+
+        return view('admin.user.edit', compact('user','roles','user_roles','departments'));
     }
 
     /**
@@ -139,7 +144,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UserUpdateRequest $request, $id)
     {
         try {
             // Find and Update.
@@ -148,19 +153,10 @@ class UserController extends Controller
             $user->name = $request->name;
             $user->email = $request->email;
             $user->phone = $request->phone;
-            $user->gender = $request->gender;
-            $user->dob = $request->dob;
             $user->department_id = $request->department_id;
 
-            $user->password = Hash::make($request->password);
             $user->role = $request->role_id;
             $user->remember_token = $request->_token;
-
-            // Default Fields.
-            $user->email_verified_at = now();
-            $user->position_id = 1;
-            $user->education_level_id = 1;
-            $user->has_been_evaluated = false;
 
             $user->save();
 
@@ -185,26 +181,6 @@ class UserController extends Controller
      */
     public function destroy(User $user, $id)
     {
-        // $role = Auth::user()->role;
-        // if($role === 4){
-        //     try{
-        //         $user->delete();
-
-        //         return response()->json([
-        //             'message' => 'User deleted successfully!'
-        //         ], 200);
-        //     }
-        //     catch(Exception $e){
-        //         return response()->json([
-        //             'message' => $e->getMessage()
-        //         ], 500);
-        //     }
-        // }
-        // else{
-        //     return response()->json([
-        //         'message' => "You don't have access to this resource! Please contact with administrator for more information!"
-        //     ], 403);
-        // }
         try {
             $user = User::findOrFail($id);
 
