@@ -97,6 +97,38 @@ class DocumentController extends Controller
         }
     }
 
+    public function storeFiles(Request $request)
+    {
+        try {
+            $params = $request->file('files');
+            $document = [];
+            foreach($params as $file){
+                $file_name = $file->getClientOriginalName();
+                $file_type = $file->getClientMimeType();
+                $path = env('APP_URL')."/upload/".Storage::disk('uploadfiles')->put($file_name, $file);
+                $size = $file->getSize() / 1000 .'KB';               
+                $document[] = Document::create([
+                    'file_name'     => $file_name,
+                    'file_type'     => $file_type,
+                    'path'          => $path,
+                    'size'          => $size,
+                    'task_id'       => (null != request('task_id')) ? request('task_id') : null,
+                    'comment_id'    => (null != request('comment_id')) ? request('comment_id') : null,
+                    'user_id'       => Auth::user()->id,
+                ]);
+            
+            }
+            return response()->json([
+                'data'      => $document,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
     /**
      * Display the specified resource.
      *
@@ -196,20 +228,36 @@ class DocumentController extends Controller
         }
     }
 
-    // public function getDocumentInfoByTaskID(int $task_id)
-    // {
-    //     try {
-    //         $documentByTask = DB::table('documents')->where('task_id', $task_id)->get();
+    public function getDocumentInfoByTaskID(int $task_id)
+    {
+        try {
+            $documentByTask = DB::table('documents')->where('task_id', $task_id)->get();
 
-    //         return response()->json([
-    //             'data'       => $documentByTask,
-    //             'message'    => 'Success'
-    //         ], 200);
-    //     }
-    //     catch(Exception $e){
-    //         return response()->json([
-    //             'message' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
+            return response()->json([
+                'data'       => $documentByTask,
+                'message'    => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getDocumentInfoByCommentId(int $comment_id){
+        try {
+            $documentByComment = DB::table('documents')->where('comment_id', $comment_id)->get();
+
+            return response()->json([
+                'data'       => $documentByComment,
+                'message'    => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

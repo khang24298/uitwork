@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\MailNotification;
+use Illuminate\Http\File;
 use Illuminate\Support\Facades\Notification as FacadesNotification;
-
+use Illuminate\Support\Facades\Storage;
 class TaskController extends Controller
 {
     use Notifiable;
@@ -377,17 +378,20 @@ class TaskController extends Controller
         }
     }
 
-    /*
-    *
-    public function getReportByTaskID(int $task_id)
+    
+    public function storeFiles(Request $request)
     {
         try {
-            $reports = DB::table('tasks')->join('reports', 'tasks.id', '=', 'reports.task_id')
-                ->select('title', 'content', 'type_id')
-                ->where('tasks.id', $task_id)->get();
+            $params = $request->file('files');
+            $url = [];
+            foreach($params as $file){
+                $filename = $file->getClientOriginalName();
+                $filepath = Storage::disk('uploadfiles')->put($filename, $file);
+                $url[] = env('APP_URL')."/upload/".$filepath;
+            }
 
             return response()->json([
-                'data'      => $reports,
+                'data'      => $url,
                 'message'   => 'Success'
             ], 200);
         }
@@ -397,7 +401,8 @@ class TaskController extends Controller
             ], 500);
         }
     }
-
+    /*
+    *
     public function getTaskCriteriaByTaskID(int $task_id)
     {
         try {

@@ -36,7 +36,8 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/getProjectsUserJoinedOrCreated/{user_id}', 'ProjectsController@getProjectsUserJoinedOrCreated');
     Route::get('/getUsersJoinedProject/{project_id}', 'ProjectsController@getUsersJoinedProject');
 
-
+    // Upload file
+    Route::post('/uploadFiles','DocumentController@storeFiles');
 
     // Criteria
     Route::resource('/criteria', 'CriteriaController');
@@ -78,7 +79,8 @@ Route::group(['middleware' => 'auth.jwt'], function () {
 
     // Documents
     Route::resource('/documents', 'DocumentController');
-    // Route::get('/getDocumentInfoByTaskID/{task_id}', 'DocumentController@getDocumentInfoByTaskID');
+    Route::get('/getDocumentInfoByTaskID/{task_id}', 'DocumentController@getDocumentInfoByTaskID');
+    Route::get('/getDocumentInfoByCommentId/{comment_id}', 'DocumentController@getDocumentInfoByCommentId');
 
     // Status
     Route::resource('/status', 'StatusController');
