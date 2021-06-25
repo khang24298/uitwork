@@ -56,35 +56,27 @@ class CommentController extends Controller
      */
     public function store(Request $request)
     {
-        $role = Auth::user()->role;
-        if($role > 2){
-            $this->validate($request, [
-                'content'   => 'required',
-                'parent_id' => 'nullable'
-            ]);
+        $this->validate($request, [
+            'content'   => 'required',
+            'parent_id' => 'nullable'
+        ]);
 
-            try{
-                $comment = Comment::create([
-                    'content'       => request('content'),
-                    'user_id'       => Auth::user()->id,
-                    'task_id'       => request('task_id'),
-                    'parent_id'     => request('parent_id'),
-                ]);
-                return response()->json([
-                    'data'      => $comment,
-                    'message'   => 'Success'
-                ], 200);
-            }
-            catch(Exception $e){
-                return response()->json([
-                    'message' => $e->getMessage()
-                ], 500);
-            }
-        }
-        else{
+        try{
+            $comment = Comment::create([
+                'content'       => request('content'),
+                'user_id'       => Auth::user()->id,
+                'task_id'       => request('task_id'),
+                'parent_id'     => request('parent_id'),
+            ]);
             return response()->json([
-                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
-            ], 403);
+                'data'      => $comment,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 

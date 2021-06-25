@@ -122,19 +122,20 @@ class ProjectsController extends Controller
      * @param  \App\Project  $project
      * @return \Illuminate\Http\Response
      */
-    public function show(Project $project)
+    public function show($project)
     {
-        // dd($project);
-        try{
+        try {
+            
+            $tasksByProject = Task::where('project_id',$project)->get()->toArray();
             return response()->json([
-                'data'      => $project,
+                'data'      => $tasksByProject,
                 'message'   => 'Success'
             ], 200);
         }
         catch(Exception $e){
             return response()->json([
                 'message' => $e->getMessage()
-            ],500);
+            ], 500);
         }
     }
 

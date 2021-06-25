@@ -20,5 +20,6 @@ DirectoryIndex index.php
     RewriteRule .? - [L]
 
     RewriteRule .? %{ENV:BASE}/index.php [L]
+    php_value post_max_size 50M
 
 </IfModule>

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Document extends Model
 {
     //
-    protected $fillable = ['file_name', 'file_type', 'path', 'size', 'task_id', 'user_id'];
+    protected $fillable = ['file_name', 'file_type', 'path', 'size', 'task_id', 'user_id','comment_id'];
 
     public function task()
     {
