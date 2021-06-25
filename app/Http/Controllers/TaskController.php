@@ -126,7 +126,7 @@ class TaskController extends Controller
                 // }
 
                 return response()->json([
-                    'data'      => true,
+                    'data'      => $task,
                     'message'   => 'Success'
                 ], 200);
             }
@@ -480,14 +480,5 @@ class TaskController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
-    }
-
-    public function routeNotificationForMail()
-    {
-        // Return email address only...
-        return 'caotanan1234@gmail.com';
-
-        // Return email address and name...
-        // return [$this->email_address => $this->name];
     }
 }
