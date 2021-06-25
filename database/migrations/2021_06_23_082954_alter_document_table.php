@@ -14,8 +14,7 @@ class AlterDocumentTable extends Migration
     public function up()
     {
         Schema::table('documents', function (Blueprint $table) {
-            //
-            $table->integer('comment_id')->nullable();
+            $table->integer('comment_id')->nullable()->after('size');
         });
     }
 

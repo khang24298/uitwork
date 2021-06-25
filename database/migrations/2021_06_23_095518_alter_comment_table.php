@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class AlterCommentTable extends Migration
 {
@@ -13,10 +14,11 @@ class AlterCommentTable extends Migration
      */
     public function up()
     {
-        Schema::table('comments', function (Blueprint $table) {
-            //
-            $table->longText('content');
-        });
+        // Schema::table('comments', function (Blueprint $table) {
+        //     $table->longText('content')->change();
+        // });
+
+        DB::statement('ALTER TABLE comments MODIFY content LONGTEXT;');
     }
 
     /**
@@ -26,9 +28,10 @@ class AlterCommentTable extends Migration
      */
     public function down()
     {
-        Schema::table('comments', function (Blueprint $table) {
-            //
-            $table->dropColumn('content');
-        });
+        // Schema::table('comments', function (Blueprint $table) {
+        //     $table->dropColumn('content');
+        // });
+
+        DB::statement('ALTER TABLE comments MODIFY content TEXT;');
     }
 }
