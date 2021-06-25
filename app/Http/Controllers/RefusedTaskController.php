@@ -10,6 +10,9 @@ use App\Jobs\NotificationJob;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\User;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\MailNotification;
 
 class RefusedTaskController extends Controller
 {
@@ -121,6 +124,18 @@ class RefusedTaskController extends Controller
 
             // Dispatch to NotificationJob.
             NotificationJob::dispatch($notification);
+
+            // Test mail notification.
+            // $receiverEmail = User::select('email')->where('id', $task->user_id)->first()->email;
+
+            // $details = [
+            //     'subject'   => 'Refuse task',
+            //     'title'     => 'Refuse '.$task->task_name,
+            //     'body'      => $message,
+            //     'url'       => route('admin.login'),
+            // ];
+
+            // Mail::to($receiverEmail)->send(new MailNotification($details));
 
             return response()->json([
                 'data'      => true,

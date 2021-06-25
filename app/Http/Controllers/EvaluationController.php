@@ -14,6 +14,9 @@ use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Facades\Mail;
+use App\Mail\MailNotification;
+
 class EvaluationController extends Controller
 {
     public function __construct()
@@ -166,6 +169,18 @@ class EvaluationController extends Controller
 
                         // Dispatch to NotificationJob.
                         NotificationJob::dispatch($notification);
+
+                        // Test mail notification.
+                        // $receiverEmail = User::select('email')->where('id', $receiverID)->first()->email;
+
+                        // $details = [
+                        //     'subject'   => 'New Evaluation',
+                        //     'title'     => 'New Evaluation',
+                        //     'body'      => $message,
+                        //     'url'       => route('admin.login'),
+                        // ];
+
+                        // Mail::to($receiverEmail)->send(new MailNotification($details));
                     }
                     catch(Exception $e){
                         return response()->json([

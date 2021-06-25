@@ -11,8 +11,10 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Notifications\Notifiable;
-use App\Notifications\MailNotification;
 use Illuminate\Support\Facades\Notification as FacadesNotification;
+
+use Illuminate\Support\Facades\Mail;
+use App\Mail\MailNotification;
 
 class TaskController extends Controller
 {
@@ -107,18 +109,24 @@ class TaskController extends Controller
                 // Dispatch to NotificationJob.
                 NotificationJob::dispatch($notification);
 
-                // Test Mail
+                // Test mail notification. // => Use Queue.
                 // if (request('priority') === 'High') {
 
-                //     $receiver = User::select('email')->where('id', request('assignee_id'))->get();
-                //     $task->email = $receiver[0]->email;
+                //     $receiverEmail = User::select('email')->where('id', request('assignee_id'))->first()->email;
 
-                //     // $task->notify(new MailNotification());
-                //     FacadesNotification::send($task, new MailNotification());
+                //     $details = [
+                //         'subject'   => 'New Task',
+                //         'title'     => 'New Task',
+                //         'body'      => $message,
+                //         // 'url'       => "http://127.0.0.1:8000/api/tasks/$task->id",
+                //         'url'       => route('admin.login'),
+                //     ];
+
+                //     Mail::to($receiverEmail)->send(new MailNotification($details));
                 // }
 
                 return response()->json([
-                    'data'      => $task,
+                    'data'      => true,
                     'message'   => 'Success'
                 ], 200);
             }
@@ -141,9 +149,10 @@ class TaskController extends Controller
      * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function show(Task $task)
+    public function show($id)
     {
-        try{
+        try {
+            $task = Task::findOrFail($id);
             return response()->json([
                 'data'      => $task,
                 'message'   => 'Success'
@@ -152,7 +161,7 @@ class TaskController extends Controller
         catch(Exception $e){
             return response()->json([
                 'message' => $e->getMessage()
-            ],500);
+            ], 500);
         }
     }
 
@@ -473,7 +482,7 @@ class TaskController extends Controller
         }
     }
 
-    public function routeNotificationForMail($notification)
+    public function routeNotificationForMail()
     {
         // Return email address only...
         return 'caotanan1234@gmail.com';
