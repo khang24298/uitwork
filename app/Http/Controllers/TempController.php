@@ -375,9 +375,15 @@ class TempController extends Controller
         // $id = json_decode(json_encode($receiverID), true);
         // $finalID = $id[0]['assignee_id'];
 
-        $finalID = Task::findOrFail(21)->assignee_id;
+        // $finalID = Task::findOrFail(21)->assignee_id;
+        // return response()->json([
+        //     'data'      => ($finalID),
+        //     'message'   => "Success"
+        // ], 200);
+
+        $users = DB::table('users')->offset(7)->limit(5)->get();
         return response()->json([
-            'data'      => ($finalID),
+            'data'      => $users,
             'message'   => "Success"
         ], 200);
     }

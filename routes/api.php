@@ -45,6 +45,7 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/getUserCriteriaList', 'CriteriaController@getUserCriteriaList');
     Route::get('/getTaskCriteriaByTaskID/{task_id}', 'CriteriaController@getTaskCriteriaByTaskID');
     Route::get('/getUserCriteriaByUserID/{user_id}', 'CriteriaController@getUserCriteriaByUserID');
+    Route::get('/showCriteriaByOffsetAndLimit/{offset}/{limit}', 'CriteriaController@showCriteriaByOffsetAndLimit');
 
     // CriteriaTypes
     Route::resource('/criteriaTypes', 'CriteriaTypeController');

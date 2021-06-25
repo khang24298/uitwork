@@ -397,4 +397,21 @@ class CriteriaController extends Controller
             ], 500);
         }
     }
+
+    public function showCriteriaByOffsetAndLimit(int $offset, int $limit)
+    {
+        try {
+            $criteria = DB::table('criteria')->offset($offset)->limit($limit)->get();
+
+            return response()->json([
+                'data'      => $criteria,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
