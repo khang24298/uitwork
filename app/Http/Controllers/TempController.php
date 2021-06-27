@@ -367,6 +367,37 @@ class TempController extends Controller
         //         'message' => "You don't have access to this resource! Please contact with administrator for more information!"
         //     ], 403);
         // }
+
+        // getProjectsUserJoinedOrCreated in ProjectsController.
+        // // Get id of the projects.
+        // $projectIDArray = array();
+        // foreach ($createdProjects as $crPj) {
+        //     array_push($projectIDArray, $crPj['id']);
+        // }
+
+        // // Get total number of tasks in projects with above id.
+        // $tasksInProject = Task::whereIn('project_id', $projectIDArray)->get();
+
+        // // Count the total number of tasks.
+        // $totalTasks = $tasksInProject->count();
+
+        // // Count the number of evaluated and rejected tasks.
+        // $evaluatedTasksCount = $rejectedTasksCount = 0;
+
+        // foreach ($tasksInProject as $tskPj) {
+        //     if ($tskPj['status_id'] === 4) {
+        //         $evaluatedTasksCount++;
+        //     }
+        //     if ($tskPj['status_id'] === 5) {
+        //         $rejectedTasksCount++;
+        //     }
+        // }
+
+        // // Calculate progress value and Round to 2 decimal places.
+        // $progress = round($evaluatedTasksCount / ($totalTasks - $rejectedTasksCount), 2) * 100;
+
+        // // Add progress field to the result.
+        // $createdProjects['progress'] = $progress;
     }
 
     public function test()
