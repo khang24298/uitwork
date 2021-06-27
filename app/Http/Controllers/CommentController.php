@@ -190,7 +190,7 @@ class CommentController extends Controller
 
             // Add user_name field.
             foreach ($userComment as $usrCmt) {
-                $userName = DB::table('users')->select('name')->where('id', $usrCmt['user_id'])->first()->name;
+                $userName = DB::table('users')->where('id', $usrCmt['user_id'])->first()->name;
                 $usrCmt['user_name'] = $userName;
             }
 
@@ -213,7 +213,7 @@ class CommentController extends Controller
 
             // Add user_name field.
             foreach ($taskComment as $tskCmt) {
-                $userName = DB::table('users')->select('name')->where('id', $tskCmt['user_id'])->first()->name;
+                $userName = DB::table('users')->where('id', $tskCmt['user_id'])->first()->name;
                 $tskCmt['user_name'] = $userName;
             }
 
@@ -236,7 +236,7 @@ class CommentController extends Controller
 
             // Add user_name field.
             foreach ($childComment as $childCmt) {
-                $userName = DB::table('users')->select('name')->where('id', $childCmt['user_id'])->first()->name;
+                $userName = DB::table('users')->where('id', $childCmt['user_id'])->first()->name;
                 $childCmt['user_name'] = $userName;
             }
 
