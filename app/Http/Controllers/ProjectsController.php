@@ -149,6 +149,29 @@ class ProjectsController extends Controller
     {
         // return view('projects.edit', ['project' => $project]);
     }
+    public function getProjectDetailPagination(Request $request){
+        $this->validate($request, [
+            'offset'      => 'required|numeric',
+            'limit'       => 'required|numeric',
+            'project_id'  => 'required|numeric'
+        ]);
+        try {
+            $tasksByProject['data'] = Task::where('project_id',$request->project_id)
+            ->offset($request->offset)->limit($request->limit)
+            ->get()->toArray();
+            $count = Task::where('project_id',$request->project_id)->get();
+            $tasksByProject['count'] = $count->count();
+            return response()->json([
+                'data'      => $tasksByProject,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     /**
      * Update the specified resource in storage.

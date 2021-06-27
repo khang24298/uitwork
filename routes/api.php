@@ -32,6 +32,7 @@ Route::group(['middleware' => 'auth.jwt'], function () {
 
     // Projects
     Route::resource('/projects', 'ProjectsController');
+    Route::post('/projectPagination', 'ProjectsController@getProjectDetailPagination');
     Route::get('/getTasksByProjectID/{project_id}', 'ProjectsController@getTasksByProjectID');
     Route::get('/getProjectsUserJoinedOrCreated/{user_id}', 'ProjectsController@getProjectsUserJoinedOrCreated');
     Route::get('/getUsersJoinedProject/{project_id}', 'ProjectsController@getUsersJoinedProject');
@@ -41,8 +42,8 @@ Route::group(['middleware' => 'auth.jwt'], function () {
 
     // Criteria
     Route::resource('/criteria', 'CriteriaController');
-    Route::get('/getTaskCriteriaList', 'CriteriaController@getTaskCriteriaList');
-    Route::get('/getUserCriteriaList', 'CriteriaController@getUserCriteriaList');
+    Route::post('/getTaskCriteriaList', 'CriteriaController@getTaskCriteriaList');
+    Route::post('/getUserCriteriaList', 'CriteriaController@getUserCriteriaList');
     Route::get('/getTaskCriteriaByTaskID/{task_id}', 'CriteriaController@getTaskCriteriaByTaskID');
     Route::get('/getUserCriteriaByUserID/{user_id}', 'CriteriaController@getUserCriteriaByUserID');
     Route::get('/showCriteriaByOffsetAndLimit/{offset}/{limit}', 'CriteriaController@showCriteriaByOffsetAndLimit');
