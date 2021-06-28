@@ -74,13 +74,17 @@ class ProjectsController extends Controller
             $this->validate($request, [
                 'project_name'  => 'required|max:255',
                 'description'   => 'required',
+                'start_date'    => 'required|date',
+                'end_date'      => 'required|date'
             ]);
 
             try{
                 $project = Project::create([
                     'project_name'  => request('project_name'),
                     'description'   => request('description'),
-                    'user_id'       => Auth::user()->id
+                    'user_id'       => Auth::user()->id,
+                    'start_date'    => request('start_date'),
+                    'end_date'      => request('end_date')
                 ]);
 
                 // // Create Notification.
@@ -316,7 +320,7 @@ class ProjectsController extends Controller
             $userRole = DB::table('users')->where('id', $user_id)->first()->role;
 
             if ($userRole > 2) {
-                $createdProjects = Project::where('user_id', $user_id)->get();
+                $createdProjects = Project::where('user_id', $user_id)->orderByDesc('id')->get();
 
                 foreach ($createdProjects as $crPj) {
                     $tasksInProject = Task::where('project_id', $crPj['id'])->get();
