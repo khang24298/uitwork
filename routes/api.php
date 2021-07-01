@@ -144,6 +144,7 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/getUserRankingListByMonth/{month}/{year}', 'RankingController@getUserRankingListByMonth');
     Route::get('/getUserRankingListInUserDepartmentByMonth/{month}/{year}', 'RankingController@getUserRankingListInUserDepartmentByMonth');
 
+    Route::get('/getRankListByMonth/{month}/{year}', 'RankingController@getRankListByMonth');
     Route::get('/getRankListInUserDepartmentByMonth/{month}/{year}', 'RankingController@getRankListInUserDepartmentByMonth');
 
     // Just for some testing

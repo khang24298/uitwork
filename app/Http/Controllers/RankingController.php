@@ -1263,4 +1263,84 @@ class RankingController extends Controller
             ], 500);
         }
     }
+
+    public function getRankListByMonth(int $month, int $year)
+    {
+        try {
+            // $time_start = microtime(true);
+
+            // Get usersID list.
+            $usersID = User::select('id')->orderBy('id')->get();
+
+            // Result variable.
+            $result = array();
+
+            // Loop through each user in the usersID list.
+            foreach ($usersID as $user_id) {
+                // Get this month rank and score.
+                $tempRankInThisMonth = $this->getUserRankingByMonth($user_id['id'], $month, $year);
+                $rankInThisMonth = json_decode(json_encode($tempRankInThisMonth), true)['original']['data'];
+
+                // Get previous month rank and score.
+                $tempRankInPreviousMonth = $this->getUserRankingByMonth($user_id['id'], $month - 1, $year);
+                $rankInPreviousMonth = json_decode(json_encode($tempRankInPreviousMonth), true)['original']['data'];
+
+                //
+                if ($rankInThisMonth != null) {
+                    $thisMonthScore = $rankInThisMonth[0]['total_score'];
+
+                    if ($rankInPreviousMonth != null) {
+                        $previousMonthScore = $rankInPreviousMonth[0]['total_score'];
+                    } else {
+                        $previousMonthScore = 0;
+                    }
+
+                    if ($previousMonthScore === 0) {
+                        $increaseOrDecrease = 0;
+                    } else {
+                        $increaseOrDecrease = 100 * round(($thisMonthScore / $previousMonthScore - 1), 2);
+                    }
+
+                    // Get username.
+                    $userName = DB::table('users')->where('id', $user_id['id'])->first()->name;
+
+                    $tempRank = array(
+                        'user_id'                           => $user_id['id'],
+                        'user_name'                         => $userName,
+                        'score_by_task_criteria'            => $rankInThisMonth[0]['score_by_task_criteria'],
+                        'score_by_personnel_criteria'       => $rankInThisMonth[0]['score_by_personnel_criteria'],
+                        'total_score'                       => $rankInThisMonth[0]['total_score'],
+                        'rank_by_task_criteria_score'       => $rankInThisMonth[0]['rank_by_task_criteria_score'],
+                        'rank_by_personnel_criteria_score'  => $rankInThisMonth[0]['rank_by_personnel_criteria_score'],
+                        'total_rank'                        => $rankInThisMonth[0]['total_rank'],
+                        'increase_or_decrease'              => $increaseOrDecrease,
+                    );
+
+                    // Add to result.
+                    array_push($result, $tempRank);
+                }
+                else {
+                    return response()->json([
+                        'data'      => 'User ranking data in this month does not exist.',
+                        'message'   => 'Error'
+                    ], 200);
+                }
+            }
+
+            // $time_end = microtime(true);
+
+            return response()->json([
+                'data'      => $result,
+                // 'test'      => $rankInThisMonth[0]['total_score'],
+                // 'temp'      => $rankInThisMonth,
+                // 'time'      => $time_end - $time_start,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
