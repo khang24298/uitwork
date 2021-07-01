@@ -110,11 +110,6 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/getTaskEvaluationByTaskID/{task_id}', 'EvaluationController@getTaskEvaluationByTaskID');
     Route::get('/getUserEvaluationByUserID/{user_id}', 'EvaluationController@getUserEvaluationByUserID');
 
-    Route::get('/calcTaskCriteriaScoreByTaskID/{task_id}', 'EvaluationController@calcTaskCriteriaScoreByTaskID');
-    Route::get('/calcUserCriteriaScoreByUserID/{user_id}', 'EvaluationController@calcUserCriteriaScoreByUserID');
-    Route::get('/calcTotalTaskCriteriaScoreByUserID/{user_id}', 'EvaluationController@calcTotalTaskCriteriaScoreByUserID');
-    Route::get('/calcTotalUserScore/{user_id}', 'EvaluationController@calcTotalUserScore');
-
     // Ranking
     Route::resource('/ranking', 'RankingController');
     Route::get('/getTaskCriteriaScoreRankList', 'RankingController@getTaskCriteriaScoreRankList');
@@ -129,8 +124,26 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/getUserTotalRank/{user_id}', 'RankingController@getUserTotalRank');
 
     Route::get('/calcValuesForOneUser/{user_id}', 'RankingController@calcValuesForOneUser');
-    Route::get('/insertToDatabase', 'RankingController@insertToDatabase');
-    Route::get('/testInsert/{user_id}', 'RankingController@testInsert');
+    Route::get('/insertUserRankList', 'RankingController@insertUserRankList');
+    Route::get('/insertUserRankByUserID/{user_id}', 'RankingController@insertUserRankByUserID');
+
+    Route::get('/calcTaskCriteriaScoreByTaskID/{task_id}', 'RankingController@calcTaskCriteriaScoreByTaskID');
+    Route::get('/calcPersonnelCriteriaScoreByUserID/{user_id}', 'RankingController@calcPersonnelCriteriaScoreByUserID');
+    Route::get('/calcTotalTaskCriteriaScoreByUserID/{user_id}', 'RankingController@calcTotalTaskCriteriaScoreByUserID');
+    Route::get('/calcTotalUserScore/{user_id}', 'RankingController@calcTotalUserScore');
+
+    Route::get('/getPersonnelCriteriaScoreRankListByMonth/{month}/{year}', 'RankingController@getPersonnelCriteriaScoreRankListByMonth');
+    Route::get('/getTaskCriteriaScoreRankListByMonth/{month}/{year}', 'RankingController@getTaskCriteriaScoreRankListByMonth');
+    Route::get('/getUserTotalRankListByMonth/{month}/{year}', 'RankingController@getUserTotalRankListByMonth');
+    Route::get('/calcValuesForOneUserByMonth/{user_id}/{month}/{year}', 'RankingController@calcValuesForOneUserByMonth');
+    Route::get('/insertUserRankListByMonth/{month}/{year}', 'RankingController@insertUserRankListByMonth');
+    Route::get('/insertUserRankByMonthByUserID/{user_id}/{month}/{year}', 'RankingController@insertUserRankByMonthByUserID');
+
+    Route::get('/getUserRankingByMonth/{user_id}/{month}/{year}', 'RankingController@getUserRankingByMonth');
+    Route::get('/getUserRankingListByMonth/{month}/{year}', 'RankingController@getUserRankingListByMonth');
+    Route::get('/getUserRankingListInUserDepartmentByMonth/{month}/{year}', 'RankingController@getUserRankingListInUserDepartmentByMonth');
+
+    Route::get('/getRankListInUserDepartmentByMonth/{month}/{year}', 'RankingController@getRankListInUserDepartmentByMonth');
 
     // Just for some testing
     Route::get('/draftFunction', 'TestingController@draftFunction');
