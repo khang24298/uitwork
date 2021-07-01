@@ -360,13 +360,21 @@ class CriteriaController extends Controller
         }
     }
 
-    public function getTaskCriteriaList()
+    public function getTaskCriteriaList(Request $request)
     {
         try {
-            $taskCriteria = DB::table('criteria')
-                ->where('criteria_type_id', 1)->get()
-                ->toArray();
-
+            if(isset($request->offset) && isset($request->limit))
+            {
+                $taskCriteria['data'] = DB::table('criteria')
+                ->where('criteria_type_id', 1)->offset($request->offset)->limit($request->limit)
+                ->orderByDesc('id')->get()->toArray();
+                $count = DB::table('criteria')->where('criteria_type_id', 1)->get();
+                $taskCriteria['count'] = $count->count();
+            }
+            else{
+                $taskCriteria = DB::table('criteria')
+                ->where('criteria_type_id', 1)->orderByDesc('id')->get()->toArray();
+            }
             return response()->json([
                 'data'      => $taskCriteria,
                 'message'   => 'Success'
@@ -379,13 +387,21 @@ class CriteriaController extends Controller
         }
     }
 
-    public function getUserCriteriaList()
+    public function getUserCriteriaList(Request $request)
     {
         try {
-            $userCriteria = DB::table('criteria')
-                ->where('criteria_type_id', 2)->get()
-                ->toArray();
-
+            if(isset($request->offset) && isset($request->limit))
+            {
+                $userCriteria['data'] = DB::table('criteria')
+                    ->where('criteria_type_id', 2)->offset($request->offset)->limit($request->limit)
+                    ->orderByDesc('id')->get()->toArray();
+                $count = DB::table('criteria')->where('criteria_type_id', 2)->get();
+                $userCriteria['count'] = $count->count();
+            }
+            else{
+                $userCriteria = DB::table('criteria')
+                ->where('criteria_type_id', 2)->orderByDesc('id')->get()->toArray();
+            }
             return response()->json([
                 'data'      => $userCriteria,
                 'message'   => 'Success'
@@ -402,7 +418,6 @@ class CriteriaController extends Controller
     {
         try {
             $criteria = DB::table('criteria')->offset($offset)->limit($limit)->get();
-
             return response()->json([
                 'data'      => $criteria,
                 'message'   => 'Success'
