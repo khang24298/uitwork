@@ -488,6 +488,11 @@ class TaskController extends Controller
 
     public function getTasksByFilter(Request $request)
     {
+        $this->validate($request, [
+            'offset'    => 'required|numeric',
+            'limit'     => 'required|numeric'
+        ]);
+
         try {
             // Get data from request.
             $offset = $request->offset;
@@ -501,6 +506,7 @@ class TaskController extends Controller
             // Check if fields in filters variable exist.
             if (count($filters) > 0) {
                 foreach ($filters as $filter) {
+
                     // Get type and value of each filter.
                     $filterType = $filter['filter'];
                     $filterValue = $filter['value'];
@@ -514,7 +520,32 @@ class TaskController extends Controller
                         $query .= " and";
                     }
 
-                    $query .= " $filterType = $filterValue";
+                    // Check if value of the $filterType is a array.
+                    if (gettype($filterValue) === "array") {
+
+                        // Get the value of the elements in $filterValue regardless of its field name.
+                        $tempValues = array();
+                        foreach ($filterValue as $key => $value) {
+                            array_push($tempValues, $value);
+                        }
+
+                        // Check if the value of each element in $filterValue is a string.
+                        if (gettype($tempValues[0]) === "string" && gettype($tempValues[1]) === "string") {
+                            $query .= " $filterType >= '$tempValues[0]' and $filterType <= '$tempValues[1]'";
+                        }
+                        else {
+                            $query .= " $filterType >= $tempValues[0] and $filterType <= $tempValues[1]";
+                        }
+                    }
+                    else {
+                        // Check if the value of $filterValue is a string.
+                        if (gettype($filterValue) === "string") {
+                            $query .= " $filterType = '$filterValue'";
+                        }
+                        else {
+                            $query .= " $filterType = $filterValue";
+                        }
+                    }
                 }
             }
 
@@ -552,8 +583,8 @@ class TaskController extends Controller
 
             return response()->json([
                 'data'      => $result,
-                // 'temp'      => $query,
-                // 'test'      => $tasks,
+                // 'temp'      => $tempTasks,
+                // 'test'      => $query,
                 'message'   => 'Success'
             ], 200);
         }
