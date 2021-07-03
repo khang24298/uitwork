@@ -73,6 +73,8 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     // Route::get('/getDocumentByTaskID/{task_id}', 'TaskController@getDocumentByTaskID');
     Route::get('/getTasksByStatusID/{status_id}', 'TaskController@getTasksByStatusID');
 
+    Route::get('/getTasksByFilter', 'TaskController@getTasksByFilter');
+
     // Comments
     Route::resource('/comments', 'CommentController');
     Route::get('/getCommentByUserID/{user_id}', 'CommentController@getCommentByUserID');
