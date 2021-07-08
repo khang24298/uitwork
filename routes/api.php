@@ -32,6 +32,7 @@ Route::group(['middleware' => 'auth.jwt'], function () {
 
     // Projects
     Route::resource('/projects', 'ProjectsController');
+    Route::post('/projectPagination', 'ProjectsController@getProjectDetailPagination');
     Route::get('/getTasksByProjectID/{project_id}', 'ProjectsController@getTasksByProjectID');
     Route::get('/getProjectsUserJoinedOrCreated/{user_id}', 'ProjectsController@getProjectsUserJoinedOrCreated');
     Route::get('/getUsersJoinedProject/{project_id}', 'ProjectsController@getUsersJoinedProject');
@@ -41,10 +42,11 @@ Route::group(['middleware' => 'auth.jwt'], function () {
 
     // Criteria
     Route::resource('/criteria', 'CriteriaController');
-    Route::get('/getTaskCriteriaList', 'CriteriaController@getTaskCriteriaList');
-    Route::get('/getUserCriteriaList', 'CriteriaController@getUserCriteriaList');
+    Route::post('/getTaskCriteriaList', 'CriteriaController@getTaskCriteriaList');
+    Route::post('/getUserCriteriaList', 'CriteriaController@getUserCriteriaList');
     Route::get('/getTaskCriteriaByTaskID/{task_id}', 'CriteriaController@getTaskCriteriaByTaskID');
-    Route::get('/getUserCriteriaByUserID/{user_id}', 'CriteriaController@getUserCriteriaByUserID');
+    Route::get('/getUserCriteriaByUserID/{user_id}/{month}/{year}', 'CriteriaController@getUserCriteriaByUserID');
+    Route::get('/showCriteriaByOffsetAndLimit/{offset}/{limit}', 'CriteriaController@showCriteriaByOffsetAndLimit');
 
     // CriteriaTypes
     Route::resource('/criteriaTypes', 'CriteriaTypeController');
@@ -70,6 +72,8 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     // Route::get('/getCommentByTaskID/{task_id}', 'TaskController@getCommentByTaskID');
     // Route::get('/getDocumentByTaskID/{task_id}', 'TaskController@getDocumentByTaskID');
     Route::get('/getTasksByStatusID/{status_id}', 'TaskController@getTasksByStatusID');
+
+    Route::post('/getTasksByFilter', 'TaskController@getTasksByFilter');
 
     // Comments
     Route::resource('/comments', 'CommentController');
@@ -105,14 +109,9 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     // Evaluation
     Route::resource('/evaluation', 'EvaluationController');
     Route::get('/getTaskEvaluationList', 'EvaluationController@getTaskEvaluationList');
-    Route::get('/getUserEvaluationList', 'EvaluationController@getUserEvaluationList');
+    Route::get('/getTaskEvaluationListByUserId/{user_id}/{month}/{year}', 'EvaluationController@getTaskEvaluationListByUserId');
     Route::get('/getTaskEvaluationByTaskID/{task_id}', 'EvaluationController@getTaskEvaluationByTaskID');
-    Route::get('/getUserEvaluationByUserID/{user_id}', 'EvaluationController@getUserEvaluationByUserID');
-
-    Route::get('/calcTaskCriteriaScoreByTaskID/{task_id}', 'EvaluationController@calcTaskCriteriaScoreByTaskID');
-    Route::get('/calcUserCriteriaScoreByUserID/{user_id}', 'EvaluationController@calcUserCriteriaScoreByUserID');
-    Route::get('/calcTotalTaskCriteriaScoreByUserID/{user_id}', 'EvaluationController@calcTotalTaskCriteriaScoreByUserID');
-    Route::get('/calcTotalUserScore/{user_id}', 'EvaluationController@calcTotalUserScore');
+    Route::get('/getUserEvaluationByUserID/{user_id}/{month}/{year}', 'EvaluationController@getUserEvaluationByUserID');
 
     // Ranking
     Route::resource('/ranking', 'RankingController');
@@ -128,13 +127,34 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/getUserTotalRank/{user_id}', 'RankingController@getUserTotalRank');
 
     Route::get('/calcValuesForOneUser/{user_id}', 'RankingController@calcValuesForOneUser');
-    Route::get('/insertToDatabase', 'RankingController@insertToDatabase');
-    Route::get('/testInsert/{user_id}', 'RankingController@testInsert');
+    Route::get('/insertUserRankList', 'RankingController@insertUserRankList');
+    Route::get('/insertUserRankByUserID/{user_id}', 'RankingController@insertUserRankByUserID');
+
+    Route::get('/calcTaskCriteriaScoreByTaskID/{task_id}', 'RankingController@calcTaskCriteriaScoreByTaskID');
+    Route::get('/calcPersonnelCriteriaScoreByUserID/{user_id}', 'RankingController@calcPersonnelCriteriaScoreByUserID');
+    Route::get('/calcTotalTaskCriteriaScoreByUserID/{user_id}', 'RankingController@calcTotalTaskCriteriaScoreByUserID');
+    Route::get('/calcTotalUserScore/{user_id}', 'RankingController@calcTotalUserScore');
+
+    Route::get('/getPersonnelCriteriaScoreRankListByMonth/{month}/{year}', 'RankingController@getPersonnelCriteriaScoreRankListByMonth');
+    Route::get('/getTaskCriteriaScoreRankListByMonth/{month}/{year}', 'RankingController@getTaskCriteriaScoreRankListByMonth');
+    Route::get('/getUserTotalRankListByMonth/{month}/{year}', 'RankingController@getUserTotalRankListByMonth');
+    Route::get('/calcValuesForOneUserByMonth/{user_id}/{month}/{year}', 'RankingController@calcValuesForOneUserByMonth');
+    Route::get('/insertUserRankListByMonth/{month}/{year}', 'RankingController@insertUserRankListByMonth');
+    Route::get('/insertUserRankByMonthByUserID/{user_id}/{month}/{year}', 'RankingController@insertUserRankByMonthByUserID');
+
+    Route::get('/getUserRankingByMonth/{user_id}/{month}/{year}', 'RankingController@getUserRankingByMonth');
+    Route::get('/getUserRankingListByMonth/{month}/{year}', 'RankingController@getUserRankingListByMonth');
+    Route::get('/getUserRankingListInUserDepartmentByMonth/{month}/{year}', 'RankingController@getUserRankingListInUserDepartmentByMonth');
+
+    Route::get('/getRankListByMonth/{month}/{year}', 'RankingController@getRankListByMonth');
+    Route::get('/getRankListInUserDepartmentByMonth/{month}/{year}', 'RankingController@getRankListInUserDepartmentByMonth');
+
 
     // Just for some testing
     Route::get('/draftFunction', 'TestingController@draftFunction');
     Route::resource('/temp', 'TempController');
     Route::get('/test', 'TempController@test');
+    Route::get('/send-mail', 'MailController@sendEmail');
 
     // RefusedTask
     Route::post('/refusedTask', 'RefusedTaskController@refuseTask');

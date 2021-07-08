@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class AlterTaskTable extends Migration
 {
@@ -13,10 +14,11 @@ class AlterTaskTable extends Migration
      */
     public function up()
     {
-        Schema::table('tasks', function (Blueprint $table) {
-            //
-            $table->longText('description');
-        });
+        // Schema::table('tasks', function (Blueprint $table) {
+        //     $table->longText('description')->change();
+        // });
+
+        DB::statement('ALTER TABLE tasks MODIFY description LONGTEXT;');
     }
 
     /**
@@ -26,10 +28,12 @@ class AlterTaskTable extends Migration
      */
     public function down()
     {
-        if (Schema::hasColumn('tasks', 'description')){
-            Schema::table('tasks', function (Blueprint $table) {
-                $table->dropColumn('description');
-            });
-        }
+        // if (Schema::hasColumn('tasks', 'description')){
+        //     Schema::table('tasks', function (Blueprint $table) {
+        //         $table->dropColumn('description');
+        //     });
+        // }
+
+        DB::statement('ALTER TABLE tasks MODIFY description TEXT;');
     }
 }

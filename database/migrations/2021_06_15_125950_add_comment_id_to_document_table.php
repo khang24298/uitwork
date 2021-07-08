@@ -13,10 +13,10 @@ class AddCommentIdToDocumentTable extends Migration
      */
     public function up()
     {
-        Schema::table('documents', function (Blueprint $table) {
-            //
-            $table->integer('comment_id')->after('size');
-        });
+        // Schema::table('documents', function (Blueprint $table) {
+        //     //
+        //     $table->integer('comment_id')->after('size');
+        // });
     }
 
     /**
@@ -26,8 +26,8 @@ class AddCommentIdToDocumentTable extends Migration
      */
     public function down()
     {
-        Schema::table('documents', function (Blueprint $table) {
-            //
-        });
+        // Schema::table('documents', function (Blueprint $table) {
+        //     //
+        // });
     }
 }

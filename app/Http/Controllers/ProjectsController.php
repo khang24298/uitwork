@@ -74,13 +74,17 @@ class ProjectsController extends Controller
             $this->validate($request, [
                 'project_name'  => 'required|max:255',
                 'description'   => 'required',
+                'start_date'    => 'required|date',
+                'end_date'      => 'required|date'
             ]);
 
             try{
                 $project = Project::create([
                     'project_name'  => request('project_name'),
                     'description'   => request('description'),
-                    'user_id'       => Auth::user()->id
+                    'user_id'       => Auth::user()->id,
+                    'start_date'    => request('start_date'),
+                    'end_date'      => request('end_date')
                 ]);
 
                 // // Create Notification.
@@ -125,7 +129,7 @@ class ProjectsController extends Controller
     public function show($project)
     {
         try {
-            
+
             $tasksByProject = Task::where('project_id',$project)->get()->toArray();
             return response()->json([
                 'data'      => $tasksByProject,
@@ -148,6 +152,29 @@ class ProjectsController extends Controller
     public function edit(Project $project)
     {
         // return view('projects.edit', ['project' => $project]);
+    }
+    public function getProjectDetailPagination(Request $request){
+        $this->validate($request, [
+            'offset'      => 'required|numeric',
+            'limit'       => 'required|numeric',
+            'project_id'  => 'required|numeric'
+        ]);
+        try {
+            $tasksByProject['data'] = Task::where('project_id',$request->project_id)
+            ->offset($request->offset)->limit($request->limit)
+            ->get()->toArray();
+            $count = Task::where('project_id',$request->project_id)->get();
+            $tasksByProject['count'] = $count->count();
+            return response()->json([
+                'data'      => $tasksByProject,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -262,14 +289,18 @@ class ProjectsController extends Controller
             }
             $tasksByProject = [];
             foreach($statuses as $status){
-                $taskList = Task::where([
+                $taskList = DB::table('tasks')
+                    ->join('users', 'tasks.assignee_id', '=', 'users.id')
+                    ->select('tasks.*','users.name','users.email')
+                    ->where([
                     [
                         'status_id',$status->type_id
                     ],
                     [
                         'project_id',$project_id
                     ]
-                    ])->get()->toArray();
+                    ])
+                    ->get()->toArray();
                 array_push($tasksByProject,(Object)[
                     "status" => $status,
                     "tasks" => $taskList
@@ -290,28 +321,87 @@ class ProjectsController extends Controller
     public function getProjectsUserJoinedOrCreated(int $user_id)
     {
         try {
-            $userRole = DB::table('users')->where('id', $user_id)->select('role')->get();
+            $userRole = DB::table('users')->where('id', $user_id)->first()->role;
 
-            // Convert to array.
-            $userRoleArray = json_decode(json_encode($userRole), true);
-            $userRoleValue = $userRoleArray[0]['role'];
+            if ($userRole > 2) {
+                $createdProjects = Project::where('user_id', $user_id)->orderByDesc('id')->get();
 
-            if ($userRoleValue > 2) {
-                $projectsCreated = DB::table('projects')->where('user_id', $user_id)->get();
+                foreach ($createdProjects as $crPj) {
+                    $tasksInProject = Task::where('project_id', $crPj['id'])->get();
+
+                    // Count the total number of tasks.
+                    $totalTasks = $tasksInProject->count();
+
+                    // Count the number of evaluated and rejected tasks.
+                    $evaluatedTasksCount = $rejectedTasksCount = 0;
+
+                    if ($totalTasks === 0) {
+                        $progress = 100;
+                    }
+                    else {
+                        foreach ($tasksInProject as $tskPj) {
+                            if ($tskPj['status_id'] === 4) {
+                                $evaluatedTasksCount++;
+                            }
+                            if ($tskPj['status_id'] === 5) {
+                                $rejectedTasksCount++;
+                            }
+                        }
+
+                        // Calculate progress value and Round to 2 decimal places.
+                        $progress = round($evaluatedTasksCount / ($totalTasks - $rejectedTasksCount), 2) * 100;
+                    }
+
+                    // Add fields to the result.
+                    $crPj['total_tasks'] = $totalTasks;
+                    $crPj['evaluated_tasks'] = $evaluatedTasksCount;
+                    $crPj['rejected_tasks'] = $rejectedTasksCount;
+                    $crPj['progress'] = $progress;
+                }
 
                 return response()->json([
-                    'data'      => $projectsCreated,
+                    'data'      => $createdProjects,
                     'message'   => 'Success'
                 ], 200);
             }
             else {
-                $projectsJoined = DB::table('tasks')
+                $joinedProjects = DB::table('tasks')
                     ->join('projects', 'tasks.project_id', '=', 'projects.id')
                     ->select('projects.*')
-                    ->where('tasks.assignee_id', $user_id)->distinct()->get();
+                    ->where('tasks.assignee_id', $user_id)->distinct()->get()->toArray();
+
+                // Calculate values in each projects which user joined.
+                foreach ($joinedProjects as $jnPr) {
+                    $userTasksInProject = Task::where('project_id', $jnPr->id)
+                        ->where('assignee_id', $user_id)->get();
+
+                    // Count the total number of tasks.
+                    $totalTasks = $userTasksInProject->count();
+
+                    // Count the number of evaluated and rejected tasks.
+                    $evaluatedTasksCount = $rejectedTasksCount = 0;
+
+                    foreach ($userTasksInProject as $usrTskPj) {
+                        if ($usrTskPj['status_id'] === 4) {
+                            $evaluatedTasksCount++;
+                        }
+                        if ($usrTskPj['status_id'] === 5) {
+                            $rejectedTasksCount++;
+                        }
+                    }
+
+                    // Calculate progress value and Round to 2 decimal places.
+                    $progress = round($evaluatedTasksCount / ($totalTasks - $rejectedTasksCount), 2) * 100;
+
+                    // Add fields to the result.
+                    $jnPr->total_tasks = $totalTasks;
+                    $jnPr->evaluated_tasks = $evaluatedTasksCount;
+                    $jnPr->rejected_tasks = $rejectedTasksCount;
+                    $jnPr->progress = $progress;
+                }
 
                 return response()->json([
-                    'data'      => $projectsJoined,
+                    'data'      => $joinedProjects,
                     'message'   => 'Success'
                 ], 200);
             }
@@ -326,14 +416,15 @@ class ProjectsController extends Controller
     public function getUsersJoinedProject(int $project_id)
     {
         try {
-            $usersJoined = DB::table('tasks')
-                ->join('users', 'tasks.user_id', '=', 'users.id')
+            $joinedUsers = DB::table('tasks')
+                ->join('users', 'tasks.assignee_id', '=', 'users.id')
                 ->select('users.*')
                 ->where('tasks.project_id', $project_id)
+                ->distinct()
                 ->get();
 
             return response()->json([
-                'data'      => $usersJoined,
+                'data'      => $joinedUsers,
                 'message'   => 'Success'
             ], 200);
         }

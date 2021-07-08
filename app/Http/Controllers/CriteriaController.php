@@ -317,19 +317,25 @@ class CriteriaController extends Controller
         }
     }
 
-    public function getUserCriteriaByUserID(int $user_id)
+    public function getUserCriteriaByUserID(int $user_id, int $month, int $year)
     {
         try {
             $userCriteria = DB::table('criteria')
                 ->where('user_id', $user_id)
-                ->where('criteria_type_id', 2)->get()->toArray();
+                ->where('criteria_type_id', 2)
+                ->whereMonth('created_at',$month)
+                ->whereYear('created_at', $year)
+                ->get()->toArray();
 
             // If the user is EVALUATED => Get evaluation data.
             if (DB::table('evaluation')->where('user_id', $user_id) !== null) {
                 $evaluated = DB::table('criteria')
                     ->join('evaluation', 'evaluation.criteria_id', '=', 'criteria.id')
                     ->select('criteria.*', 'score', 'note')
-                    ->where('evaluation.user_id', $user_id)->get()->toArray();
+                    ->where('evaluation.user_id', $user_id)
+                    ->whereMonth('evaluation.created_at',$month)
+                    ->whereYear('evaluation.created_at', $year)
+                    ->get()->toArray();
 
                 // Get evaluated.
                 $temp = array();
@@ -360,13 +366,21 @@ class CriteriaController extends Controller
         }
     }
 
-    public function getTaskCriteriaList()
+    public function getTaskCriteriaList(Request $request)
     {
         try {
-            $taskCriteria = DB::table('criteria')
-                ->where('criteria_type_id', 1)->get()
-                ->toArray();
-
+            if(isset($request->offset) && isset($request->limit))
+            {
+                $taskCriteria['data'] = DB::table('criteria')
+                ->where('criteria_type_id', 1)->offset($request->offset)->limit($request->limit)
+                ->orderByDesc('id')->get()->toArray();
+                $count = DB::table('criteria')->where('criteria_type_id', 1)->get();
+                $taskCriteria['count'] = $count->count();
+            }
+            else{
+                $taskCriteria = DB::table('criteria')
+                ->where('criteria_type_id', 1)->orderByDesc('id')->get()->toArray();
+            }
             return response()->json([
                 'data'      => $taskCriteria,
                 'message'   => 'Success'
@@ -379,15 +393,39 @@ class CriteriaController extends Controller
         }
     }
 
-    public function getUserCriteriaList()
+    public function getUserCriteriaList(Request $request)
     {
         try {
-            $userCriteria = DB::table('criteria')
-                ->where('criteria_type_id', 2)->get()
-                ->toArray();
-
+            if(isset($request->offset) && isset($request->limit))
+            {
+                $userCriteria['data'] = DB::table('criteria')
+                    ->where('criteria_type_id', 2)->offset($request->offset)->limit($request->limit)
+                    ->orderByDesc('id')->get()->toArray();
+                $count = DB::table('criteria')->where('criteria_type_id', 2)->get();
+                $userCriteria['count'] = $count->count();
+            }
+            else{
+                $userCriteria = DB::table('criteria')
+                ->where('criteria_type_id', 2)->orderByDesc('id')->get()->toArray();
+            }
             return response()->json([
                 'data'      => $userCriteria,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function showCriteriaByOffsetAndLimit(int $offset, int $limit)
+    {
+        try {
+            $criteria = DB::table('criteria')->offset($offset)->limit($limit)->get();
+            return response()->json([
+                'data'      => $criteria,
                 'message'   => 'Success'
             ], 200);
         }

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\MailNotification;
 use Illuminate\Http\File;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Notification as FacadesNotification;
 use Illuminate\Support\Facades\Storage;
 class TaskController extends Controller
@@ -108,14 +109,20 @@ class TaskController extends Controller
                 // Dispatch to NotificationJob.
                 NotificationJob::dispatch($notification);
 
-                // Test Mail
+                // Test mail notification. // => Use Queue.
                 // if (request('priority') === 'High') {
 
-                //     $receiver = User::select('email')->where('id', request('assignee_id'))->get();
-                //     $task->email = $receiver[0]->email;
+                //     $receiverEmail = User::select('email')->where('id', request('assignee_id'))->first()->email;
 
-                //     // $task->notify(new MailNotification());
-                //     FacadesNotification::send($task, new MailNotification());
+                //     $details = [
+                //         'subject'   => 'New Task',
+                //         'title'     => 'New Task',
+                //         'body'      => $message,
+                //         // 'url'       => "http://127.0.0.1:8000/api/tasks/$task->id",
+                //         'url'       => route('admin.login'),
+                //     ];
+
+                //     Mail::to($receiverEmail)->send(new MailNotification($details));
                 // }
 
                 return response()->json([
@@ -142,9 +149,10 @@ class TaskController extends Controller
      * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function show(Task $task)
+    public function show($id)
     {
-        try{
+        try {
+            $task = Task::findOrFail($id);
             return response()->json([
                 'data'      => $task,
                 'message'   => 'Success'
@@ -153,7 +161,7 @@ class TaskController extends Controller
         catch(Exception $e){
             return response()->json([
                 'message' => $e->getMessage()
-            ],500);
+            ], 500);
         }
     }
 
@@ -221,7 +229,7 @@ class TaskController extends Controller
     {
         $role = Auth::user()->role;
 
-        if ($role > 2) {
+        // if ($role > 2) {
             $this->validate($request, [
                 'task_name'         => 'required|max:255',
                 'description'       => 'required',
@@ -273,12 +281,12 @@ class TaskController extends Controller
                         'message' => $e->getMessage()
                     ],500);
             }
-        }
-        else{
-            return response()->json([
-                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
-            ], 403);
-        }
+        // }
+        // else{
+        //     return response()->json([
+        //         'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+        //     ], 403);
+        // }
     }
 
     /**
@@ -378,7 +386,7 @@ class TaskController extends Controller
         }
     }
 
-    
+
     public function storeFiles(Request $request)
     {
         try {
@@ -478,12 +486,110 @@ class TaskController extends Controller
         }
     }
 
-    public function routeNotificationForMail($notification)
+    public function getTasksByFilter(Request $request)
     {
-        // Return email address only...
-        return 'caotanan1234@gmail.com';
+        $this->validate($request, [
+            'offset'    => 'required|numeric',
+            'limit'     => 'required|numeric'
+        ]);
 
-        // Return email address and name...
-        // return [$this->email_address => $this->name];
+        try {
+            // Get data from request.
+            $offset = $request->offset;
+            $limit = $request->limit;
+            $filters = $request->filters;
+
+            // Query statement.
+            $query = "select * from tasks";
+            $firstTime = true;
+
+            // Check if fields in filters variable exist.
+            if (count($filters) > 0) {
+                foreach ($filters as $filter) {
+
+                    // Get type and value of each filter.
+                    $filterType = $filter['filter'];
+                    $filterValue = $filter['value'];
+
+                    // Add conditions to the query statement.
+                    if ($firstTime) {
+                        $query .= " where";
+                        $firstTime = false;
+                    }
+                    else {
+                        $query .= " and";
+                    }
+
+                    // Check if value of the $filterType is a array.
+                    if (gettype($filterValue) === "array") {
+
+                        // Get the value of the elements in $filterValue regardless of its field name.
+                        $tempValues = array();
+                        foreach ($filterValue as $key => $value) {
+                            array_push($tempValues, $value);
+                        }
+
+                        // Check if the value of each element in $filterValue is a string.
+                        if (gettype($tempValues[0]) === "string" && gettype($tempValues[1]) === "string") {
+                            $query .= " $filterType >= '$tempValues[0]' and $filterType <= '$tempValues[1]'";
+                        }
+                        else {
+                            $query .= " $filterType >= $tempValues[0] and $filterType <= $tempValues[1]";
+                        }
+                    }
+                    else {
+                        // Check if the value of $filterValue is a string.
+                        if (gettype($filterValue) === "string") {
+                            $query .= " $filterType = '$filterValue'";
+                        }
+                        else {
+                            $query .= " $filterType = $filterValue";
+                        }
+                    }
+                }
+            }
+
+            // Count the number of result without limit and offset fields.
+            $count = count(DB::select($query));
+
+            // Add limit and offset fields.
+            $query .= " limit $limit offset $offset";
+
+            // Execute the query.
+            $tempTasks = DB::select($query);
+
+            // Convert to array.
+            $tasks = json_decode(json_encode($tempTasks), true);
+
+            // If the query result has data.
+            if (count($tasks) > 0){
+                foreach ($tasks as &$task) {
+                    $projectName = DB::table('projects')->where('id', $task['project_id'])->first()->project_name;
+                    $userName = DB::table('users')->where('id', $task['assignee_id'])->first()->name;
+
+                    // Add fields project_name and user_name.
+                    $task['project_name'] = $projectName;
+                    $task['user_name'] = $userName;
+                }
+            }
+
+            // Result variable.
+            $result = array(
+                    "count" => $count,
+                    "tasks" => $tasks
+            );
+
+            return response()->json([
+                'data'      => $result,
+                // 'temp'      => $tempTasks,
+                // 'test'      => $query,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AlterDocumentTable extends Migration
+class AlterTableDocuments extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,8 @@ class AlterDocumentTable extends Migration
     public function up()
     {
         Schema::table('documents', function (Blueprint $table) {
-            $table->integer('comment_id')->nullable()->after('size');
+            //
+            $table->integer('task_id')->nullable();
         });
     }
 
@@ -26,7 +27,7 @@ class AlterDocumentTable extends Migration
     public function down()
     {
         Schema::table('documents', function (Blueprint $table) {
-            $table->dropColumn('comment_id');
+            $table->dropIfExists('task_id');
         });
     }
 }

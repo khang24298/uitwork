@@ -8,7 +8,7 @@ class Project extends Model
 {
     // protected $guarded = [];
 
-    protected $fillable = ['user_id', 'project_name', 'description'];
+    protected $fillable = ['user_id', 'project_name', 'description','start_date','end_date'];
 
     public function user()
     {

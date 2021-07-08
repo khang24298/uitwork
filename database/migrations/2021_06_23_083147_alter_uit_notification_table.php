@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class AlterUitNotificationTable extends Migration
 {
@@ -13,10 +14,11 @@ class AlterUitNotificationTable extends Migration
      */
     public function up()
     {
-        Schema::table('uit_notifications', function (Blueprint $table) {
-            //
-            $table->longText('content');
-        });
+        // Schema::table('uit_notifications', function (Blueprint $table) {
+        //     $table->longText('content')->change();
+        // });
+
+        DB::statement('ALTER TABLE uit_notifications MODIFY content LONGTEXT;');
     }
 
     /**
@@ -26,10 +28,12 @@ class AlterUitNotificationTable extends Migration
      */
     public function down()
     {
-        if (Schema::hasColumn('uit_notifications', 'content')){
-            Schema::table('uit_notifications', function (Blueprint $table) {
-                $table->dropColumn('content');
-            });
-        }
+        // if (Schema::hasColumn('uit_notifications', 'content')){
+        //     Schema::table('uit_notifications', function (Blueprint $table) {
+        //         $table->dropColumn('content');
+        //     });
+        // }
+
+        DB::statement('ALTER TABLE uit_notifications MODIFY content TEXT;');
     }
 }

@@ -14,6 +14,9 @@ use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Facades\Mail;
+use App\Mail\MailNotification;
+
 class EvaluationController extends Controller
 {
     public function __construct()
@@ -166,6 +169,18 @@ class EvaluationController extends Controller
 
                         // Dispatch to NotificationJob.
                         NotificationJob::dispatch($notification);
+
+                        // Test mail notification.
+                        // $receiverEmail = User::select('email')->where('id', $receiverID)->first()->email;
+
+                        // $details = [
+                        //     'subject'   => 'New Evaluation',
+                        //     'title'     => 'New Evaluation',
+                        //     'body'      => $message,
+                        //     'url'       => route('admin.login'),
+                        // ];
+
+                        // Mail::to($receiverEmail)->send(new MailNotification($details));
                     }
                     catch(Exception $e){
                         return response()->json([
@@ -429,11 +444,15 @@ class EvaluationController extends Controller
         }
     }
 
-    public function getUserEvaluationByUserID(int $user_id)
+    public function getUserEvaluationByUserID(int $user_id, int $month, int $year)
     {
         try {
-            $userEvaluation = DB::table('evaluation')->where('user_id', $user_id)->get();
-
+            $userEvaluation = DB::table('evaluation')
+            ->where('user_id', $user_id)
+            ->whereMonth('created_at',$month)
+            ->whereYear('created_at', $year)
+            ->get();
+            
             return response()->json([
                 'data'      => $userEvaluation,
                 'message'   => 'Success'
@@ -446,105 +465,18 @@ class EvaluationController extends Controller
         }
     }
 
-    public function getUserEvaluationList()
+    public function getTaskEvaluationListByUserId(int $user_id, int $month, int $year)
     {
         try {
-            $userEvaluationList = DB::table('evaluation')->where('user_id', '<>', null)->get();
-
+            $userEvaluationList = DB::table('tasks')->join('evaluation','tasks.id', '=','evaluation.task_id')
+            ->where('tasks.assignee_id',$user_id)
+            ->whereMonth('evaluation.created_at',$month)
+            ->whereYear('evaluation.created_at',$year)
+            ->select('tasks.project_id','evaluation.score','tasks.id','tasks.task_name','tasks.assignee_id','tasks.start_date','tasks.end_date','evaluation.created_at','tasks.user_id','tasks.has_been_evaluated')
+            ->get();
+         
             return response()->json([
                 'data'      => $userEvaluationList,
-                'message'   => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function calcTaskCriteriaScoreByTaskID(int $task_id)
-    {
-        try {
-            $score = DB::table('evaluation')->where('task_id', $task_id)->sum('score');
-
-            return response()->json([
-                'data'      => $score,
-                'message'   => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function calcUserCriteriaScoreByUserID(int $user_id)
-    {
-        try {
-            $score = DB::table('evaluation')->where('user_id', $user_id)->sum('score');
-
-            return response()->json([
-                'data'      => $score,
-                'message'   => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function calcTotalTaskCriteriaScoreByUserID(int $user_id)
-    {
-        try {
-            $userTask = DB::table('users')
-                ->join('tasks', 'users.id', '=', 'tasks.user_id')
-                ->select('users.id AS userID', 'users.name', 'tasks.id')
-                ->toSql();
-
-            $score = DB::table('evaluation')
-            ->joinSub($userTask, 'user_task', function($join) {
-                $join->on('evaluation.task_id', '=', 'user_task.id');
-            })
-            ->select('user_task.name', 'evaluation.score', 'evaluation.task_id')
-            ->where('user_task.userID', $user_id)->sum('score');
-
-            return response()->json([
-                'data'      => $score,
-                'message'   => 'Success'
-            ], 200);
-        }
-        catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function calcTotalUserScore(int $user_id)
-    {
-        try {
-            $score_1 = DB::table('evaluation')->where('user_id', $user_id)->sum('score');
-
-            $userTask = DB::table('users')
-                ->join('tasks', 'users.id', '=', 'tasks.user_id')
-                ->select('users.id AS userID', 'users.name', 'tasks.id')
-                ->toSql();
-
-            $score_2 = DB::table('evaluation')
-            ->joinSub($userTask, 'user_task', function($join) {
-                $join->on('evaluation.task_id', '=', 'user_task.id');
-            })
-            ->select('user_task.name', 'evaluation.score', 'evaluation.task_id')
-            ->where('user_task.userID', $user_id)->sum('score');
-
-            $score = $score_1 + $score_2;
-
-            return response()->json([
-                'data'      => $score,
                 'message'   => 'Success'
             ], 200);
         }

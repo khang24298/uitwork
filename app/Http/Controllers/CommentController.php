@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Comment;
+use App\User;
 use Illuminate\Http\Request;
 
 use Exception;
@@ -185,7 +186,13 @@ class CommentController extends Controller
     public function getCommentByUserID(int $user_id)
     {
         try {
-            $userComment = DB::table('comments')->where('user_id', $user_id)->get();
+            $userComment = Comment::where('user_id', $user_id)->get();
+
+            // Add user_name field.
+            foreach ($userComment as $usrCmt) {
+                $userName = DB::table('users')->where('id', $usrCmt['user_id'])->first()->name;
+                $usrCmt['user_name'] = $userName;
+            }
 
             return response()->json([
                 'data'      => $userComment,
@@ -202,7 +209,13 @@ class CommentController extends Controller
     public function getCommentByTaskID(int $task_id)
     {
         try {
-            $taskComment = DB::table('comments')->where('task_id', $task_id)->get();
+            $taskComment = Comment::where('task_id', $task_id)->get();
+
+            // Add user_name field.
+            foreach ($taskComment as $tskCmt) {
+                $userName = DB::table('users')->where('id', $tskCmt['user_id'])->first()->name;
+                $tskCmt['user_name'] = $userName;
+            }
 
             return response()->json([
                 'data'      => $taskComment,
@@ -219,7 +232,13 @@ class CommentController extends Controller
     public function getReplyComment(int $parent_id)
     {
         try {
-            $childComment = DB::table('comments')->where('parent_id', $parent_id)->get();
+            $childComment = Comment::where('parent_id', $parent_id)->get();
+
+            // Add user_name field.
+            foreach ($childComment as $childCmt) {
+                $userName = DB::table('users')->where('id', $childCmt['user_id'])->first()->name;
+                $childCmt['user_name'] = $userName;
+            }
 
             return response()->json([
                 'data'      => $childComment,
