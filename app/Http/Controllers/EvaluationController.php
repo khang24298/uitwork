@@ -520,11 +520,15 @@ class EvaluationController extends Controller
         }
     }
 
-    public function getUserEvaluationByUserID(int $user_id)
+    public function getUserEvaluationByUserID(int $user_id, int $month, int $year)
     {
         try {
-            $userEvaluation = DB::table('evaluation')->where('user_id', $user_id)->get();
-
+            $userEvaluation = DB::table('evaluation')
+            ->where('user_id', $user_id)
+            ->whereMonth('created_at',$month)
+            ->whereYear('created_at', $year)
+            ->get();
+            
             return response()->json([
                 'data'      => $userEvaluation,
                 'message'   => 'Success'
@@ -537,11 +541,16 @@ class EvaluationController extends Controller
         }
     }
 
-    public function getUserEvaluationList()
+    public function getTaskEvaluationListByUserId(int $user_id, int $month, int $year)
     {
         try {
-            $userEvaluationList = DB::table('evaluation')->where('user_id', '<>', null)->get();
-
+            $userEvaluationList = DB::table('tasks')->join('evaluation','tasks.id', '=','evaluation.task_id')
+            ->where('tasks.assignee_id',$user_id)
+            ->whereMonth('evaluation.created_at',$month)
+            ->whereYear('evaluation.created_at',$year)
+            ->select('tasks.project_id','evaluation.score','tasks.id','tasks.task_name','tasks.assignee_id','tasks.start_date','tasks.end_date','evaluation.created_at','tasks.user_id','tasks.has_been_evaluated')
+            ->get();
+         
             return response()->json([
                 'data'      => $userEvaluationList,
                 'message'   => 'Success'

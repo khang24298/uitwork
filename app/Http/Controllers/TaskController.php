@@ -229,7 +229,7 @@ class TaskController extends Controller
     {
         $role = Auth::user()->role;
 
-        if ($role > 2) {
+        // if ($role > 2) {
             $this->validate($request, [
                 'task_name'         => 'required|max:255',
                 'description'       => 'required',
@@ -281,12 +281,12 @@ class TaskController extends Controller
                         'message' => $e->getMessage()
                     ],500);
             }
-        }
-        else{
-            return response()->json([
-                'message' => "You don't have access to this resource! Please contact with administrator for more information!"
-            ], 403);
-        }
+        // }
+        // else{
+        //     return response()->json([
+        //         'message' => "You don't have access to this resource! Please contact with administrator for more information!"
+        //     ], 403);
+        // }
     }
 
     /**
@@ -575,10 +575,8 @@ class TaskController extends Controller
 
             // Result variable.
             $result = array(
-                array(
                     "count" => $count,
                     "tasks" => $tasks
-                )
             );
 
             return response()->json([
