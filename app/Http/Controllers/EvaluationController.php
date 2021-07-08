@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\MailNotification;
+use App\Criteria;
 
 class EvaluationController extends Controller
 {
@@ -69,15 +70,23 @@ class EvaluationController extends Controller
         // DataType of evaluations : Array.
         $dataArray = $request->all();
 
+        // Get data from $request variable regardless of the key name of the array passed.
+        foreach ($dataArray as $key => $value) {
+            $inputData = $value;
+        }
+
         // Result variable.
         $result = array();
 
         if ($role > 2) {
             try {
-                foreach ($dataArray as $data) {
+                //
+                $inputCriteriaIDList = array();
+
+                foreach ($inputData as $data) {
                     // Get maxScore of criteriaID.
                     $criteriaID = $data['criteria_id'];
-                    $maxScore = DB::table('criteria')->select('max_score')->where('id', $criteriaID)->get();
+                    $maxScore = DB::table('criteria')->where('id', $criteriaID)->first()->max_score;
 
                     // Validate.
                     Validator::make($data, [
@@ -88,108 +97,175 @@ class EvaluationController extends Controller
                     // Get and assign null to task_id if it not exist.
                     $taskID = $data['task_id'] ?? null;
 
+                    // $time_start = microtime(true);
+
                     // Check if task_id already exists in evaluation if the passed task_id value is not null.
                     if ($taskID !== null) {
-                        // Check if task_id already exists in evaluation.
-                        $taskIDList = DB::table('evaluation')->select('task_id')->where('task_id', '<>', null)->get();
+
+                        // Get task_id list.
+                        $taskIDList = DB::table('evaluation')
+                            ->select('task_id')
+                            ->distinct()
+                            ->where('task_id', '<>', null)
+                            ->orderByDesc('task_id')
+                            ->get();
+
                         $taskIDListArray = json_decode(json_encode($taskIDList), true);
                         $tempTaskIDArray = array();
 
-                        for ($i = 0; $i < count($taskIDListArray) - 1; $i++) {
-                            array_push($tempTaskIDArray, $taskIDListArray[$i]['task_id']);
+                        foreach ($taskIDListArray as $id) {
+                            array_push($tempTaskIDArray, $id['task_id']);
                         }
 
+                        // Check if task_id already exists in evaluation.
                         if (in_array($taskID, $tempTaskIDArray)) {
-                            // Check if the criteria_id already exists with this task_id.
+
+                            // Get criteria_id list with this task_id in evaluation.
                             $criteriaIDList = DB::table('evaluation')
                                 ->select('criteria_id')
-                                ->where('task_id', $taskID)->get();
+                                ->where('task_id', $taskID)
+                                ->orderByDesc('criteria_id')
+                                ->get();
 
                             $criteriaIDListArray = json_decode(json_encode($criteriaIDList), true);
                             $tempCriteriaArray = array();
 
-                            for ($i = 0; $i < count($criteriaIDListArray) - 1; $i++) {
-                                array_push($tempCriteriaArray, $criteriaIDListArray[$i]['criteria_id']);
+                            foreach ($criteriaIDListArray as $id) {
+                                array_push($tempCriteriaArray, $id['criteria_id']);
                             }
 
+                            // Check if the criteria_id already exists with this task_id.
                             if (in_array($criteriaID, $tempCriteriaArray)) {
+                                // $time_end = microtime(true);
                                 return response()->json([
-                                    'message' => "The criteria_id value already exists with this same task_id. Please try another value."
+                                    'message'   => "The criteria_id value already exists with this same task_id. Please try another value.",
+                                    // 'time'      => $time_end - $time_start
                                 ], 500);
                             }
+                        }
+                        else {
+                            array_push($inputCriteriaIDList, $criteriaID);
                         }
                     }
 
                     // Get and assign null to user_id if it not exist.
                     $userID = $data['user_id'] ?? null;
 
-                    // Create.
-                    try {
-                        $evaluation = Evaluation::create([
-                            'task_id'       => $taskID,
-                            'user_id'       => $userID,
-                            'criteria_id'   => $criteriaID,
-                            'score'         => $data['score'],
-                            'note'          => $data['note'] ?? "",
-                        ]);
+                    // // Create.
+                    // try {
+                    //     $evaluation = Evaluation::create([
+                    //         'task_id'       => $taskID,
+                    //         'user_id'       => $userID,
+                    //         'criteria_id'   => $criteriaID,
+                    //         'score'         => $data['score'],
+                    //         'note'          => $data['note'] ?? "",
+                    //     ]);
 
-                        if ($taskID !== null) {
-                            // Update task status to EVALUATED and has been evaluated field to TRUE.
-                            Task::where('id', $taskID)->update(['status_id' => 4]);
-                            Task::where('id', $taskID)->update(['has_been_evaluated' => true]);
+                    //     if ($taskID !== null) {
+                    //         // Update task status to EVALUATED and has been evaluated field to TRUE.
+                    //         Task::where('id', $taskID)->update(['status_id' => 4]);
+                    //         Task::where('id', $taskID)->update(['has_been_evaluated' => true]);
 
-                            // Assign receiver_id in the notification table equal to assignee_id.
-                            $receiverID = Task::findOrFail($evaluation->task_id)->assignee_id;
-                        }
+                    //         // Assign receiver_id in the notification table equal to assignee_id.
+                    //         $receiverID = Task::findOrFail($evaluation->task_id)->assignee_id;
+                    //     }
 
-                        if ($userID !== null) {
-                            // Update has been evaluated field to TRUE.
-                            User::where('id', $userID)->update(['has_been_evaluated' => true]);
+                    //     if ($userID !== null) {
+                    //         // Update has been evaluated field to TRUE.
+                    //         User::where('id', $userID)->update(['has_been_evaluated' => true]);
 
-                            // Assign receiver_id in the notification table equal to user_id.
-                            $receiverID = $userID;
-                        }
+                    //         // Assign receiver_id in the notification table equal to user_id.
+                    //         $receiverID = $userID;
+                    //     }
 
-                        // Get this evaluation and add to the result.
-                        $maxEvaluationID = DB::table('evaluation')->max('id');
-                        $temp = DB::table('evaluation')->where('id', $maxEvaluationID)->get()->toArray();
-                        $result = array_merge($result, $temp);
+                    //     // Get this evaluation and add to the result.
+                    //     $maxEvaluationID = DB::table('evaluation')->max('id');
+                    //     $temp = DB::table('evaluation')->where('id', $maxEvaluationID)->get()->toArray();
+                    //     $result = array_merge($result, $temp);
 
-                        // Create Notification.
-                        $message = Auth::user()->name.' created a new evaluation.';
+                    //     // Create Notification.
+                    //     $message = Auth::user()->name.' created a new evaluation.';
 
-                        $notification = ([
-                            'user_id'       => Auth::user()->id,
-                            'type_id'       => 4,
-                            'message'       => $message,
-                            'content'       => json_encode($evaluation),
-                            'receiver_id'   => $receiverID,
-                            'has_seen'      => false,
-                        ]);
+                    //     $notification = ([
+                    //         'user_id'       => Auth::user()->id,
+                    //         'type_id'       => 4,
+                    //         'message'       => $message,
+                    //         'content'       => json_encode($evaluation),
+                    //         'receiver_id'   => $receiverID,
+                    //         'has_seen'      => false,
+                    //     ]);
 
-                        // Dispatch to NotificationJob.
-                        NotificationJob::dispatch($notification);
+                    //     // Dispatch to NotificationJob.
+                    //     NotificationJob::dispatch($notification);
 
-                        // Test mail notification.
-                        // $receiverEmail = User::select('email')->where('id', $receiverID)->first()->email;
+                    //     // Test mail notification.
+                    //     // $receiverEmail = User::select('email')->where('id', $receiverID)->first()->email;
 
-                        // $details = [
-                        //     'subject'   => 'New Evaluation',
-                        //     'title'     => 'New Evaluation',
-                        //     'body'      => $message,
-                        //     'url'       => route('admin.login'),
-                        // ];
+                    //     // $details = [
+                    //     //     'subject'   => 'New Evaluation',
+                    //     //     'title'     => 'New Evaluation',
+                    //     //     'body'      => $message,
+                    //     //     'url'       => route('admin.login'),
+                    //     // ];
 
-                        // Mail::to($receiverEmail)->send(new MailNotification($details));
-                    }
-                    catch(Exception $e){
-                        return response()->json([
-                            'message' => $e->getMessage()
-                        ], 500);
-                    }
+                    //     // Mail::to($receiverEmail)->send(new MailNotification($details));
+                    // }
+                    // catch(Exception $e){
+                    //     return response()->json([
+                    //         'message' => $e->getMessage()
+                    //     ], 500);
+                    // }
                 }
+
+                // Get criteria_id list with this task_id in criteria.
+                $tempCriteriaIDListByTaskID = DB::table('criteria')
+                    ->select('id as criteria_id')
+                    ->where('task_id', $taskID)
+                    ->get();
+
+                $criteriaIDListArrayByTaskID = json_decode(json_encode($tempCriteriaIDListByTaskID), true);
+                $criteriaIDListByTaskID = array();
+
+                foreach ($criteriaIDListArrayByTaskID as $id) {
+                    array_push($criteriaIDListByTaskID, $id['criteria_id']);
+                }
+
+                $a = array(1,2,3,4,76,78,9,10);
+                $criteriaIDLeft = array_diff($a, $inputCriteriaIDList);
+
+                //
+                foreach ($criteriaIDLeft as $criIDLf) {
+                    // Get maxScore of criteriaID.
+                    $maxScore = DB::table('criteria')->where('id', $criIDLf)->first()->max_score;
+
+                    $evaluation = Evaluation::create([
+                        'task_id'       => $taskID,
+                        'user_id'       => "",
+                        'criteria_id'   => $criIDLf,
+                        'score'         => $maxScore,
+                        'note'          => "",
+                    ]);
+
+                    if ($taskID !== null) {
+                        // Update task status to EVALUATED and has been evaluated field to TRUE.
+                        Task::where('id', $taskID)->update(['status_id' => 4]);
+                        Task::where('id', $taskID)->update(['has_been_evaluated' => true]);
+
+                        // Assign receiver_id in the notification table equal to assignee_id.
+                        $receiverID = Task::findOrFail($evaluation->task_id)->assignee_id;
+                    }
+
+                    // Get this evaluation and add to the result.
+                    $maxEvaluationID = DB::table('evaluation')->max('id');
+                    $temp = DB::table('evaluation')->where('id', $maxEvaluationID)->get()->toArray();
+                    $result = array_merge($result, $temp);
+                }
+
                 return response()->json([
-                    'data'      => $result,
+                    // 'data'      => $inputData,
+                    'test'      => $criteriaIDListByTaskID,
+                    'temp'      => $criteriaIDLeft,
+                    // 'time'      => $time_end - $time_start,
                     'message'   => 'Success'
                 ], 200);
             }
