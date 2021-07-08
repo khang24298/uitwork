@@ -194,7 +194,7 @@ class UserController extends Controller
                 $totalTask = Task::whereIn('project_id', $projectsInUserDepartment)->count();
 
                 // Get total done tasks.
-                $totalDoneTask = Task::whereIn('project_id', $projectsInUserDepartment)->whereIn('status_id', array(3,4))->count();
+                $totalDoneTask = Task::whereIn('project_id', $projectsInUserDepartment)->where('status_id', 4)->count();
 
                 // Get total rejected tasks.
                 $totalRejectedTask = Task::whereIn('project_id', $projectsInUserDepartment)->where('status_id', 5)->count();
@@ -207,7 +207,7 @@ class UserController extends Controller
                 $totalTask = Task::where('assignee_id', Auth::user()->id)->count();
 
                 // Get total done tasks.
-                $totalDoneTask = Task::where('assignee_id', Auth::user()->id)->whereIn('status_id', array(3,4))->count();
+                $totalDoneTask = Task::where('assignee_id', Auth::user()->id)->where('status_id', 4)->count();
 
                 // Get total rejected tasks.
                 $totalRejectedTask = Task::where('assignee_id', Auth::user()->id)->where('status_id', 5)->count();
