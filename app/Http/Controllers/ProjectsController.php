@@ -289,14 +289,18 @@ class ProjectsController extends Controller
             }
             $tasksByProject = [];
             foreach($statuses as $status){
-                $taskList = Task::where([
+                $taskList = DB::table('tasks')
+                    ->join('users', 'tasks.assignee_id', '=', 'users.id')
+                    ->select('tasks.*','users.name','users.email')
+                    ->where([
                     [
                         'status_id',$status->type_id
                     ],
                     [
                         'project_id',$project_id
                     ]
-                    ])->get()->toArray();
+                    ])
+                    ->get()->toArray();
                 array_push($tasksByProject,(Object)[
                     "status" => $status,
                     "tasks" => $taskList

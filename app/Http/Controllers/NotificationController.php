@@ -194,7 +194,7 @@ class NotificationController extends Controller
     {
         try {
             // Get notifications.
-            $userNotification = Notification::where('receiver_id', $user_id)->get();
+            $userNotification = Notification::where('user_id', $user_id)->get();
 
             // Get type_name of each notification.
             foreach ($userNotification as $usrNft) {

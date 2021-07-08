@@ -317,19 +317,25 @@ class CriteriaController extends Controller
         }
     }
 
-    public function getUserCriteriaByUserID(int $user_id)
+    public function getUserCriteriaByUserID(int $user_id, int $month, int $year)
     {
         try {
             $userCriteria = DB::table('criteria')
                 ->where('user_id', $user_id)
-                ->where('criteria_type_id', 2)->get()->toArray();
+                ->where('criteria_type_id', 2)
+                ->whereMonth('created_at',$month)
+                ->whereYear('created_at', $year)
+                ->get()->toArray();
 
             // If the user is EVALUATED => Get evaluation data.
             if (DB::table('evaluation')->where('user_id', $user_id) !== null) {
                 $evaluated = DB::table('criteria')
                     ->join('evaluation', 'evaluation.criteria_id', '=', 'criteria.id')
                     ->select('criteria.*', 'score', 'note')
-                    ->where('evaluation.user_id', $user_id)->get()->toArray();
+                    ->where('evaluation.user_id', $user_id)
+                    ->whereMonth('evaluation.created_at',$month)
+                    ->whereYear('evaluation.created_at', $year)
+                    ->get()->toArray();
 
                 // Get evaluated.
                 $temp = array();
