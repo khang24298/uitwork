@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\MailNotification;
+use App\Criteria;
 
 class EvaluationController extends Controller
 {
@@ -77,7 +78,7 @@ class EvaluationController extends Controller
                 foreach ($dataArray as $data) {
                     // Get maxScore of criteriaID.
                     $criteriaID = $data['criteria_id'];
-                    $maxScore = DB::table('criteria')->select('max_score')->where('id', $criteriaID)->get();
+                    $maxScore = DB::table('criteria')->where('id', $criteriaID)->first()->max_score;
 
                     // Validate.
                     Validator::make($data, [
@@ -452,7 +453,7 @@ class EvaluationController extends Controller
             ->whereMonth('created_at',$month)
             ->whereYear('created_at', $year)
             ->get();
-            
+
             return response()->json([
                 'data'      => $userEvaluation,
                 'message'   => 'Success'
@@ -474,7 +475,7 @@ class EvaluationController extends Controller
             ->whereYear('evaluation.created_at',$year)
             ->select('tasks.project_id','evaluation.id','evaluation.score',DB::raw('tasks.id as task_id'),'tasks.task_name','tasks.assignee_id','tasks.start_date','tasks.end_date','evaluation.created_at','tasks.user_id','tasks.has_been_evaluated')
             ->get();
-         
+
             return response()->json([
                 'data'      => $userEvaluationList,
                 'message'   => 'Success'
