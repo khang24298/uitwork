@@ -472,7 +472,7 @@ class EvaluationController extends Controller
             ->where('tasks.assignee_id',$user_id)
             ->whereMonth('evaluation.created_at',$month)
             ->whereYear('evaluation.created_at',$year)
-            ->select('tasks.project_id','evaluation.score','tasks.id','tasks.task_name','tasks.assignee_id','tasks.start_date','tasks.end_date','evaluation.created_at','tasks.user_id','tasks.has_been_evaluated')
+            ->select('tasks.project_id','evaluation.id','evaluation.score',DB::raw('tasks.id as task_id'),'tasks.task_name','tasks.assignee_id','tasks.start_date','tasks.end_date','evaluation.created_at','tasks.user_id','tasks.has_been_evaluated')
             ->get();
          
             return response()->json([
