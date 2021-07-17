@@ -186,7 +186,7 @@ class TaskController extends Controller
 
         $role = Auth::user()->role;
 
-        if ($role <= 2 && in_array($request['status_id'],[0,6])) {
+        if ($role <= 2 && in_array($request['status_id'],[0,5])) {
             return response()->json([
                 'data'      => null,
                 'message'   => 'Permission Denied!'
@@ -238,7 +238,8 @@ class TaskController extends Controller
                 'project_id'        => 'required|numeric',
                 'assignee_id'       => 'required|numeric',
                 'qa_id'             => 'required|numeric',
-                'priority'          => 'required'
+                'priority'          => 'required',
+                'status_id'         => 'in:0,1,2,3'
             ]);
 
             try {
