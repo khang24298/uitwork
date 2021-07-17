@@ -170,7 +170,7 @@ class EvaluationController extends Controller
 
                         // Dispatch to NotificationJob.
                         NotificationJob::dispatch($notification);
-
+                        
                         // Test mail notification.
                         // $receiverEmail = User::select('email')->where('id', $receiverID)->first()->email;
 
