@@ -1119,7 +1119,8 @@ class RankingController extends Controller
                 ->where('user_id', $user_id)
                 ->whereMonth('created_at', $month)
                 ->whereYear('created_at', $year)
-                ->get();
+                ->orderByDesc('created_at')
+                ->first();
 
             return response()->json([
                 'data'      => $userRankingInfo,
@@ -1287,10 +1288,10 @@ class RankingController extends Controller
 
                 //
                 if ($rankInThisMonth != null) {
-                    $thisMonthScore = $rankInThisMonth[0]['total_score'];
+                    $thisMonthScore = $rankInThisMonth['total_score'];
 
                     if ($rankInPreviousMonth != null) {
-                        $previousMonthScore = $rankInPreviousMonth[0]['total_score'];
+                        $previousMonthScore = $rankInPreviousMonth['total_score'];
                     } else {
                         $previousMonthScore = 0;
                     }
@@ -1307,12 +1308,12 @@ class RankingController extends Controller
                     $tempRank = array(
                         'user_id'                           => $user_id['id'],
                         'user_name'                         => $userName,
-                        'score_by_task_criteria'            => $rankInThisMonth[0]['score_by_task_criteria'],
-                        'score_by_personnel_criteria'       => $rankInThisMonth[0]['score_by_personnel_criteria'],
-                        'total_score'                       => $rankInThisMonth[0]['total_score'],
-                        'rank_by_task_criteria_score'       => $rankInThisMonth[0]['rank_by_task_criteria_score'],
-                        'rank_by_personnel_criteria_score'  => $rankInThisMonth[0]['rank_by_personnel_criteria_score'],
-                        'total_rank'                        => $rankInThisMonth[0]['total_rank'],
+                        'score_by_task_criteria'            => $rankInThisMonth['score_by_task_criteria'],
+                        'score_by_personnel_criteria'       => $rankInThisMonth['score_by_personnel_criteria'],
+                        'total_score'                       => $rankInThisMonth['total_score'],
+                        'rank_by_task_criteria_score'       => $rankInThisMonth['rank_by_task_criteria_score'],
+                        'rank_by_personnel_criteria_score'  => $rankInThisMonth['rank_by_personnel_criteria_score'],
+                        'total_rank'                        => $rankInThisMonth['total_rank'],
                         'increase_or_decrease'              => $increaseOrDecrease,
                     );
 

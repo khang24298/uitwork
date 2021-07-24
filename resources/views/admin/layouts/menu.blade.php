@@ -36,17 +36,11 @@
             </li>
             <!-- End Role -->
 
-            <!-- Member -->
-            <li>
-                <a href="#"><i class="fa fa-users fa-fw"></i>Thành viên<span class="fa arrow"></span></a>
-            </li>
-            <!-- End Member -->
-
-            <!-- Member -->
+            <!-- User -->
             <li>
                 <a href="{{ route('user.index') }}"><i class="fa fa-users fa-fw"></i>Người dùng<span class="fa arrow"></span></a>
             </li>
-            <!-- End Member -->
+            <!-- End User -->
         </ul>
     </div>
     <!-- /.sidebar-collapse -->

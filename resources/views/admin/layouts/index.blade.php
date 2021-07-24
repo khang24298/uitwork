@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="UIT WORK ADMIN">
     <meta name="author" content="Pham Nhat Duy">
-    <title>Admin - Duy Phạm</title>
+    <title>Admin - UITWORK</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="/admin_asset/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
