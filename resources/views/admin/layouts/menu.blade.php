@@ -19,9 +19,9 @@
             <!-- End Dashboard -->
 
             <!-- PermissionGroup -->
-            <li>
+            <!-- <li>
                 <a href="{{ route('group.permission.index') }}"><i class="fa fa-bar-chart-o fa-fw"></i>Nhóm Quyền<span class="fa arrow"></span></a>
-            </li>
+            </li> -->
             <!-- End PermissionGroup -->
 
             <!-- Permission -->
@@ -36,7 +36,13 @@
             </li>
             <!-- End Role -->
 
-            <!-- User -->
+            <!-- Member -->
+            <!-- <li>
+                <a href="#"><i class="fa fa-users fa-fw"></i>Thành viên<span class="fa arrow"></span></a>
+            </li> -->
+            <!-- End Member -->
+
+            <!-- Member -->
             <li>
                 <a href="{{ route('user.index') }}"><i class="fa fa-users fa-fw"></i>Người dùng<span class="fa arrow"></span></a>
             </li>
