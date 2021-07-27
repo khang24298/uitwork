@@ -10,13 +10,16 @@ use App\Task;
 use Illuminate\Support\Facades\Validator;
 use App\Notification;
 use App\Jobs\NotificationJob;
+use App\Jobs\CalRanking;
+
 use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
+use App\Http\Controllers\RankingController;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\MailNotification;
 use App\Criteria;
+use App\Ranking;
 
 class EvaluationController extends Controller
 {
@@ -180,7 +183,11 @@ class EvaluationController extends Controller
                         //     'body'      => $message,
                         //     'url'       => route('admin.login'),
                         // ];
+                        $month = date('n',strtotime($evaluation->created_at));
+                        $year = date('Y',strtotime($evaluation->created_at));
 
+                        $ranking = new CalRanking($receiverID,$month,$year);
+                        dispatch($ranking);
                         // Mail::to($receiverEmail)->send(new MailNotification($details));
                     }
                     catch(Exception $e){
@@ -478,6 +485,43 @@ class EvaluationController extends Controller
 
             return response()->json([
                 'data'      => $userEvaluationList,
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getListUserEvaluationByMonth(int $month, int $year){
+        $department_id = Auth::user()->department_id;
+        
+        $userCollection = User::select('users.id','users.name','users.email','users.phone','users.role','users.dob')
+                        ->where('users.department_id',$department_id)
+                        ->get()
+                        ->toArray();
+
+        $rankingCollection = Ranking::select('user_id','created_at')
+                            ->whereMonth('created_at',$month)
+                            ->whereYear('created_at', $year)
+                            ->get();
+        $rankingCollection = $rankingCollection->pluck('created_at','user_id')->toArray();
+        $rankingArrKeys = array_keys($rankingCollection);
+        try{
+            foreach($userCollection as $item){
+                if(in_array($item['id'],$rankingArrKeys)){
+                    $item["evaluated_at"] = $rankingCollection[$item['id']];
+                    $data["listUserEvaluated"][]= $item;
+                }
+                else{
+                    $data["listUserNotEvaluated"][]= $item;
+                }
+            }
+
+            return response()->json([
+                'data'      => $data,
                 'message'   => 'Success'
             ], 200);
         }

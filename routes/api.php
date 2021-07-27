@@ -112,6 +112,7 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/getTaskEvaluationListByUserId/{user_id}/{month}/{year}', 'EvaluationController@getTaskEvaluationListByUserId');
     Route::get('/getTaskEvaluationByTaskID/{task_id}', 'EvaluationController@getTaskEvaluationByTaskID');
     Route::get('/getUserEvaluationByUserID/{user_id}/{month}/{year}', 'EvaluationController@getUserEvaluationByUserID');
+    Route::get('/getListUserEvaluationByMonth/{month}/{year}','EvaluationController@getListUserEvaluationByMonth');
 
     // Ranking
     Route::resource('/ranking', 'RankingController');
@@ -140,7 +141,7 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/getUserTotalRankListByMonth/{month}/{year}', 'RankingController@getUserTotalRankListByMonth');
     Route::get('/calcValuesForOneUserByMonth/{user_id}/{month}/{year}', 'RankingController@calcValuesForOneUserByMonth');
     Route::get('/insertUserRankListByMonth/{month}/{year}', 'RankingController@insertUserRankListByMonth');
-    Route::get('/insertUserRankByMonthByUserID/{user_id}/{month}/{year}', 'RankingController@insertUserRankByMonthByUserID');
+    Route::get('/insertUserRankByMonthByUserID/{user_id}/{month}/{year}', 'RankingController@insertUserRankByMonthByUserID')->name('insertUserRankByMonth');
 
     Route::get('/getUserRankingByMonth/{user_id}/{month}/{year}', 'RankingController@getUserRankingByMonth');
     Route::get('/getUserRankingListByMonth/{month}/{year}', 'RankingController@getUserRankingListByMonth');
@@ -148,7 +149,6 @@ Route::group(['middleware' => 'auth.jwt'], function () {
 
     Route::get('/getRankListByMonth/{month}/{year}', 'RankingController@getRankListByMonth');
     Route::get('/getRankListInUserDepartmentByMonth/{month}/{year}', 'RankingController@getRankListInUserDepartmentByMonth');
-
 
     // Just for some testing
     Route::get('/draftFunction', 'TestingController@draftFunction');
