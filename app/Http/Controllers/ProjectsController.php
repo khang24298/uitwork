@@ -130,9 +130,9 @@ class ProjectsController extends Controller
     {
         try {
 
-            $tasksByProject = Task::where('project_id',$project)->get()->toArray();
+            $projectInfo = Project::findOrFail($project);
             return response()->json([
-                'data'      => $tasksByProject,
+                'data'      => $projectInfo,
                 'message'   => 'Success'
             ], 200);
         }

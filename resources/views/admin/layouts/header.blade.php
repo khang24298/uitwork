@@ -7,7 +7,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">Admin Area - Duy Phạm</a>
+        <a class="navbar-brand" href="#">Admin Area - UITWORK</a>
     </div>
     <!-- /.navbar-header -->
 

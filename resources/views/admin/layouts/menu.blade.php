@@ -46,7 +46,7 @@
             <li>
                 <a href="{{ route('user.index') }}"><i class="fa fa-users fa-fw"></i>Người dùng<span class="fa arrow"></span></a>
             </li>
-            <!-- End Member -->
+            <!-- End User -->
         </ul>
     </div>
     <!-- /.sidebar-collapse -->
