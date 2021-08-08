@@ -28,7 +28,7 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('/getUserInfo/{user_id}', 'UserController@getUserInfo');
     Route::get('/getUsersWithEmployeeRole', 'UserController@getUsersWithEmployeeRole');
     Route::get('/getUsersWithManagerRole', 'UserController@getUsersWithManagerRole');
-    Route::get('/getTheStatistics', 'UserController@getTheStatistics');
+    Route::post('/getTheStatistics', 'UserController@getTheStatistics');
 
     // Projects
     Route::resource('/projects', 'ProjectsController');
@@ -52,6 +52,11 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::resource('/criteriaTypes', 'CriteriaTypeController');
 
     // Reports
+
+    Route::post('/getProjectStatics','ReportController@getProjectStaticsReport');
+    Route::post('/getMembersStatics','ReportController@getMembersStaticsReport');
+
+
     Route::resource('/reports', 'ReportController');
     Route::get('/getReportList', 'ReportController@getReportList');
     Route::get('/getTaskReport', 'ReportController@getTaskReport');
