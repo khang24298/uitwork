@@ -6,7 +6,12 @@ use App\Report;
 use Exception;
 use Illuminate\Http\Request;
 
-use GuzzleHttp\Handler\Proxy;
+use App\Task;
+use App\Project;
+use App\User;
+use App\Ranking;
+
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 class ReportController extends Controller
@@ -285,5 +290,366 @@ class ReportController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    // Get projects statics
+    public function getProjectStaticsReport(Request $request){
+        $params = $request->all();
+
+        $type = $params["type"];
+        $time = $params["time"];
+       
+        $user_id = Auth::user()->id;
+        try {
+            switch ($type){
+                case "year": 
+                    $date = date("Y-m-d",strtotime("- ".$time." years"));
+                    break;
+                case "month":
+                    $date = date("Y-m-d",strtotime("- ".$time." months"));
+                    break;
+                case "day": 
+                    $date =  date("Y-m-d",strtotime("- ".$time." days"));
+                    break;
+                default:
+                    $date = date('Y-m-d');
+                break;
+            }
+  
+            $createdProjects = Project::where('user_id', $user_id)
+                            ->whereDate('start_date','>=',$date)
+                            ->orderByDesc('id')->get();
+            $doneProject = 0;
+            $lateProject = 0;
+
+            foreach ($createdProjects as $crPj) {
+                $tasksInProject = Task::where('project_id', $crPj['id'])
+                                        ->whereDate('start_date','>=',$date)
+                                        ->join('users', 'tasks.assignee_id', '=', 'users.id')
+                                        ->select('users.id','tasks.status_id')
+                                        ->get();
+
+                // Count the total number of tasks.
+                if($tasksInProject->count() != 0){
+                    $totalTasks = $tasksInProject->count();
+
+                    $arrayValues = array_values($tasksInProject->pluck('id')->toArray());
+                    $usersInProject = count(array_unique($arrayValues));
+                }
+                else{
+                    $totalTasks = 0;
+                    $usersInProject = 0;
+                }
+
+                // Count the number of evaluated and rejected tasks.
+                $evaluatedTasksCount 
+                = $rejectedTasksCount 
+                = $onHoldTasksCount 
+                = $onGoingTasksCount 
+                = $progress 
+                = $taskPerUser
+                = 0;
+
+                if ($totalTasks === 0) {
+                    $progress = 100;
+                }
+                else {
+                    foreach ($tasksInProject as $tskPj) {
+                        if ($tskPj['status_id'] === 4) {
+                            $evaluatedTasksCount++;
+                        }
+                        if ($tskPj['status_id'] === 5) {
+                            $rejectedTasksCount++;
+                        }
+                        if ($tskPj['status_id'] === 0) {
+                            $onHoldTasksCount++;
+                        }
+                        if (in_array($tskPj['status_id'],[1,2,3])){
+                            $onGoingTasksCount++;
+                        }
+                    }
+                    $taskPerUser = round(($totalTasks - $rejectedTasksCount)/$usersInProject,2);
+                    // Calculate progress value and Round to 2 decimal places.
+                    $progress = round($evaluatedTasksCount / ($totalTasks - $rejectedTasksCount), 2) * 100;
+                }
+
+                // Add fields to the result.
+                $crPj['total_tasks'] = $totalTasks;
+                $crPj['on_hold_tasks'] = $onHoldTasksCount;
+                $crPj['on_going_tasks'] = $onGoingTasksCount;
+                $crPj['evaluated_tasks'] = $evaluatedTasksCount;
+                $crPj['rejected_tasks'] = $rejectedTasksCount;
+                $crPj['progress'] = $progress;
+                $crPj['taskPerUser'] = $taskPerUser;
+                $crPj['users']  = $usersInProject;
+                if($progress == 100){
+                    $doneProject++;
+                }
+                else{
+                    if(strtotime($crPj["end_date"]) < strtotime("now")){
+                        $lateProject++;
+                    }
+                }
+
+            }
+            return response()->json([
+                'data'      => [
+                    "total_project"     => $createdProjects->count(),
+                    "done_project"      => $doneProject,
+                    "on_going_project"  => $createdProjects->count() - $doneProject,
+                    "late_project"      => $lateProject,
+                    "detail"            => $createdProjects
+                ],
+                'message'   => 'Success'
+            ], 200);
+        }
+        catch(Exception $e){
+
+        }
+    }
+
+    // Get members statics
+    public function getMembersStaticsReport(Request $request){
+        $params = $request->all();
+
+        $type = $params["type"];
+        $time = $params["time"];
+       
+        $department = Auth::user()->department_id;
+       
+        
+        $usersCollection = User::where('users.department_id',$department)
+                                    ->where('users.role','<=',2)
+                                    ->get();
+        foreach($usersCollection as $item){
+            $userArray[] = $item->id;
+        }
+        switch ($type){
+            case "year": 
+                $date = date("Y-m-d",strtotime("- ".$time." years"));
+
+                $groupUserByTime = $usersCollection->where('created_at','>=',$date)->groupBy(function ($item, $key) {
+                    return date("Y",strtotime($item['created_at']));
+                })->toArray();
+                $userGrowthByTime = [];
+                foreach($groupUserByTime as $key => $item){
+                    $userGrowthByTime[] = [
+                        "key"   => $key,
+                        "value" => $item
+                    ];
+                }
+
+                $rankingCollection = Ranking::where('created_at','>=',$date)->get();
+                $rankingByTime = $rankingCollection->groupBy(function ($item, $key) {
+                    return date("Y",strtotime($item['created_at']));
+                });
+                $rankingRateByTime = [];
+                foreach($rankingByTime as $key => $item){
+                    $usersRankingCount = $item->unique('user_id')->count();
+                    $userHigh = $item->sortDesc()->unique('user_id');
+                    $countHigh = 0;
+                    foreach($userHigh as $val){
+                        if($val->total_score > 400){
+                            $countHigh++;
+                        }
+                    }
+                    $usersRateHigh = round(($countHigh/$usersRankingCount),2)*100;
+                    $rankingRateByTime[] =[
+                        "key"   =>$key,
+                        "value" =>$usersRateHigh
+                    ];
+                }
+              
+                $tasks = Task::whereIn('assignee_id',$userArray)->get();
+                $tasksEachUser = $tasks->where('start_date','>=',$date)->groupBy(function ($item, $key) {
+                    return date("Y",strtotime($item['start_date']));
+                });
+
+                $taskReport = [];
+                foreach($tasksEachUser as $key => $item){
+                    $tasksCount = $item->count();
+                    $usersCount = $item->groupBy('assignee_id')->count();
+                    $percents = round($tasksCount/$usersCount,2);
+                    $taskReport[] = [
+                        "key"   => $key,
+                        "value" => $percents
+                    ];
+                }
+
+                break;
+            case "month":
+                $date = date("Y-m-d",strtotime("- ".$time." months"));
+
+                //
+                $groupUserByTime = $usersCollection->where('created_at','>=',$date)->groupBy(function ($item, $key) {
+                    return date("m",strtotime($item['created_at']));
+                })->toArray();
+                $userGrowthByTime = [];
+                foreach($groupUserByTime as $key => $item){
+                    $userGrowthByTime[] = [
+                        "key"   => $key,
+                        "value" => $item
+                    ];
+                }
+                //
+
+                //
+                $rankingCollection = Ranking::where('created_at','>=',$date)->get();
+                $rankingByTime = $rankingCollection->groupBy(function ($item, $key) {
+                    return date("m",strtotime($item['created_at']));
+                });
+                $rankingRateByTime = [];
+                foreach($rankingByTime as $key => $item){
+                    $usersRankingCount = $item->unique('user_id')->count();
+                    $userHigh = $item->sortDesc()->unique('user_id');
+                    $countHigh = 0;
+                    foreach($userHigh as $val){
+                        if($val->total_score > 400){
+                            $countHigh++;
+                        }
+                    }
+                    $usersRateHigh = round(($countHigh/$usersRankingCount),2)*100;
+                    $rankingRateByTime[] =[
+                        "key"   =>$key,
+                        "value" =>$usersRateHigh
+                    ];
+                }
+              
+                $tasks = Task::whereIn('assignee_id',$userArray)->get();
+                $tasksEachUser = $tasks->where('start_date','>=',$date)->groupBy(function ($item, $key) {
+                    return date("m",strtotime($item['start_date']));
+                });
+
+                $taskReport = [];
+                foreach($tasksEachUser as $key => $item){
+                    $tasksCount = $item->count();
+                    $usersCount = $item->groupBy('assignee_id')->count();
+                    $percents = round($tasksCount/$usersCount,2);
+                    $taskReport[] = [
+                        "key"   => $key,
+                        "value" => $percents
+                    ];
+                }
+                //
+                break;
+            case "day":
+                $date = date("Y-m-d",strtotime("- ".$time." days"));
+
+                //
+                $groupUserByTime = $usersCollection->where('created_at','>=',$date)->groupBy(function ($item, $key) {
+                    return date("d",strtotime($item['created_at']));
+                })->toArray();
+                $userGrowthByTime = [];
+                foreach($groupUserByTime as $key => $item){
+                    $userGrowthByTime[] = [
+                        "key"   => $key,
+                        "value" => $item
+                    ];
+                }
+                //
+
+                //
+                $rankingCollection = Ranking::where('created_at','>=',$date)->get();
+                $rankingByTime = $rankingCollection->groupBy(function ($item, $key) {
+                    return date("d",strtotime($item['created_at']));
+                });
+                $rankingRateByTime = [];
+                foreach($rankingByTime as $key => $item){
+                    $usersRankingCount = $item->unique('user_id')->count();
+                    $userHigh = $item->sortDesc()->unique('user_id');
+                    $countHigh = 0;
+                    foreach($userHigh as $val){
+                        if($val->total_score > 400){
+                            $countHigh++;
+                        }
+                    }
+                    $usersRateHigh = round(($countHigh/$usersRankingCount),2)*100;
+                    $rankingRateByTime[] =[
+                        "key"   =>$key,
+                        "value" =>$usersRateHigh
+                    ];
+                }
+              
+                $tasks = Task::whereIn('assignee_id',$userArray)->get();
+                $tasksEachUser = $tasks->where('start_date','>=',$date)->groupBy(function ($item, $key) {
+                    return date("d",strtotime($item['start_date']));
+                });
+
+                $taskReport = [];
+                foreach($tasksEachUser as $key => $item){
+                    $tasksCount = $item->count();
+                    $usersCount = $item->groupBy('assignee_id')->count();
+                    $percents = round($tasksCount/$usersCount,2);
+                    $taskReport[] = [
+                        "key"   => $key,
+                        "value" => $percents
+                    ];
+                }
+                //
+                break;
+            default:
+                $date = date("Y-m-d");
+                //
+                $groupUserByTime = $usersCollection->where('created_at','>=',$date)->groupBy(function ($item, $key) {
+                    return date("d",strtotime($item['created_at']));
+                })->toArray();
+                $userGrowthByTime = [];
+                foreach($groupUserByTime as $key => $item){
+                    $userGrowthByTime[] = [
+                        "key"   => $key,
+                        "value" => $item
+                    ];
+                }
+                //
+
+                //
+                $rankingCollection = Ranking::where('created_at','>=',$date)->get();
+                $rankingByTime = $rankingCollection->groupBy(function ($item, $key) {
+                    return date("d",strtotime($item['created_at']));
+                });
+                $rankingRateByTime = [];
+                foreach($rankingByTime as $key => $item){
+                    $usersRankingCount = $item->unique('user_id')->count();
+                    $userHigh = $item->sortDesc()->unique('user_id');
+                    $countHigh = 0;
+                    foreach($userHigh as $val){
+                        if($val->total_score > 400){
+                            $countHigh++;
+                        }
+                    }
+                    $usersRateHigh = round(($countHigh/$usersRankingCount),2)*100;
+                    $rankingRateByTime[] =[
+                        "key"   =>$key,
+                        "value" =>$usersRateHigh
+                    ];
+                }
+              
+                $tasks = Task::whereIn('assignee_id',$userArray)->get();
+                $tasksEachUser = $tasks->where('start_date','>=',$date)->groupBy(function ($item, $key) {
+                    return date("d",strtotime($item['start_date']));
+                });
+
+                $taskReport = [];
+                foreach($tasksEachUser as $key => $item){
+                    $tasksCount = $item->count();
+                    $usersCount = $item->groupBy('assignee_id')->count();
+                    $percents = round($tasksCount/$usersCount,2);
+                    $taskReport[] = [
+                        "key"   => $key,
+                        "value" => $percents
+                    ];
+                }
+                //
+            break;
+        }
+
+        return response()->json([
+            'data'      => [
+                "userGroupByTime"     => $userGrowthByTime,
+                "taskEachUsers"          => $taskReport,
+                "rankingRateByTime"   => $rankingRateByTime,
+            ],
+            'message'   => 'Success'
+        ], 200);
     }
 }
