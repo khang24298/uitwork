@@ -64,7 +64,7 @@ class LoginController extends Controller
         $credentials = $request->only('username', 'password');
 
         if (Auth::guard('admin')->attempt($credentials)) {
-            return redirect('admin/dashboard');
+            return redirect('admin/permission-group');
         } else {
             echo 'Admin Login Failed!';
             exit;
